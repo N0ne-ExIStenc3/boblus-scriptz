@@ -1,0 +1,316 @@
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Giangplay/Script/refs/heads/main/Orion_Library_PE_V2.lua"))()
+local Player = game.Players.LocalPlayer.DisplayName
+local User = game.Players.LocalPlayer.Name
+local BID = 0
+local RBList = {}  -- Table to store RB List
+local PID = 0
+
+local function giveB(id)
+    game:GetService("ReplicatedStorage").Events.RemoteFunction.BadgeRewardClaim:InvokeServer({
+			["Description"] = "Your personal friendly little Doombringer. Complete all of Chapter 1 with all stars beaten to claim him.",
+			["ChapterRequired"] = "BattleBricksClassic",
+			["Difficulty"] = "Easy",
+			["LockedDescription"] = "Complete Chapter 1 to unlock badge info!",
+			["Name"] = "Doom Approaches",
+			["UnitReward"] = id,
+			["Image"] = "rbxassetid://16952821023",
+			["StarRequired"] = 1,
+			["StarReveal"] = 1
+		})
+end
+
+local function getRandomID()
+    return math.random(1, 82)  -- Ensuring proper randomization
+end
+
+local Window = OrionLib:MakeWindow({Name = "The Battle Bricks", HidePremium = false, SaveConfig = true, ConfigFolder = "OhioTBB"})
+
+local H = Window:MakeTab({
+	Name = "Home",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+local S = H:AddSection({ Name = "Welcome!" })
+
+H:AddLabel("Welcome! " .. Player .. " (" .. User .. ") Thank you for using my script! :)")
+H:AddParagraph("This script is open-source", "feel free to improving or take the codes, but please do not skid.\nCredits are appreciated!")
+
+H:AddButton({
+	Name = "Remove UI",
+	Callback = function()
+		OrionLib:MakeNotification({
+			Name = "Notification!",
+			Content = "Removing The UI... :(",
+			Image = "rbxassetid://4483345998",
+			Time = 3
+		})
+		wait(3)
+		OrionLib:Destroy()
+	end
+})
+
+local A = Window:MakeTab({
+	Name = "How To Use",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local Z = A:AddSection({ Name = "W" })
+
+A:AddLabel("Important: To use this you need to have beaten Chapter 1 (1 Star)")
+A:AddLabel("Important: You need XP to upgrade battlers, and it's saved")
+A:AddLabel("Tip: To get Battler ID, use Dex Explorer.")
+A:AddLabel("Go to ReplicatedStorage/Modules/FriendlyNPCLibrary")
+
+local O = A:AddSection({ Name = "Battler ID" })
+
+A:AddLabel("Common IDs: 33 (Lil Doombringer), 34 (Lil Turking), 35 (Lil Exec)")
+A:AddLabel("41 (Tumored Battler), 42 (Tumored Troweler), 43 (Tumored Sword)")
+A:AddLabel("Special: 32 (Raig) [DO NOT SPAWN NORMAL & ALT CUZ ANTI CHEAT]")
+A:AddLabel("67 (FRIEND), 82 (Mage Battler), 14 (Papaler), 17 (Golden Hammer)")
+
+local B = Window:MakeTab({
+	Name = "Battler",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local E = B:AddSection({ Name = "Battlerz" })
+
+B:AddTextbox({
+	Name = "Battler ID",
+	Default = "",
+	TextDisappear = false,
+	Callback = function(Value)
+		BID = tonumber(Value) or 0
+	end
+})
+
+B:AddButton({
+	Name = "Give Battler",
+	Callback = function()
+		if BID == 0 then
+			OrionLib:MakeNotification({
+				Name = "Error!",
+				Content = "Invalid Battler ID!",
+				Image = "rbxassetid://4483345998",
+				Time = 3
+			})
+			return
+		end
+
+		OrionLib:MakeNotification({
+			Name = "Notification!",
+			Content = "The Unit ID: " .. BID .. " has spawned, check shop menu.",
+			Image = "rbxassetid://4483345998",
+			Time = 5
+		})
+
+		giveB(BID)
+	end
+})
+
+B:AddButton({
+	Name = "Random Battler (Might Include Placeholder)",
+	Callback = function()
+	    local RID = getRandomID()  -- Ensure proper randomization
+
+		OrionLib:MakeNotification({
+			Name = "Notification!",
+			Content = "You got Unit ID: " .. RID .. ", check shop menu.",
+			Image = "rbxassetid://4483345998",
+			Time = 5
+		})
+
+		giveB(RID)
+	end
+})
+
+B:AddTextbox({
+	Name = "Add ID to RB List",
+	Default = "",
+	TextDisappear = false,
+	Callback = function(Value)
+		local newID = tonumber(Value) or 0
+		if newID ~= 0 then
+			table.insert(RBList, newID)  -- Store new ID in table
+			RB:Set(table.concat(RBList, ", "))  -- Display all IDs
+		else
+			OrionLib:MakeNotification({
+				Name = "Error!",
+				Content = "Invalid ID!",
+				Image = "rbxassetid://4483345998",
+				Time = 3
+			})
+		end
+	end
+})
+
+RB = B:AddParagraph("RB Lists:", "N/A")
+
+B:AddButton({
+	Name = "Random Battler On RB List",
+	Callback = function()
+	    if #RBList == 0 then
+			OrionLib:MakeNotification({
+				Name = "Error!",
+				Content = "RB List is empty!",
+				Image = "rbxassetid://4483345998",
+				Time = 3
+			})
+			return
+		end
+
+		local randomIndex = math.random(1, #RBList)
+		local randomRBID = RBList[randomIndex]
+
+		OrionLib:MakeNotification({
+			Name = "Notification!",
+			Content = "You got Unit ID: " .. randomRBID .. ", check shop menu.",
+			Image = "rbxassetid://4483345998",
+			Time = 5
+		})
+
+		giveB(randomRBID)
+	end
+})
+
+B:AddButton({
+	Name = "Remove Current RB Lists",
+	Callback = function()
+		RBList = {}  -- Clear list
+		RB:Set("N/A")  -- Reset UI display
+		OrionLib:MakeNotification({
+			Name = "Notification!",
+			Content = "RB List has been cleared.",
+			Image = "rbxassetid://4483345998",
+			Time = 3
+		})
+	end
+})
+
+local O = Window:MakeTab({
+	Name = "Battler Set",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local U = O:AddSection({ Name = "Set" })
+
+O:AddButton({
+	Name = "OP Set",
+	Callback = function()
+	    OrionLib:MakeNotification({
+			Name = "Notification!",
+			Content = "OP Set had been given.",
+			Image = "rbxassetid://4483345998",
+			Time = 3
+		})
+		giveB(32)
+		giveB(17)
+		giveB(14)
+		giveB(41)
+		giveB(42)
+		giveB(43)
+		giveB(33)
+		giveB(34)
+		giveB(35)
+		giveB(67)
+		giveB(82)
+		giveB(81)
+		giveB(29)
+		giveB(65)
+		giveB(66)
+		giveB(57)
+		giveB(30)
+		giveB(77)
+		giveB(29)
+		giveB(68)
+		giveB(31)
+	end
+})
+
+O:AddButton({
+	Name = "Uber Rare Set",
+	Callback = function()
+	    OrionLib:MakeNotification({
+			Name = "Notification!",
+			Content = "Uber Rare Set had been given.",
+			Image = "rbxassetid://4483345998",
+			Time = 3
+		})
+		giveB(81)
+		giveB(29)
+		giveB(65)
+		giveB(66)
+		giveB(57)
+		giveB(30)
+		giveB(77)
+		giveB(29)
+		giveB(68)
+		giveB(31)
+	end
+})
+
+O:AddButton({
+	Name = "Tumored Set",
+	Callback = function()
+	    OrionLib:MakeNotification({
+			Name = "Notification!",
+			Content = "Tumored Set had been given.",
+			Image = "rbxassetid://4483345998",
+			Time = 3
+		})
+		giveB(41)
+		giveB(42)
+		giveB(43)
+	end
+})
+
+O:AddButton({
+	Name = "Lil' Set",
+	Callback = function()
+	    OrionLib:MakeNotification({
+			Name = "Notification!",
+			Content = "Lil' Set had been given.",
+			Image = "rbxassetid://4483345998",
+			Time = 3
+		})
+		giveB(33)
+		giveB(34)
+		giveB(35)
+	end
+})
+
+O:AddButton({
+	Name = "Special Characters Set",
+	Callback = function()
+	    OrionLib:MakeNotification({
+			Name = "Notification!",
+			Content = "Special Characters Set had been given.",
+			Image = "rbxassetid://4483345998",
+			Time = 3
+		})
+		giveB(32)
+		giveB(17)
+		giveB(14)
+		giveB(82)
+	end
+})
+
+local M = Window:MakeTab({
+	Name = "Misc",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local Q = M:AddSection({ Name = "Misc" })
+
+M:AddButton({
+	Name = "Dex For PC",
+	Callback = function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"))()
+	end
+})
+
+OrionLib:Init()
