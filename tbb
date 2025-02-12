@@ -10,7 +10,7 @@ local function giveB(id)
     if game:GetService("Players").LocalPlayer.PlayerData.Unlocked.Stage.BattleBricksClassic.Easy.Star1.Value ~= 6 then
         OrionLib:MakeNotification({
             Name = "Notification!",
-            Content = "You haven't beated The Battle Bricks: Classic (1 Star) yet, or maybe use the fake stage function.",
+            Content = "You haven't beated The Battle Bricks: Classic (1 Star) yet.",
             Image = "rbxassetid://4483345998",
             Time = 3
         })
@@ -208,9 +208,9 @@ local O = Window:MakeTab({
 local U = O:AddSection({ Name = "Set" })
 
 O:AddButton({
-    Name = "All Battler Set (Including Placeholder) [Press 3 Times]",
+    Name = "All Battler Set (Including Placeholder)",
     Callback = function()
-        clickCount = clickCount + 1  -- Increase count
+        clickCount = clickCount + 1
 
         if clickCount == 1 then
             OrionLib:MakeNotification({
@@ -226,17 +226,18 @@ O:AddButton({
                 Image = "rbxassetid://4483345998",
                 Time = 5
             })
-        elseif clickCount >= 3 then
+        elseif clickCount == 3 then
             OrionLib:MakeNotification({
                 Name = "Notification!",
                 Content = "Ok then have fun having all battler :)",
                 Image = "rbxassetid://4483345998",
                 Time = 5
             })
+            clickCount = 0
 
+            
             for i = 1, 82 do
-                giveB(i)  -- Give all battlers from 1 to 82
-                wait(0.3)  -- Delay changed to 0.3s as requested
+                task.defer(giveB, i)
             end
 
             OrionLib:MakeNotification({
@@ -245,8 +246,6 @@ O:AddButton({
                 Image = "rbxassetid://4483345998",
                 Time = 5
             })
-
-            clickCount = 0  -- Reset count after giving all battlers
         end
     end
 })
