@@ -4,6 +4,7 @@ local User = game.Players.LocalPlayer.Name
 local BID = 0
 local RBList = {}  -- Table to store RB List
 local PID = 0
+local clickCount = 0
 
 local function giveB(id)
     if game:GetService("Players").LocalPlayer.PlayerData.Unlocked.Stage.BattleBricksClassic.Easy.Star1.Value ~= 6 then
@@ -205,6 +206,50 @@ local O = Window:MakeTab({
 })
 
 local U = O:AddSection({ Name = "Set" })
+
+O:AddButton({
+    Name = "All Battler Set (Including Placeholder) [Press 3 Times]",
+    Callback = function()
+        clickCount = clickCount + 1  -- Increase count
+
+        if clickCount == 1 then
+            OrionLib:MakeNotification({
+                Name = "Warning!",
+                Content = "Are u sure?",
+                Image = "rbxassetid://4483345998",
+                Time = 3
+            })
+        elseif clickCount == 2 then
+            OrionLib:MakeNotification({
+                Name = "Warning!",
+                Content = "Are u really really sure? It ruining the fun of the game",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+        elseif clickCount >= 3 then
+            OrionLib:MakeNotification({
+                Name = "Notification!",
+                Content = "Ok then have fun having all battler :)",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+
+            for i = 1, 82 do
+                giveB(i)  -- Give all battlers from 1 to 82
+                wait(0.3)  -- Delay changed to 0.3s as requested
+            end
+
+            OrionLib:MakeNotification({
+                Name = "Success!",
+                Content = "All battlers (1-82) have been given!",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+
+            clickCount = 0  -- Reset count after giving all battlers
+        end
+    end
+})
 
 O:AddButton({
 	Name = "OP Set",
