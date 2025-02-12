@@ -67,7 +67,7 @@ local A = Window:MakeTab({
 
 local Z = A:AddSection({ Name = "W" })
 
-A:AddParagraph("Important:", "To use this you need to have beaten Chapter 1 (1 Star) or maybe use fake stage function.")
+A:AddParagraph("Important:", "To use this you need to have beaten The Battle Bricks:Classic (1 Star)")
 A:AddParagraph("Important:", "You need XP to upgrade battlers, and it's saved")
 A:AddParagraph("Tip:", "To get Battler ID, use Dex Explorer.\nGo to ReplicatedStorage/Modules/FriendlyNPCLibrary")
 
