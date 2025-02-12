@@ -6,10 +6,10 @@ local RBList = {}  -- Table to store RB List
 local PID = 0
 
 local function giveB(id)
-    if game.Players.LocalPlayer.PlayerData.Unlocked.Stage.Chapter1.Star1.Value ~= 30 then
+    if game:GetService("Players").LocalPlayer.PlayerData.Unlocked.Stage.BattleBricksClassic.Easy.Star1.Value ~= 6 then
         OrionLib:MakeNotification({
             Name = "Notification!",
-            Content = "You haven't beaten Ch.1 (1 Star) yet, or maybe use the fake stage function.",
+            Content = "You haven't beated The Battle Bricks: Classic (1 Star) yet, or maybe use the fake stage function.",
             Image = "rbxassetid://4483345998",
             Time = 3
         })
@@ -305,29 +305,6 @@ O:AddButton({
 		giveB(14)
 		giveB(82)
 	end
-})
-
-local F = Window:MakeTab({
-	Name = "Fake Stage",
-	Icon = "rbxassetid://4483345998",
-	PremiumOnly = false
-})
-
-local S = O:AddSection({ Name = "Fake Stage" })
-
-F:AddParagraph("Disclaimer:", "Fake Stage is used for giving battler and don't play the stage or u get anti-cheat")
-
-F:AddButton({
-    Name = "Fake Ch.1 (1 Star)",
-    Callback = function()
-        game.Players.LocalPlayer.PlayerData.Unlocked.Stage.Chapter1.Star1.Value = 30
-        OrionLib:MakeNotification({
-            Name = "Notification!",
-            Content = "Fake Stage Activated!",
-            Image = "rbxassetid://4483345998",
-            Time = 3
-        })
-    end
 })
 
 local M = Window:MakeTab({
