@@ -6,17 +6,27 @@ local RBList = {}  -- Table to store RB List
 local PID = 0
 
 local function giveB(id)
+    if game.Players.LocalPlayer.PlayerData.Unlocked.Stage.Chapter1.Star1.Value ~= 30 then
+        OrionLib:MakeNotification({
+            Name = "Notification!",
+            Content = "You haven't beaten Ch.1 (1 Star) yet, or maybe use the fake stage function.",
+            Image = "rbxassetid://4483345998",
+            Time = 3
+        })
+        return
+    end
+
     game:GetService("ReplicatedStorage").Events.RemoteFunction.BadgeRewardClaim:InvokeServer({
-			["Description"] = "Your personal friendly little Doombringer. Complete all of Chapter 1 with all stars beaten to claim him.",
-			["ChapterRequired"] = "BattleBricksClassic",
-			["Difficulty"] = "Easy",
-			["LockedDescription"] = "Complete Chapter 1 to unlock badge info!",
-			["Name"] = "Doom Approaches",
-			["UnitReward"] = id,
-			["Image"] = "rbxassetid://16952821023",
-			["StarRequired"] = 1,
-			["StarReveal"] = 1
-		})
+        ["Description"] = "Your personal friendly little Doombringer. Complete all of Chapter 1 with all stars beaten to claim him.",
+        ["ChapterRequired"] = "BattleBricksClassic",
+        ["Difficulty"] = "Easy",
+        ["LockedDescription"] = "Complete Chapter 1 to unlock badge info!",
+        ["Name"] = "Doom Approaches",
+        ["UnitReward"] = id,
+        ["Image"] = "rbxassetid://16952821023",
+        ["StarRequired"] = 1,
+        ["StarReveal"] = 1
+    })
 end
 
 local function getRandomID()
@@ -33,7 +43,7 @@ local H = Window:MakeTab({
 local S = H:AddSection({ Name = "Welcome!" })
 
 H:AddLabel("Welcome! " .. Player .. " (" .. User .. ") Thank you for using my script! :)")
-H:AddParagraph("This script is open-source", "feel free to improving or take the codes, but please do not skid.\nCredits are appreciated!")
+H:AddParagraph("This script is open-source", "Feel free to improving or take the part of codes, but please do not skid.\nand Credits are appreciated!")
 
 H:AddButton({
 	Name = "Remove UI",
@@ -57,10 +67,9 @@ local A = Window:MakeTab({
 
 local Z = A:AddSection({ Name = "W" })
 
-A:AddLabel("Important: To use this you need to have beaten Chapter 1 (1 Star)")
-A:AddLabel("Important: You need XP to upgrade battlers, and it's saved")
-A:AddLabel("Tip: To get Battler ID, use Dex Explorer.")
-A:AddLabel("Go to ReplicatedStorage/Modules/FriendlyNPCLibrary")
+A:AddParagraph("Important:", "To use this you need to have beaten Chapter 1 (1 Star) or maybe use fake stage function.")
+A:AddParagraph("Important:", "You need XP to upgrade battlers, and it's saved")
+A:AddParagraph("Tip:", "To get Battler ID, use Dex Explorer.\nGo to ReplicatedStorage/Modules/FriendlyNPCLibrary")
 
 local O = A:AddSection({ Name = "Battler ID" })
 
@@ -298,6 +307,29 @@ O:AddButton({
 	end
 })
 
+local F = Window:MakeTab({
+	Name = "Fake Stage",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+local S = O:AddSection({ Name = "Fake Stage" })
+
+F:AddParagraph("Disclaimer:", "Fake Stage is used for giving battler and don't play the stage or u get anti-cheat")
+
+F:AddButton({
+    Name = "Fake Ch.1 (1 Star)",
+    Callback = function()
+        game.Players.LocalPlayer.PlayerData.Unlocked.Stage.Chapter1.Star1.Value = 30
+        OrionLib:MakeNotification({
+            Name = "Notification!",
+            Content = "Fake Stage Activated!",
+            Image = "rbxassetid://4483345998",
+            Time = 3
+        })
+    end
+})
+
 local M = Window:MakeTab({
 	Name = "Misc",
 	Icon = "rbxassetid://4483345998",
@@ -307,9 +339,16 @@ local M = Window:MakeTab({
 local Q = M:AddSection({ Name = "Misc" })
 
 M:AddButton({
+	Name = "Dex For Mobile",
+	Callback = function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/realredz/DEX-Explorer/refs/heads/main/Mobile.lua"))()
+	end
+})
+
+M:AddButton({
 	Name = "Dex For PC",
 	Callback = function()
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"))()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/refs/heads/main/dex.lua"))()
 	end
 })
 
