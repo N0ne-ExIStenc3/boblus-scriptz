@@ -30,6 +30,54 @@ local function giveB(id)
     })
 end
 
+local excludedIDNoTaP = {36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48}
+
+local function giveAllBattlersNoTaP()
+    local validIDs = {}  
+
+    for i = 1, 82 do
+        if not table.find(excludedIDNoTaP, i) then
+            table.insert(validIDs, i)  
+        end
+    end
+
+    for _, id in ipairs(validIDs) do
+        task.defer(giveB, id)  
+    end
+end
+
+local excludedIDNoP = {36, 37, 38, 39, 40, 44, 45, 46, 47, 48}
+
+local function giveAllBattlersNoP()
+    local validIDs = {}  
+
+    for i = 1, 82 do
+        if not table.find(excludedIDNoP, i) then
+            table.insert(validIDs, i)  
+        end
+    end
+
+    for _, id in ipairs(validIDs) do
+        task.defer(giveB, id)  
+    end
+end
+
+local excludedIDNoT = {41, 42, 43}
+
+local function giveAllBattlersNoT()
+    local validIDs = {}  
+
+    for i = 1, 82 do
+        if not table.find(excludedIDNoT, i) then
+            table.insert(validIDs, i)  
+        end
+    end
+
+    for _, id in ipairs(validIDs) do
+        task.defer(giveB, id)  
+    end
+end
+
 local function getRandomID()
     return math.random(1, 82)  -- Ensuring proper randomization
 end
@@ -239,6 +287,126 @@ O:AddButton({
             for i = 1, 82 do
                 task.defer(giveB, i)
             end
+
+            OrionLib:MakeNotification({
+                Name = "Success!",
+                Content = "All battlers (1-82) have been given!",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+        end
+    end
+})
+
+O:AddButton({
+    Name = "All Battler Set (No Placeholder)",
+    Callback = function()
+        clickCount = clickCount + 1
+
+        if clickCount == 1 then
+            OrionLib:MakeNotification({
+                Name = "Warning!",
+                Content = "Are u sure?",
+                Image = "rbxassetid://4483345998",
+                Time = 3
+            })
+        elseif clickCount == 2 then
+            OrionLib:MakeNotification({
+                Name = "Warning!",
+                Content = "Are u really really sure? It ruining the fun of the game",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+        elseif clickCount == 3 then
+            OrionLib:MakeNotification({
+                Name = "Notification!",
+                Content = "Ok then have fun having all battler :)",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+            clickCount = 0
+
+            giveAllBattlersNoP()
+
+            OrionLib:MakeNotification({
+                Name = "Success!",
+                Content = "All battlers (1-82) have been given!",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+        end
+    end
+})
+
+O:AddButton({
+    Name = "All Battler Set (No Tumored)",
+    Callback = function()
+        clickCount = clickCount + 1
+
+        if clickCount == 1 then
+            OrionLib:MakeNotification({
+                Name = "Warning!",
+                Content = "Are u sure?",
+                Image = "rbxassetid://4483345998",
+                Time = 3
+            })
+        elseif clickCount == 2 then
+            OrionLib:MakeNotification({
+                Name = "Warning!",
+                Content = "Are u really really sure? It ruining the fun of the game",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+        elseif clickCount == 3 then
+            OrionLib:MakeNotification({
+                Name = "Notification!",
+                Content = "Ok then have fun having all battler :)",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+            clickCount = 0
+
+            giveAllBattlersNoT()
+
+            OrionLib:MakeNotification({
+                Name = "Success!",
+                Content = "All battlers (1-82) have been given!",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+        end
+    end
+})
+
+O:AddButton({
+    Name = "All Battler Set (No Tumored and Placeholder)",
+    Callback = function()
+        clickCount = clickCount + 1
+
+        if clickCount == 1 then
+            OrionLib:MakeNotification({
+                Name = "Warning!",
+                Content = "Are u sure?",
+                Image = "rbxassetid://4483345998",
+                Time = 3
+            })
+        elseif clickCount == 2 then
+            OrionLib:MakeNotification({
+                Name = "Warning!",
+                Content = "Are u really really sure? It ruining the fun of the game",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+        elseif clickCount == 3 then
+            OrionLib:MakeNotification({
+                Name = "Notification!",
+                Content = "Ok then have fun having all battler :)",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+            clickCount = 0
+
+            giveAllBattlersNoTaP()
 
             OrionLib:MakeNotification({
                 Name = "Success!",
