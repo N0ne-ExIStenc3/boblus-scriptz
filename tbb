@@ -46,7 +46,7 @@ local function giveAllBattlersNoTaP()
     end
 end
 
-local excludedIDNoTaP = {32, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48}
+local excludedIDNoTrP = {32, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48}
 
 local function giveAllBattlersNoTrP()
     local validIDs = {}  
