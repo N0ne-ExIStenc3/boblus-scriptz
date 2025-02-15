@@ -509,7 +509,7 @@ O:AddButton({
 })
 
 O:AddButton({
-	Name = "Uber Rare Set (No Ivory)",
+	Name = "Uber Rare Set (No Iota/Ivory)",
 	Callback = function()
 	    OrionLib:MakeNotification({
 			Name = "Notification!",
