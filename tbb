@@ -35,7 +35,7 @@ local excludedIDNoTaP = {36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48}
 local function giveAllBattlersNoTaP()
     local validIDs = {}  
 
-    for i = 1, 82 do
+    for i = 1, 88 do
         if not table.find(excludedIDNoTaP, i) then
             table.insert(validIDs, i)  
         end
@@ -51,7 +51,7 @@ local excludedIDNoTrP = {32, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48}
 local function giveAllBattlersNoTrP()
     local validIDs = {}  
 
-    for i = 1, 82 do
+    for i = 1, 88 do
         if not table.find(excludedIDNoTrP, i) then
             table.insert(validIDs, i)  
         end
@@ -67,7 +67,7 @@ local excludedIDNoP = {36, 37, 38, 39, 40, 44, 45, 46, 47, 48}
 local function giveAllBattlersNoP()
     local validIDs = {}  
 
-    for i = 1, 82 do
+    for i = 1, 88 do
         if not table.find(excludedIDNoP, i) then
             table.insert(validIDs, i)  
         end
@@ -78,12 +78,12 @@ local function giveAllBattlersNoP()
     end
 end
 
-local excludedIDNoT = {41, 42, 43}
+local excludedIDNoT = {41, 42, 43, 44, 45, 46, 47, 48}
 
 local function giveAllBattlersNoT()
     local validIDs = {}  
 
-    for i = 1, 82 do
+    for i = 1, 88 do
         if not table.find(excludedIDNoT, i) then
             table.insert(validIDs, i)  
         end
@@ -95,7 +95,7 @@ local function giveAllBattlersNoT()
 end
 
 local function getRandomID()
-    return math.random(1, 82)  -- Ensuring proper randomization
+    return math.random(1, 88)  -- Ensuring proper randomization
 end
 
 local Window = OrionLib:MakeWindow({Name = "The Battle Bricks", HidePremium = false, SaveConfig = true, ConfigFolder = "OhioTBB"})
@@ -109,6 +109,7 @@ local S = H:AddSection({ Name = "Welcome!" })
 
 H:AddLabel("Welcome! " .. Player .. " (" .. User .. ") Thank you for using my script! :)")
 H:AddParagraph("This script is open-source", "Feel free to improving or take the part of codes, but please do not skid.\nand Credits are appreciated!")
+H:AddParagraph("Update 4!", "What news, Added 6 more battler id due to ch. 4")
 
 H:AddButton({
 	Name = "Remove UI",
@@ -141,7 +142,7 @@ local O = A:AddSection({ Name = "Battler ID" })
 A:AddLabel("Common IDs: 33 (Lil Doombringer), 34 (Lil Turking), 35 (Lil Exec)")
 A:AddLabel("41 (Tumored Battler), 42 (Tumored Troweler), 43 (Tumored Sword)")
 A:AddLabel("Special: 32 (Raig) [DO NOT SPAWN NORMAL & ALT CUZ ANTI CHEAT]")
-A:AddLabel("67 (FRIEND), 82 (Mage Battler), 14 (Papaler), 17 (Golden Hammer)")
+A:AddLabel("67 (FRIEND), 14 (Papaler), 17 (Golden Hammer)")
 
 local B = Window:MakeTab({
 	Name = "Battler",
@@ -300,13 +301,13 @@ O:AddButton({
             clickCount = 0
 
             
-            for i = 1, 82 do
+            for i = 1, 88 do
                 task.defer(giveB, i)
             end
 
             OrionLib:MakeNotification({
                 Name = "Success!",
-                Content = "All battlers (1-82) have been given!",
+                Content = "All battlers (1-88) have been given!",
                 Image = "rbxassetid://4483345998",
                 Time = 5
             })
@@ -508,7 +509,7 @@ O:AddButton({
 })
 
 O:AddButton({
-	Name = "Uber Rare Set",
+	Name = "Uber Rare Set (No Ivory)",
 	Callback = function()
 	    OrionLib:MakeNotification({
 			Name = "Notification!",
@@ -541,6 +542,7 @@ O:AddButton({
 		giveB(41)
 		giveB(42)
 		giveB(43)
+		giveB(44)
 	end
 })
 
@@ -556,6 +558,7 @@ O:AddButton({
 		giveB(33)
 		giveB(34)
 		giveB(35)
+		giveB(36)
 	end
 })
 
@@ -571,7 +574,27 @@ O:AddButton({
 		giveB(32)
 		giveB(17)
 		giveB(14)
+	end
+})
+
+O:AddButton({
+	Name = "Ch.4 Set",
+	Callback = function()
+	    OrionLib:MakeNotification({
+			Name = "Notification!",
+			Content = "Ch.4 Set had been given.",
+			Image = "rbxassetid://4483345998",
+			Time = 3
+		})
 		giveB(82)
+		giveB(83)
+		giveB(84)
+		giveB(85)
+		giveB(86)
+		giveB(87)
+		giveB(88)
+		giveB(36)
+		giveB(44)
 	end
 })
 
