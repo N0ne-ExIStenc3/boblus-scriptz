@@ -1,0 +1,305 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Combat Initiation Hub",
+   Icon = 0,
+   LoadingTitle = "Combat Initiation Hub",
+   LoadingSubtitle = "Loading...",
+   Theme = "Ocean",
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false,
+
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = nil,
+      FileName = "CI"
+   },
+
+   Discord = {
+      Enabled = false,
+      Invite = "noinvitelink",
+      RememberJoins = true
+   },
+
+   KeySystem = false,
+   KeySettings = {
+      Title = "Testing",
+      Subtitle = "Key Needed",
+      Note = "Key is test",
+      FileName = "Key",
+      SaveKey = true,
+      GrabKeyFromSite = false,
+      Key = {"test"}
+   }
+})
+
+local Toggles = {
+   slingshot = false,
+   scatterblaster = false,
+   flamethrower = false,
+   swords = false
+}
+
+_G.maxdashes = false
+getgenv().Farm = false
+_G.nodashes = false
+_G.nodashescd = false
+
+local MiscTab = Window:CreateTab("Misc", 4483362458)
+
+MiscTab:CreateButton({
+   Name = "Load Infinite Yield (IY)",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+   end,
+})
+
+MiscTab:CreateButton({
+   Name = "Destroy UI",
+   Callback = function()
+      Rayfield:Destroy()
+   end,
+})
+
+local EnemiesTab = Window:CreateTab("Enemies", 4483362458)
+
+EnemiesTab:CreateButton({
+   Name = "Loop Grab All Enemies",
+   Callback = function()
+       local lp = game.Players.LocalPlayer
+       local path = game.Workspace:WaitForChild("Enemies")
+       local distance = 10
+       getgenv().Farm = true
+
+       local function BringNPCs()
+           while getgenv().Farm do
+               local playerHRP = lp.Character:WaitForChild("HumanoidRootPart")
+               for _, npc in ipairs(path:GetChildren()) do
+                   local npcHRP = npc:FindFirstChild("HumanoidRootPart")
+                   local npcHumanoid = npc:FindFirstChild("Humanoid")
+                   if npcHRP and npcHumanoid and npcHumanoid.Health > 0 then
+                       npcHRP.CFrame = playerHRP.CFrame + playerHRP.CFrame.LookVector * distance
+                   end
+               end
+               task.wait(0.1)
+           end
+       end
+
+       BringNPCs()
+   end
+})
+
+EnemiesTab:CreateButton({
+   Name = "Un-loop Grab All Enemies",
+   Callback = function()
+      getgenv().Farm = false
+   end,
+})
+
+local PlayerTab = Window:CreateTab("Player", 4483362458)
+
+PlayerTab:CreateButton({
+   Name = "No CD Dashes",
+   Callback = function()
+      game.Players.LocalPlayer.Character:SetAttribute("DashRegenTime", 0.01)
+   end,
+})
+
+PlayerTab:CreateButton({
+   Name = "Loop No CD Dashes (click again to stop)",
+   Callback = function()
+      _G.nodashcd = not _G.nodashcd
+      while _G.nodashcd do
+          game.Players.LocalPlayer.Character:SetAttribute("DashRegenTime", 0.01)
+          wait(3)
+      end
+   end,
+})
+
+PlayerTab:CreateButton({
+   Name = "No Regen Dashes",
+   Callback = function()
+      game.Players.LocalPlayer.Character:SetAttribute("DashRegenTime", math.huge)
+   end,
+})
+
+PlayerTab:CreateButton({
+   Name = "Loop No Regen Dashes (click again to stop)",
+   Callback = function()
+      _G.nodash = not _G.nodash
+      while _G.nodash do
+          game.Players.LocalPlayer.Character:SetAttribute("DashRegenTime", math.huge)
+          wait(3)
+      end
+   end,
+})
+
+PlayerTab:CreateButton({
+   Name = "Revert Regen Dashes Time",
+   Callback = function()
+      game.Players.LocalPlayer.Character:SetAttribute("DashRegenTime", 1.5)
+   end,
+})
+
+PlayerTab:CreateButton({
+   Name = "Get 12 Max Dashes",
+   Callback = function()
+      game.Players.LocalPlayer.Character:SetAttribute("MaxDashes", 12)
+   end,
+})
+
+PlayerTab:CreateButton({
+   Name = "Loop Get 12 Max Dashes (click again to stop)",
+   Callback = function()
+      _G.maxdashes = not _G.maxdashes
+      while _G.maxdashes do
+          game.Players.LocalPlayer.Character:SetAttribute("MaxDashes", 12)
+          wait(3)
+      end
+   end,
+})
+
+local WeaponsTab = Window:CreateTab("Weapons", 4483362458)
+
+WeaponsTab:CreateSection("Slingshot")
+
+WeaponsTab:CreateButton({
+   Name = "Slingshot No CD/Spam",
+   Callback = function()
+       local Slingshot = game.Players.LocalPlayer.Backpack:FindFirstChild("Slingshot")
+       if Slingshot then
+           Slingshot:SetAttribute("Firerate", 0)
+           Slingshot:SetAttribute("Capacity", math.huge)
+           Slingshot:SetAttribute("ChargeRate", 0)
+           Slingshot:SetAttribute("Spread", 1.35)
+       end
+   end
+})
+
+WeaponsTab:CreateButton({
+   Name = "Scatterblaster No CD/Spam",
+   Callback = function()
+       local Scatterblaster = game.Players.LocalPlayer.Backpack:FindFirstChild("Scatterblaster")
+       if Scatterblaster then
+           Scatterblaster:SetAttribute("Firerate", 0)
+           Scatterblaster:SetAttribute("Spread", 1.35)
+       end
+   end
+})
+
+WeaponsTab:CreateSection("Swords")
+
+WeaponsTab:CreateButton({
+   Name = "Swords No CD (All Sword)",
+   Callback = function()
+       local player = game.Players.LocalPlayer
+       local backpack = player:FindFirstChild("Backpack")
+       
+       local function setAttributes(itemName, attributes)
+           local item = backpack:FindFirstChild(itemName)
+           if item then
+               for attr, value in pairs(attributes) do
+                   item:SetAttribute(attr, value)
+               end
+           end
+       end
+
+       local swordAttributes = {
+           Swingrate = 0,
+           LungeRate = 0,
+           OffhandSwingRate = 0,
+       }
+       setAttributes("Sword", swordAttributes)
+       setAttributes("Katana", swordAttributes)
+
+       local firebrandAttributes = {
+           Windup = 0,
+           Swingrate = 0,
+           LungeRate = 0,
+           OffhandSwingRate = 0,
+       }
+       setAttributes("Firebrand", firebrandAttributes)
+   end,
+})
+
+WeaponsTab:CreateSection("Looping")
+
+WeaponsTab:CreateButton({
+   Name = "Loop Slingshot No CD/Spam (click again to stop)",
+   Callback = function()
+       Toggles.slingshot = not Toggles.slingshot
+       spawn(function()
+           while Toggles.slingshot do
+               local Slingshot = game.Players.LocalPlayer.Backpack:FindFirstChild("Slingshot")
+               if Slingshot then
+                   Slingshot:SetAttribute("Firerate", 0)
+                   Slingshot:SetAttribute("Capacity", math.huge)
+                   Slingshot:SetAttribute("ChargeRate", 0)
+                   Slingshot:SetAttribute("Spread", 1.35)
+               end
+               wait(3)
+           end
+       end)
+   end
+})
+
+WeaponsTab:CreateButton({
+   Name = "Loop Scatterblaster No CD/Spam (click again to stop)",
+   Callback = function()
+       Toggles.scatterblaster = not Toggles.scatterblaster
+       spawn(function()
+           while Toggles.scatterblaster do
+               local Scatterblaster = game.Players.LocalPlayer.Backpack:FindFirstChild("Scatterblaster")
+               if Scatterblaster then
+                   Scatterblaster:SetAttribute("Firerate", 0)
+                   Scatterblaster:SetAttribute("Spread", 1.35)
+               end
+               wait(3)
+           end
+       end)
+   end
+})
+
+WeaponsTab:CreateButton({
+   Name = "Loop Swords No CD (click again to stop)",
+   Callback = function()
+       Toggles.swords = not Toggles.swords
+       spawn(function()
+           while Toggles.swords do
+               local player = game.Players.LocalPlayer
+               local backpack = player:FindFirstChild("Backpack")
+
+               local function setAttributes(itemName, attributes)
+                   local item = backpack:FindFirstChild(itemName)
+                   if item then
+                       for attr, value in pairs(attributes) do
+                           item:SetAttribute(attr, value)
+                       end
+                   end
+               end
+
+               local swordAttributes = {
+                   Swingrate = 0,
+                   LungeRate = 0,
+                   OffhandSwingRate = 0,
+               }
+               setAttributes("Sword", swordAttributes)
+               setAttributes("Katana", swordAttributes)
+
+               local firebrandAttributes = {
+                   Windup = 0,
+                   Swingrate = 0,
+                   LungeRate = 0,
+                   OffhandSwingRate = 0,
+               }
+               setAttributes("Firebrand", firebrandAttributes)
+
+               wait(3)
+           end
+       end)
+   end
+})
+
+local CreditsTab = Window:CreateTab("Credits", 4483362458)
+
+CreditsTab:CreateSection("OG Script By DexScripts, Additional Function By BlockyBoi")
