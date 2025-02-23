@@ -97,8 +97,6 @@ V:AddButton({
     end
 })
 
-local V = Window:MakeTab({ Name = "Misc", Icon = "rbxassetid://4483345998", PremiumOnly = false })
-
 V:AddButton({
     Name = "Change to Casual Difficulty",
     Callback = function()
