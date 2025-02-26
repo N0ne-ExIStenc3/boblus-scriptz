@@ -27,18 +27,26 @@ local function SaveLoadout(B1, B2, B3, B4, B5, B6, B7, B8, A1, A2, A3, A4, A5, A
         }
     }
 
-    game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteEvents"):WaitForChild("SaveLoadout"):FireServer(unpack(args))
+    game:GetService("ReplicatedStorage").Events.RemoteEvents.SaveLoadout:FireServer(args)
 end
 
 local function Spawn(Name, Val)
     while Val do
-        local args = {
-            [1] = Name;
-        }
-
-        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteFunction"):WaitForChild("PlayerSpawn"):InvokeServer(unpack(args))
+        local args = { [1] = Name }
+        game:GetService("ReplicatedStorage").Events.RemoteFunction.PlayerSpawn:InvokeServer(args)
         wait(1)
+    end
 end
+
+S:AddButton({
+    Name = "Anti-Afk",
+    Callback = function()
+        for _, v in pairs(getconnections(game:GetService("Players").LocalPlayer.Idled)) do
+            v:Disable()
+        end
+        
+    end
+})
 
 local Window = OrionLib:MakeWindow({ Name = "The Battle Bricks", HidePremium = false, SaveConfig = true, ConfigFolder = "OhioTBB" })
 
@@ -386,8 +394,15 @@ S:AddButton({
 S:AddButton({
     Name = "Anti-Afk",
     Callback = function()
-        for i,v in pairs(getconnections(game:GetService("Players").LocalPlayer.Idled)) do
-        v:Disable()
+        for _, v in pairs(getconnections(game:GetService("Players").LocalPlayer.Idled)) do
+            v:Disable()
+        end
+        OrionLib:MakeNotification({
+	        Name = "Anti-Afk Enabled!",
+	        Content = "Enjoy!",
+	        Image = "rbxassetid://4483345998",
+	        Time = 10
+        })
     end
 })
 
