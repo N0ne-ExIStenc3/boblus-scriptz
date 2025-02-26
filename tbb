@@ -383,6 +383,14 @@ S:AddButton({
     end
 })
 
+S:AddButton({
+    Name = "Anti-Afk",
+    Callback = function()
+        for i,v in pairs(getconnections(game:GetService("Players").LocalPlayer.Idled)) do
+        v:Disable()
+    end
+})
+
 OrionLib:MakeNotification({
 	Name = "Script Loaded!",
 	Content = "Enjoy!",
