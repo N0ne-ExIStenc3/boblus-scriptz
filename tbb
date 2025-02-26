@@ -27,13 +27,12 @@ local function SaveLoadout(B1, B2, B3, B4, B5, B6, B7, B8, A1, A2, A3, A4, A5, A
         }
     }
 
-    game:GetService("ReplicatedStorage").Events.RemoteEvents.SaveLoadout:FireServer(args)
+    game:GetService("ReplicatedStorage").Events.RemoteEvents.SaveLoadout:FireServer(unpack(args))
 end
 
 local function Spawn(Name, Val)
     while Val do
-        local args = { [1] = Name }
-        game:GetService("ReplicatedStorage").Events.RemoteFunction.PlayerSpawn:InvokeServer(args)
+        game:GetService("ReplicatedStorage").Events.RemoteFunction.PlayerSpawn:InvokeServer(Name)
         wait(1)
     end
 end
@@ -311,7 +310,7 @@ UI:AddButton({
     end
 })
 
-UI:AddButton({
+UIAddButton({
     Name = "Make Transition",
     Callback = function()
         game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("BindableEvents"):WaitForChild("Transition"):Fire()
