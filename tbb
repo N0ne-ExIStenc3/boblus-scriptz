@@ -203,7 +203,399 @@ V:AddButton({
         local C = game:GetService("ReplicatedStorage").Cutscenes.ClockQuiz:Clone()
         C.Parent = game.Players.LocalPlayer.PlayerGui
     end
+})local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Giangplay/Script/refs/heads/main/Orion_Library_PE_V2.lua"))()
+local Player = game.Players.LocalPlayer.DisplayName
+local User = game.Players.LocalPlayer.Name
+local Slot = game.Players.LocalPlayer.PlayerData.Loadout.Slots
+local Type = game.Players.LocalPlayer.PlayerData.Loadout.Type
+local selectedBank = "Default"
+local selectedCannon = "Default"
+local selectedMenu = "N/A"
+local selectedMusic = "N/A"
+CamShakeIntensity = 10 
+
+local function SaveLoadout(B1, B2, B3, B4, B5, B6, B7, B8, A1, A2, A3, A4, A5, A6, A7, A8, C, B)
+    local args = {
+        [1] = {
+            ["Type"] = {
+                { "Slot1", B1 }, { "Slot2", B2 }, { "Slot3", B3 }, { "Slot4", B4 },
+                { "Slot5", B5 }, { "Slot6", B6 }, { "Slot7", B7 }, { "Slot8", B8 }
+            },
+            ["Slots"] = {
+                { "Slot1", A1 }, { "Slot2", A2 }, { "Slot3", A3 }, { "Slot4", A4 },
+                { "Slot5", A5 }, { "Slot6", A6 }, { "Slot7", A7 }, { "Slot8", A8 }
+            },
+            ["Base"] = {
+                ["Cannon"] = C,
+                ["Bank"] = B
+            }
+        }
+    }
+
+    game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteEvents"):WaitForChild("SaveLoadout"):FireServer(unpack(args))
+end
+
+local function Spawn(Name, Val)
+    while Val do
+        local args = {
+            [1] = Name;
+        }
+
+        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteFunction"):WaitForChild("PlayerSpawn"):InvokeServer(unpack(args))
+        wait(1)
+end
+
+local Window = OrionLib:MakeWindow({ Name = "The Battle Bricks", HidePremium = false, SaveConfig = true, ConfigFolder = "OhioTBB" })
+
+local H = Window:MakeTab({ Name = "Home", Icon = "rbxassetid://4483345998", PremiumOnly = false })
+H:AddLabel("Welcome! " .. Player .. " (" .. User .. ") Thank you for using my script! :)")
+H:AddParagraph("This script is open-source", "Feel free to improve or take parts of the code, but please do not skid.\nCredits are appreciated!")
+H:AddParagraph("Update 5!", "Give battler is patched due to the new update. :(")
+
+H:AddButton({
+    Name = "Remove UI",
+    Callback = function()
+        OrionLib:MakeNotification({ Name = "Notification!", Content = "Removing The UI... :(", Image = "rbxassetid://4483345998", Time = 3 })
+        wait(3)
+        OrionLib:Destroy()
+    end
 })
+
+local M = Window:MakeTab({ Name = "Main", Icon = "rbxassetid://4483345998", PremiumOnly = false })
+
+M:AddDropdown({
+    Name = "Select Bank",
+    Default = "Default",
+    Options = { "Default", "Investment", "Powerhouse", "Detonator", "Ignition" },
+    Callback = function(Value) selectedBank = Value end
+})
+
+M:AddDropdown({
+    Name = "Select Cannon",
+    Default = "Default",
+    Options = { "Default", "Gatling", "Slammer", "Recoil", "Treasure", "Absorber", "Liberty" },
+    Callback = function(Value) selectedCannon = Value end
+})
+
+M:AddButton({
+    Name = "Change Bank/Cannon",
+    Callback = function()
+        local bankMap = { Default = 1, Investment = 2, Powerhouse = 3, Detonator = 4, Ignition = 5 }
+        local cannonMap = { Default = 1, Gatling = 2, Slammer = 3, Recoil = 4, Treasure = 5, Absorber = 6, Liberty = 7 }
+        
+        local bankID = bankMap[selectedBank] or 1
+        local cannonID = cannonMap[selectedCannon] or 1
+        
+        SaveLoadout(
+            Type.Slot1.Value, Type.Slot2.Value, Type.Slot3.Value, Type.Slot4.Value,
+            Type.Slot5.Value, Type.Slot6.Value, Type.Slot7.Value, Type.Slot8.Value,
+            Slot.Slot1.Value, Slot.Slot2.Value, Slot.Slot3.Value, Slot.Slot4.Value,
+            Slot.Slot5.Value, Slot.Slot6.Value, Slot.Slot7.Value, Slot.Slot8.Value,
+            cannonID, bankID
+        )
+    end
+})
+
+local W = Window:MakeTab({ Name = "Spam", Icon = "rbxassetid://4483345998", PremiumOnly = false })
+
+W:AddToggle({
+	Name = "Spam Slot 1",
+	Default = false,
+	Callback = function(Value)
+		Spawn("Slot1", Value)
+	end    
+})
+
+W:AddToggle({
+	Name = "Spam Slot 2",
+	Default = false,
+	Callback = function(Value)
+		Spawn("Slot2", Value)
+	end    
+})
+
+W:AddToggle({
+	Name = "Spam Slot 3",
+	Default = false,
+	Callback = function(Value)
+		Spawn("Slot3", Value)
+	end    
+})
+
+W:AddToggle({
+	Name = "Spam Slot 4",
+	Default = false,
+	Callback = function(Value)
+		Spawn("Slot4", Value)
+	end    
+})
+
+W:AddToggle({
+	Name = "Spam Slot 5",
+	Default = false,
+	Callback = function(Value)
+		Spawn("Slot5", Value)
+	end    
+})
+
+W:AddToggle({
+	Name = "Spam Slot 6",
+	Default = false,
+	Callback = function(Value)
+		Spawn("Slot6", Value)
+	end    
+})
+
+W:AddToggle({
+	Name = "Spam Slot 7",
+	Default = false,
+	Callback = function(Value)
+		Spawn("Slot7", Value)
+	end    
+})
+
+W:AddToggle({
+	Name = "Spam Slot 8",
+	Default = false,
+	Callback = function(Value)
+		Spawn("Slot8", Value)
+	end    
+})
+
+W:AddToggle({
+	Name = "Spam Bank",
+	Default = false,
+	Callback = function(Value)
+		Spawn("Bank", Value)
+	end    
+})
+
+W:AddToggle({
+	Name = "Spam Cannon",
+	Default = false,
+	Callback = function(Value)
+		Spawn("Cannon", Value)
+	end    
+})
+
+W:AddParagraph("To make auto farm stage.","Use Octo-Spy, Enter Stage, Look for StartBattle, RemoteEvents\nClick Copy Auto Stage Set-up, and paste StartBattle RemoteEvents following the guide!")
+
+W:AddButton({
+    Name = "Copy Auto Stage Set-up",
+    Callback = function()
+        local scriptToCopy = [[
+while true do
+    wait(1)
+    -- Paste the start battle remote here
+end
+        ]]
+
+        local success = pcall(function()
+            if setclipboard then
+                setclipboard(scriptToCopy)
+            elseif toclipboard then
+                toclipboard(scriptToCopy)
+            else
+                error("Clipboard function not supported.")
+            end
+        end)
+
+        if success then
+            OrionLib:MakeNotification({
+                Name = "Set-up Copied!",
+                Content = "Check clipboard. If there's none, your executor doesn't support clipboard functions.",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+        else
+            OrionLib:MakeNotification({
+                Name = "Error!",
+                Content = "Your executor does not support clipboard copying.",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+        end
+    end
+})
+
+local V = Window:MakeTab({ Name = "Misc", Icon = "rbxassetid://4483345998", PremiumOnly = false })
+
+V:AddButton({
+    Name = "Change to Casual Difficulty",
+    Callback = function()
+        local args = {
+            [1] = {
+                [1] = { "Difficulty", 1 }
+            }
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteEvents"):WaitForChild("ChangeSettings"):FireServer(unpack(args))
+    end
+})
+
+V:AddButton({
+    Name = "Change to Normal Difficulty",
+    Callback = function()
+        local args = {
+            [1] = {
+                [1] = { "Difficulty", 2 }
+            }
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteEvents"):WaitForChild("ChangeSettings"):FireServer(unpack(args))
+    end
+})
+
+V:AddButton({
+    Name = "Change to Tumore Difficulty",
+    Callback = function()
+        local args = {
+            [1] = {
+                [1] = { "Difficulty", 3 },
+                [2] = { "UnlockedTumore", 1 }
+            }
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteEvents"):WaitForChild("ChangeSettings"):FireServer(unpack(args))
+    end
+})
+
+V:AddButton({
+    Name = "Remove Possible Anti-Cheat Cutscenes",
+    Callback = function()
+        game:GetService("ReplicatedStorage").Cutscenes.TheresNothing:Destroy()
+        game:GetService("ReplicatedStorage").Cutscenes.EyeOfRah:Destroy()
+        game:GetService("ReplicatedStorage").Cutscenes.RaigQuit:Destroy()
+        game:GetService("ReplicatedStorage").Cutscenes.ChangeYourTime:Destroy()
+    end
+})
+
+local ostOptions = {}
+for _, v in ipairs(game.SoundService.OST:GetChildren()) do
+    table.insert(ostOptions, v.Name)
+end
+
+V:AddDropdown({
+    Name = "Select OST",
+    Default = "N/A",
+    Options = ostOptions,
+    Callback = function(Value) selectedMusic = Value end
+})
+
+V:AddButton({
+    Name = "Change OST",
+    Callback = function()
+        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("BindableEvents"):WaitForChild("MusicChange"):Fire(selectedMusic)
+    end
+})
+
+local UI = Window:MakeTab({ Name = "GUI", Icon = "rbxassetid://4483345998", PremiumOnly = false })
+
+UI:AddDropdown({
+    Name = "Select Menu",
+    Default = "N/A",
+    Options = { "Lobby", "Almanac", "Difficulty", "MainMenu", "MainChapter", "SubChapter", "Shop", "Loadout", "StageSelect", "Loading", "FinishedLoading" },
+    Callback = function(Value) selectedMenu = Value end
+})
+
+UI:AddButton({
+    Name = "Change Menu",
+    Callback = function()
+        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("BindableEvents"):WaitForChild("MenuSelect"):Fire(selectedMenu)
+    end
+})
+
+UI:AddButton({
+    Name = "Clock Quiz",
+    Callback = function()
+        local C = game:GetService("ReplicatedStorage").Cutscenes.ClockQuiz:Clone()
+        C.Parent = game.Players.LocalPlayer.PlayerGui
+    end
+})
+
+UI:AddButton({
+    Name = "Chronos Intro",
+    Callback = function()
+        local C = game:GetService("ReplicatedStorage").Cutscenes.ChronosIntro:Clone()
+        C.Parent = game.Players.LocalPlayer.PlayerGui
+    end
+})
+
+UIAddButton({
+    Name = "Make Transition",
+    Callback = function()
+        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("BindableEvents"):WaitForChild("Transition"):Fire()
+    end
+})
+
+UI:AddTextbox({
+    Name = "Cam Shake Intensity",
+    Default = "10",
+    TextDisappear = false,
+    Callback = function(Value)
+        local num = tonumber(Value)
+        if num then
+            if num > 1000 then
+                OrionLib:MakeNotification({
+                    Name = "Warning!",
+                    Content = "CamShake intensity over 1,000 may cause extreme effects!",
+                    Image = "rbxassetid://4483345998",
+                    Time = 5
+                })
+            end
+            CamShakeIntensity = num
+        else
+            OrionLib:MakeNotification({
+                Name = "Error!",
+                Content = "Invalid input. Please enter a number.",
+                Image = "rbxassetid://4483345998",
+                Time = 3
+            })
+        end
+    end	  
+})
+
+UI:AddButton({
+    Name = "Trigger Cam Shake",
+    Callback = function()
+        local args = {
+            [1] = CamShakeIntensity;
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("BindableEvents"):WaitForChild("CamShake"):Fire(unpack(args))
+    end
+})
+
+local S = Window:MakeTab({ Name = "Scripts", Icon = "rbxassetid://4483345998", PremiumOnly = false })
+
+S:AddButton({
+    Name = "Dex For Mobile",
+    Callback = function()
+        local success, result = pcall(loadstring, game:HttpGet("https://raw.githubusercontent.com/realredz/DEX-Explorer/refs/heads/main/Mobile.lua"))
+        if success then result() else warn("Failed to load script.") end
+    end
+})
+
+S:AddButton({
+    Name = "Dex For PC",
+    Callback = function()
+        local success, result = pcall(loadstring, game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/refs/heads/main/dex.lua"))
+        if success then result() else warn("Failed to load script.") end
+    end
+})
+
+S:AddButton({
+    Name = "Octo Spy",
+    Callback = function()
+        local success, result = pcall(loadstring, game:HttpGet("https://raw.githubusercontent.com/InfernusScripts/Octo-Spy/refs/heads/main/Main.lua", true))
+        if success then result() else warn("Failed to load script.") end
+    end
+})
+
+OrionLib:MakeNotification({
+	Name = "Script Loaded!",
+	Content = "Enjoy!",
+	Image = "rbxassetid://4483345998",
+	Time = 10
+})
+
+OrionLib:Init()
 
 V:AddButton({
     Name = "Chronos Intro",
