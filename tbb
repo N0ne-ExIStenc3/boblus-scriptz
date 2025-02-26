@@ -38,16 +38,6 @@ local function Spawn(Name, Val)
     end
 end
 
-S:AddButton({
-    Name = "Anti-Afk",
-    Callback = function()
-        for _, v in pairs(getconnections(game:GetService("Players").LocalPlayer.Idled)) do
-            v:Disable()
-        end
-        
-    end
-})
-
 local Window = OrionLib:MakeWindow({ Name = "The Battle Bricks", HidePremium = false, SaveConfig = true, ConfigFolder = "OhioTBB" })
 
 local H = Window:MakeTab({ Name = "Home", Icon = "rbxassetid://4483345998", PremiumOnly = false })
