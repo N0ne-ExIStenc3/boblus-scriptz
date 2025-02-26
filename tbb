@@ -311,7 +311,7 @@ UI:AddButton({
     end
 })
 
-UIAddButton({
+UI:AddButton({
     Name = "Make Transition",
     Callback = function()
         game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("BindableEvents"):WaitForChild("Transition"):Fire()
