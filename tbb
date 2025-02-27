@@ -7,7 +7,43 @@ local selectedBank = "Default"
 local selectedCannon = "Default"
 local selectedMenu = "N/A"
 local selectedMusic = "N/A"
+local FcMaster = true
 CamShakeIntensity = 10 
+
+local function enableAntiAFK()
+    if not connection then
+        connection = player.Idled:Connect(function()
+            if getgenv().afk6464 then
+                VirtualUser:CaptureController()
+                VirtualUser:ClickButton2(Vector2.new())
+            end
+        end)
+    end
+end
+
+local function disableAntiAFK()
+    if connection then
+        connection:Disconnect()
+        connection = nil
+    end
+end
+
+local function loop()
+    while FcMaster do
+        if getgenv().afk6464 then
+            enableAntiAFK()
+        else
+            disableAntiAFK()
+        end
+        wait(1)
+    end
+end
+
+spawn(loop)
+
+if not getgenv().afk6464 then
+    getgenv().afk6464 = false
+end
 
 local function SaveLoadout(B1, B2, B3, B4, B5, B6, B7, B8, A1, A2, A3, A4, A5, A6, A7, A8, C, B)
     local args = {
@@ -31,9 +67,182 @@ local function SaveLoadout(B1, B2, B3, B4, B5, B6, B7, B8, A1, A2, A3, A4, A5, A
 end
 
 local function Spawn(Name, Val)
-    while Val do
+    repeat
         game:GetService("ReplicatedStorage").Events.RemoteFunction.PlayerSpawn:InvokeServer(Name)
         wait(1)
+    until Val == false
+end
+
+local function Auto1(val)
+    repeat
+        Spawn("Slot1", val)
+        Spawn("Slot2", val)
+        Spawn("Slot3", val)
+        Spawn("Slot4", val)
+        Spawn("Slot5", val)
+        Spawn("Slot6", val)
+        Spawn("Slot7", val)
+        Spawn("Slot8", val)
+        Spawn("Bank", val)
+        Spawn("Cannon", val)
+    until val == false
+end
+
+local function Auto2(val)
+    repeat
+        Spawn("Slot1", val)
+        Spawn("Bank", val)
+        local args = {
+            [1] = "Chapter1";
+            [2] = 11;
+            [3] = 1;
+            [4] = 1;
+            [5] = false;
+            [6] = {};
+            [7] = false;
+        }
+
+        game:GetService("ReplicatedStorage"):WaitForChild("Events", 9e9):WaitForChild("RemoteFunction", 9e9):WaitForChild("StartBattle", 9e9):InvokeServer(unpack(args))
+        wait(1)
+    until val == false
+end
+
+local function Auto3(val)
+    repeat
+        Spawn("Slot1", val)
+        Spawn("Bank", val)
+        local args = {
+            [1] = "Chapter2";
+            [2] = 10;
+            [3] = 1;
+            [4] = 1;
+            [5] = false;
+            [6] = {};
+            [7] = false;
+        }
+
+        game:GetService("ReplicatedStorage"):WaitForChild("Events", 9e9):WaitForChild("RemoteFunction", 9e9):WaitForChild("StartBattle", 9e9):InvokeServer(unpack(args))
+        wait(1)
+    until val == false
+end
+
+local clockTime = 0
+local running = false
+local totalXPGained = 0
+local Ftime = 0 
+local XPPerHour = 0
+local lastXPValue = game:GetService("Players").LocalPlayer.PlayerData.Currency.Experience.Value
+
+local function formatTime(seconds)
+    local hours = math.floor(tonumber(seconds) / 3600)
+    local minutes = math.floor((seconds % 3600) / 60)
+    local sec = seconds % 60
+    return string.format("%02d:%02d:%02d", hours, minutes, sec)
+end
+
+local function startClock()
+    if running then return end
+    running = true
+
+    while running do
+        if getgenv().AF then
+            clockTime = clockTime + 1
+        else
+            running = false
+        end
+        task.wait(1) 
+    end
+end
+
+game:GetService("RunService").Stepped:Connect(function()
+    if getgenv().AF and not running then
+        wait(5)
+        startClock()
+    end
+end)
+
+task.spawn(function()
+while FcMaster do
+    local FinalXP = game:GetService("Players").LocalPlayer.PlayerData.Currency.Experience.Value
+    Ftime = formatTime(clockTime)
+    local XPGained = FinalXP - lastXPValue
+    totalXPGained = totalXPGained + XPGained
+    XPPerHour = (totalXPGained / clockTime) * 3600
+
+    ElapsedTime:Set(" .. Ftime .. ")
+    XPGainedLabel:Set(" .. totalXPGained .. ")
+    XPPerHourLabel:Set(" .. tostring(math.floor(XPPerHour)) .. ")
+    TotalExperience:Set(" .. game:GetService("Players").LocalPlayer.PlayerData.Currency.Experience.Value .. ")
+
+    lastXPValue = FinalXP
+    wait(1)
+end
+end)
+
+function SendMessageEMBED(url, embed)
+    local http = game:GetService("HttpService")
+    local headers = {
+        ["Content-Type"] = "application/json"
+    }
+    local data = {
+        ["embeds"] = {
+            {
+                ["title"] = embed.title,
+                ["description"] = embed.description,
+                ["color"] = embed.color,
+                ["fields"] = embed.fields,
+                ["footer"] = {
+                    ["text"] = embed.footer.text
+                },
+                ["thumbnail"] = {
+                    ["url"] = embed.thumbnail_url
+                }
+            }
+        }
+    }
+    local body = http:JSONEncode(data)
+    local response = request({
+        Url = url,
+        Method = "POST",
+        Headers = headers,
+        Body = body
+    })
+end
+
+local WebHook = "e"
+local interval = 1800
+
+function SendAUTOFARMInfo(Ftime, totalXPGained, XPPerHour)
+    local embed = {
+        ["title"] = "The Battle Bricks | XP Gained",
+        ["description"] = "Stats",
+        ["color"] = 16777215,
+        ["fields"] = {
+            {
+                ["name"] = "Time Elapsed",
+                ["value"] = Ftime or 0
+            },
+            {
+                ["name"] = "Experience Gained:",
+                ["value"] = tostring(totalXPGained) or 0
+            },
+            {
+                ["name"] = "Experience Per Hour:",
+                ["value"] = tostring(math.floor(XPPerHour)) or 0
+            },
+            {
+                ["name"] = "Total Experience:",
+                ["value"] = game:GetService("Players").LocalPlayer.PlayerData.Currency.Experience.Value or 0
+            },
+        },
+        ["footer"] = {
+            ["text"] = "e"
+        },
+        ["thumbnail_url"] = "https://tr.rbxcdn.com/180DAY-74cebd5bca710a7ae16e247ff2ba806e/768/432/Image/Webp/noFilter"
+    }
+
+    if WebHook then
+        SendMessageEMBED(WebHook, embed)
     end
 end
 
@@ -210,6 +419,93 @@ end
     end
 })
 
+local P = Window:MakeTab({ Name = "Auto Farm", Icon = "rbxassetid://4483345998", PremiumOnly = false })
+
+P:AddToggle({
+	Name = "Auto Spam All (Mostly used when progress)",
+	Default = false,
+	Callback = function(Value)
+		Auto1(Value)
+	end    
+})
+
+P:AddToggle({
+	Name = "Slow Auto Farm XP (Ch. 1 Stage 11)",
+	Default = false,
+	Callback = function(Value)
+		Auto2(Value)
+	end    
+})
+
+P:AddParagraph("Unlock Ch. 1 Stage 11.", "To use this function put good dps on slot1!")
+
+P:AddToggle({
+	Name = "Fast Auto Farm XP (Ch. 2 Stage 10)",
+	Default = false,
+	Callback = function(Value)
+		Auto3(Value)
+	end    
+})
+
+P:AddParagraph("Unlock Ch. 2 Stage 10.", "To use this function put dual speed coils on slot1!")
+
+local T = Window:MakeTab({ Name = "Webhook", Icon = "rbxassetid://4483345998", PremiumOnly = false })
+
+local ElapsedTime = T:AddParagraph("Time Elapsed", Ftime or "00:00:00")
+local XPGainedLabel = T:AddParagraph("Experience Gained", tostring(totalXPGained) or "0")
+local XPPerHourLabel = T:AddParagraph("Experience Per Hour", tostring(math.floor(XPPerHour)) or "0")
+local TotalExperience = T:AddParagraph("Total Experience", game:GetService("Players").LocalPlayer.PlayerData.Currency.Experience.Value or "0")
+
+T:AddTextbox({
+    Name = "Webhook URL",
+    Default = "URL",
+    TextDisappear = false,
+    Callback = function(Value)
+        WebHookURLBool = tostring(Value)
+        WebHook = tostring(Value)
+    end	  
+})
+
+T:AddTextbox({
+    Name = "Interval (Every Second Send Webhook)",
+    Default = "1800",
+    TextDisappear = false,
+    Callback = function(Value)
+        IntervalBool = tonumber(Value)
+        interval = tonumber(Value)
+    end	  
+})
+
+T:AddToggle({
+	Name = "Activate Webhook",
+	Default = false,
+	Callback = function(Value)
+		WebHookActiveBool = Value
+        getgenv().WBhook = Value
+	end    
+})
+
+XPPerHour = 0
+
+local WebHook = "e"
+local interval = 1800
+
+local WebHookURLBool
+local IntervalBool
+local WebHookActiveBool
+
+coroutine.wrap(function()
+    while true do
+        if getgenv().WBhook and getgenv().AF and not getgenv().intervalLock then
+            getgenv().intervalLock = true
+            SendAUTOFARMInfo(Ftime, totalXPGained, XPPerHour)
+            task.wait(interval)
+            getgenv().intervalLock = false
+        end
+        task.wait(1)
+    end
+end)()
+
 local V = Window:MakeTab({ Name = "Misc", Icon = "rbxassetid://4483345998", PremiumOnly = false })
 
 V:AddButton({
@@ -323,24 +619,7 @@ UI:AddTextbox({
     TextDisappear = false,
     Callback = function(Value)
         local num = tonumber(Value)
-        if num then
-            if num > 1000 then
-                OrionLib:MakeNotification({
-                    Name = "Warning!",
-                    Content = "CamShake intensity over 1,000 may cause extreme effects!",
-                    Image = "rbxassetid://4483345998",
-                    Time = 5
-                })
-            end
-            CamShakeIntensity = num
-        else
-            OrionLib:MakeNotification({
-                Name = "Error!",
-                Content = "Invalid input. Please enter a number.",
-                Image = "rbxassetid://4483345998",
-                Time = 3
-            })
-        end
+        CamShakeIntensity = num
     end	  
 })
 
@@ -380,18 +659,25 @@ S:AddButton({
     end
 })
 
-S:AddButton({
+S:AddToggle({
     Name = "Anti-Afk",
-    Callback = function()
-        for _, v in pairs(getconnections(game:GetService("Players").LocalPlayer.Idled)) do
-            v:Disable()
-        end
-        OrionLib:MakeNotification({
-	        Name = "Anti-Afk Enabled!",
-	        Content = "Enjoy!",
-	        Image = "rbxassetid://4483345998",
-	        Time = 10
-        })
+    Default = false
+    Callback = function(Value)
+        getgenv().afk6464 = Value
+        if getgenv().afk6464 == true then
+            OrionLib:MakeNotification({
+	            Name = "Anti Afk Enabled!",
+                Content = "Done!",
+	            Image = "rbxassetid://4483345998",
+	            Time = 5
+            })
+        else
+             OrionLib:MakeNotification({
+	            Name = "Anti Afk Disabled.",
+                Content = "Done!",
+	            Image = "rbxassetid://4483345998",
+	            Time = 5
+            })
     end
 })
 
