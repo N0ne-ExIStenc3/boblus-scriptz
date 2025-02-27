@@ -35,7 +35,7 @@ local function loop()
         else
             disableAntiAFK()
         end
-        wait(1)
+        wait(5)
     end
 end
 
@@ -76,21 +76,6 @@ end
 local function Auto1(val)
     repeat
         Spawn("Slot1", val)
-        Spawn("Slot2", val)
-        Spawn("Slot3", val)
-        Spawn("Slot4", val)
-        Spawn("Slot5", val)
-        Spawn("Slot6", val)
-        Spawn("Slot7", val)
-        Spawn("Slot8", val)
-        Spawn("Bank", val)
-        Spawn("Cannon", val)
-    until val == false
-end
-
-local function Auto2(val)
-    repeat
-        Spawn("Slot1", val)
         Spawn("Bank", val)
         local args = {
             [1] = "Chapter1";
@@ -107,7 +92,7 @@ local function Auto2(val)
     until val == false
 end
 
-local function Auto3(val)
+local function Auto2(val)
     repeat
         Spawn("Slot1", val)
         Spawn("Bank", val)
@@ -125,6 +110,8 @@ local function Auto3(val)
         wait(1)
     until val == false
 end
+
+getgenv().AF = true
 
 local clockTime = 0
 local running = false
@@ -162,28 +149,26 @@ game:GetService("RunService").Stepped:Connect(function()
 end)
 
 task.spawn(function()
-while FcMaster do
-    local FinalXP = game:GetService("Players").LocalPlayer.PlayerData.Currency.Experience.Value
-    Ftime = formatTime(clockTime)
-    local XPGained = FinalXP - lastXPValue
-    totalXPGained = totalXPGained + XPGained
-    XPPerHour = (totalXPGained / clockTime) * 3600
+    while getgenv().AF do
+        local FinalXP = game:GetService("Players").LocalPlayer.PlayerData.Currency.Experience.Value
+        Ftime = formatTime(clockTime)
+        local XPGained = FinalXP - lastXPValue
+        totalXPGained = totalXPGained + XPGained
+        XPPerHour = (totalXPGained / math.max(clockTime, 1)) * 3600
 
-    ElapsedTime:Set(" .. Ftime .. ")
-    XPGainedLabel:Set(" .. totalXPGained .. ")
-    XPPerHourLabel:Set(" .. tostring(math.floor(XPPerHour)) .. ")
-    TotalExperience:Set(" .. game.Players.LocalPlayer.PlayerData.Currency.Experience.Value .. ")
+        ElapsedTime:Set(Ftime)
+        XPGainedLabel:Set(tostring(totalXPGained))
+        XPPerHourLabel:Set(tostring(math.floor(XPPerHour)))
+        TotalExperience:Set(tostring(game.Players.LocalPlayer.PlayerData.Currency.Experience.Value))
 
-    lastXPValue = FinalXP
-    wait(1)
-end
+        lastXPValue = FinalXP
+        wait(5)
+    end
 end)
 
 function SendMessageEMBED(url, embed)
     local http = game:GetService("HttpService")
-    local headers = {
-        ["Content-Type"] = "application/json"
-    }
+    local headers = { ["Content-Type"] = "application/json" }
     local data = {
         ["embeds"] = {
             {
@@ -191,12 +176,8 @@ function SendMessageEMBED(url, embed)
                 ["description"] = embed.description,
                 ["color"] = embed.color,
                 ["fields"] = embed.fields,
-                ["footer"] = {
-                    ["text"] = embed.footer.text
-                },
-                ["thumbnail"] = {
-                    ["url"] = embed.thumbnail_url
-                }
+                ["footer"] = { ["text"] = embed.footer.text },
+                ["thumbnail"] = { ["url"] = embed.thumbnail_url }
             }
         }
     }
@@ -218,31 +199,19 @@ function SendAUTOFARMInfo(Ftime, totalXPGained, XPPerHour)
         ["description"] = "Stats",
         ["color"] = 16777215,
         ["fields"] = {
-            {
-                ["name"] = "Time Elapsed",
-                ["value"] = Ftime or 0
-            },
-            {
-                ["name"] = "Experience Gained:",
-                ["value"] = tostring(totalXPGained) or 0
-            },
-            {
-                ["name"] = "Experience Per Hour:",
-                ["value"] = tostring(math.floor(XPPerHour)) or 0
-            },
-            {
-                ["name"] = "Total Experience:",
-                ["value"] = game:GetService("Players").LocalPlayer.PlayerData.Currency.Experience.Value or 0
-            },
+            { ["name"] = "Time Elapsed", ["value"] = Ftime or "0" },
+            { ["name"] = "Experience Gained:", ["value"] = tostring(totalXPGained) or "0" },
+            { ["name"] = "Experience Per Hour:", ["value"] = tostring(math.floor(XPPerHour)) or "0" },
+            { ["name"] = "Total Experience:", ["value"] = tostring(game:GetService("Players").LocalPlayer.PlayerData.Currency.Experience.Value) or "0" },
         },
-        ["footer"] = {
-            ["text"] = "e"
-        },
-        ["thumbnail_url"] = "https://tr.rbxcdn.com/180DAY-74cebd5bca710a7ae16e247ff2ba806e/768/432/Image/Webp/noFilter"
+        ["footer"] = { ["text"] = "e" },
+        ["thumbnail"] = { ["url"] = "https://tr.rbxcdn.com/180DAY-74cebd5bca710a7ae16e247ff2ba806e/768/432/Image/Webp/noFilter" }
     }
 
-    if WebHook then
+    if WebHook and WebHook ~= "e" then
         SendMessageEMBED(WebHook, embed)
+    else
+        warn("Invalid WebHook URL")
     end
 end
 
@@ -422,18 +391,10 @@ end
 local P = Window:MakeTab({ Name = "Auto Farm", Icon = "rbxassetid://4483345998", PremiumOnly = false })
 
 P:AddToggle({
-	Name = "Auto Spam All (Mostly used when progress)",
-	Default = false,
-	Callback = function(Value)
-		Auto1(Value)
-	end    
-})
-
-P:AddToggle({
 	Name = "Slow Auto Farm XP (Ch. 1 Stage 11)",
 	Default = false,
 	Callback = function(Value)
-		Auto2(Value)
+		Auto1(Value)
 	end    
 })
 
@@ -443,7 +404,7 @@ P:AddToggle({
 	Name = "Fast Auto Farm XP (Ch. 2 Stage 10)",
 	Default = false,
 	Callback = function(Value)
-		Auto3(Value)
+		Auto2(Value)
 	end    
 })
 
