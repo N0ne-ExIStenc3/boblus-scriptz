@@ -170,7 +170,7 @@ local Window = OrionLib:MakeWindow({ Name = "The Battle Bricks", HidePremium = f
 local H = Window:MakeTab({ Name = "Home", Icon = "rbxassetid://4483345998", PremiumOnly = false })
 H:AddLabel("Welcome! " .. Player .. " (" .. User .. ") Thank you for using my script! :)")
 H:AddParagraph("This script is open-source", "Feel free to improve or take parts of the code, but please do not skid.\nCredits are appreciated!")
-H:AddParagraph("Update 6!", "Added Spam Slots/Bank/Cannon\nAuto Farm XP\nInfomation Tabs\nAnd Fixed Minor Issues!")
+H:AddParagraph("Update 6!", "Added Spam Slots/Bank/Cannon\nAuto Farm XP\nInfomation Tabs\nAnd Fixed Minor Issues!\nI recommend execute 2 time cuz sometimes spam tab bugged.")
 
 H:AddButton({
     Name = "Remove UI",
