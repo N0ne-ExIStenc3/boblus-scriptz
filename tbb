@@ -111,26 +111,39 @@ local function Auto2(val)
     until val == false
 end
 
+local BattleInfo = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteEvents"):WaitForChild("BattleInfo")
+local RemoteFunction = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteFunction")
+
 local function Auto3(val)
-    local BattleInfo = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteEvents"):WaitForChild("BattleInfo")
-    local targetValue = nil
     local connection
 
-    connection = BattleInfo.OnClientEvent:Connect(function(arg1)
-        if arg1 >= 1600 and arg1 <= 1610 then
-            targetValue = arg1
-            connection:Disconnect()
-        end
-    end)
-
-    while not targetValue do
-        wait(0.1)
-    end
-    
-    game:GetService("ReplicatedStorage").Events.RemoteFunction.PlayerSpawn:InvokeServer("Slot1")
-
     repeat
-        Spawn("Bank", val)
+        local targetValue = nil
+        connection = BattleInfo.OnClientEvent:Connect(function(...)
+            local args = { ... }
+            if args[1] and args[1] >= 1600 and args[1] <= 1610 then
+                targetValue = args[1]
+            end
+        end)
+
+        while not targetValue and val do
+            wait(0.1)
+        end
+
+        if connection then
+            connection:Disconnect()
+            connection = nil
+        end
+
+        if not val then
+            break
+        end
+
+        RemoteFunction:WaitForChild("PlayerSpawn"):InvokeServer("Slot1")
+
+        for _ = 1, 4 do
+            RemoteFunction:WaitForChild("PlayerSpawn"):InvokeServer("Bank")
+        end
 
         local args = {
             [1] = "Chapter1",
@@ -142,9 +155,14 @@ local function Auto3(val)
             [7] = false
         }
 
-        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteFunction"):WaitForChild("StartBattle"):InvokeServer(unpack(args))
+        RemoteFunction:WaitForChild("StartBattle"):InvokeServer(unpack(args))
+
         wait(1)
     until val == false
+
+    if connection then
+        connection:Disconnect()
+    end
 end
 
 local Window = OrionLib:MakeWindow({ Name = "The Battle Bricks", HidePremium = false, SaveConfig = true, ConfigFolder = "OhioTBB" })
