@@ -365,7 +365,6 @@ T:AddToggle({
 		    TotalExperience:Set(game:GetService("Players").LocalPlayer.PlayerData.Currency.Experience.Value)
 		    TotalBricks:Set(game:GetService("Players").LocalPlayer.PlayerData.Currency.Bricks.Value)
 		until Value == false
-		return
 	end    
 })
 
