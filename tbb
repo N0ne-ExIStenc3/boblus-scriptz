@@ -39,7 +39,7 @@ local function loop()
     end
 end
 
-spawn(loop)
+task.spawn(loop)
 
 if not getgenv().afk6464 then
     getgenv().afk6464 = false
@@ -80,14 +80,14 @@ local function Auto1(val)
         local args = {
             [1] = "Chapter1";
             [2] = 11;
-            [3] = 1;
+            [3] = 2;
             [4] = 1;
             [5] = false;
             [6] = {};
             [7] = false;
         }
 
-        game:GetService("ReplicatedStorage"):WaitForChild("Events", 9e9):WaitForChild("RemoteFunction", 9e9):WaitForChild("StartBattle", 9e9):InvokeServer(unpack(args))
+        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteFunction"):WaitForChild("StartBattle"):InvokeServer(unpack(args))
         wait(1)
     until val == false
 end
@@ -99,120 +99,52 @@ local function Auto2(val)
         local args = {
             [1] = "Chapter2";
             [2] = 10;
-            [3] = 1;
+            [3] = 2;
             [4] = 1;
             [5] = false;
             [6] = {};
             [7] = false;
         }
 
-        game:GetService("ReplicatedStorage"):WaitForChild("Events", 9e9):WaitForChild("RemoteFunction", 9e9):WaitForChild("StartBattle", 9e9):InvokeServer(unpack(args))
+        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteFunction"):WaitForChild("StartBattle"):InvokeServer(unpack(args))
         wait(1)
     until val == false
 end
 
-getgenv().AF = true
+local function Auto3(val)
+    local BattleInfo = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteEvents"):WaitForChild("BattleInfo")
+    local targetValue = nil
+    local connection
 
-local clockTime = 0
-local running = false
-local totalXPGained = 0
-local Ftime = 0 
-local XPPerHour = 0
-local lastXPValue = game:GetService("Players").LocalPlayer.PlayerData.Currency.Experience.Value
-
-local function formatTime(seconds)
-    local hours = math.floor(tonumber(seconds) / 3600)
-    local minutes = math.floor((seconds % 3600) / 60)
-    local sec = seconds % 60
-    return string.format("%02d:%02d:%02d", hours, minutes, sec)
-end
-
-local function startClock()
-    if running then return end
-    running = true
-
-    while running do
-        if getgenv().AF then
-            clockTime = clockTime + 1
-        else
-            running = false
+    connection = BattleInfo.OnClientEvent:Connect(function(arg1)
+        if arg1 >= 1600 and arg1 <= 1610 then
+            targetValue = arg1
+            connection:Disconnect()
         end
-        task.wait(1) 
+    end)
+
+    while not targetValue do
+        wait(0.1)
     end
-end
+    
+    game:GetService("ReplicatedStorage").Events.RemoteFunction.PlayerSpawn:InvokeServer("Slot1")
 
-game:GetService("RunService").Stepped:Connect(function()
-    if getgenv().AF and not running then
-        wait(5)
-        startClock()
-    end
-end)
+    repeat
+        Spawn("Bank", val)
 
-task.spawn(function()
-    while getgenv().AF do
-        local FinalXP = game:GetService("Players").LocalPlayer.PlayerData.Currency.Experience.Value
-        Ftime = formatTime(clockTime)
-        local XPGained = FinalXP - lastXPValue
-        totalXPGained = totalXPGained + XPGained
-        XPPerHour = (totalXPGained / math.max(clockTime, 1)) * 3600
-
-        ElapsedTime:Set(Ftime)
-        XPGainedLabel:Set(tostring(totalXPGained))
-        XPPerHourLabel:Set(tostring(math.floor(XPPerHour)))
-        TotalExperience:Set(tostring(game.Players.LocalPlayer.PlayerData.Currency.Experience.Value))
-
-        lastXPValue = FinalXP
-        wait(5)
-    end
-end)
-
-function SendMessageEMBED(url, embed)
-    local http = game:GetService("HttpService")
-    local headers = { ["Content-Type"] = "application/json" }
-    local data = {
-        ["embeds"] = {
-            {
-                ["title"] = embed.title,
-                ["description"] = embed.description,
-                ["color"] = embed.color,
-                ["fields"] = embed.fields,
-                ["footer"] = { ["text"] = embed.footer.text },
-                ["thumbnail"] = { ["url"] = embed.thumbnail_url }
-            }
+        local args = {
+            [1] = "Chapter1",
+            [2] = 20,
+            [3] = 2,
+            [4] = 3,
+            [5] = false,
+            [6] = { ["Unit"] = 28 },
+            [7] = false
         }
-    }
-    local body = http:JSONEncode(data)
-    local response = request({
-        Url = url,
-        Method = "POST",
-        Headers = headers,
-        Body = body
-    })
-end
 
-local WebHook = "e"
-local interval = 1800
-
-function SendAUTOFARMInfo(Ftime, totalXPGained, XPPerHour)
-    local embed = {
-        ["title"] = "The Battle Bricks | XP Gained",
-        ["description"] = "Stats",
-        ["color"] = 16777215,
-        ["fields"] = {
-            { ["name"] = "Time Elapsed", ["value"] = Ftime or "0" },
-            { ["name"] = "Experience Gained:", ["value"] = tostring(totalXPGained) or "0" },
-            { ["name"] = "Experience Per Hour:", ["value"] = tostring(math.floor(XPPerHour)) or "0" },
-            { ["name"] = "Total Experience:", ["value"] = tostring(game:GetService("Players").LocalPlayer.PlayerData.Currency.Experience.Value) or "0" },
-        },
-        ["footer"] = { ["text"] = "e" },
-        ["thumbnail"] = { ["url"] = "https://tr.rbxcdn.com/180DAY-74cebd5bca710a7ae16e247ff2ba806e/768/432/Image/Webp/noFilter" }
-    }
-
-    if WebHook and WebHook ~= "e" then
-        SendMessageEMBED(WebHook, embed)
-    else
-        warn("Invalid WebHook URL")
-    end
+        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteFunction"):WaitForChild("StartBattle"):InvokeServer(unpack(args))
+        wait(1)
+    until val == false
 end
 
 local Window = OrionLib:MakeWindow({ Name = "The Battle Bricks", HidePremium = false, SaveConfig = true, ConfigFolder = "OhioTBB" })
@@ -410,62 +342,32 @@ P:AddToggle({
 
 P:AddParagraph("Unlock Ch. 2 Stage 10.", "To use this function put dual speed coils on slot1!")
 
-local T = Window:MakeTab({ Name = "Webhook", Icon = "rbxassetid://4483345998", PremiumOnly = false })
-
-local ElapsedTime = T:AddParagraph("Time Elapsed", Ftime or "00:00:00")
-local XPGainedLabel = T:AddParagraph("Experience Gained", tostring(totalXPGained) or "0")
-local XPPerHourLabel = T:AddParagraph("Experience Per Hour", tostring(math.floor(XPPerHour)) or "0")
-local TotalExperience = T:AddParagraph("Total Experience", game:GetService("Players").LocalPlayer.PlayerData.Currency.Experience.Value or "0")
-
-T:AddTextbox({
-    Name = "Webhook URL",
-    Default = "URL",
-    TextDisappear = false,
-    Callback = function(Value)
-        WebHookURLBool = tostring(Value)
-        WebHook = tostring(Value)
-    end	  
-})
-
-T:AddTextbox({
-    Name = "Interval (Every Second Send Webhook)",
-    Default = "1800",
-    TextDisappear = false,
-    Callback = function(Value)
-        IntervalBool = tonumber(Value)
-        interval = tonumber(Value)
-    end	  
-})
-
-T:AddToggle({
-	Name = "Activate Webhook",
+P:AddToggle({
+	Name = "Fastest Auto Farm XP (Ch. 1 Stage 20 3 Stars)",
 	Default = false,
 	Callback = function(Value)
-		WebHookActiveBool = Value
-        getgenv().WBhook = Value
+		Auto3(Value)
 	end    
 })
 
-XPPerHour = 0
+P:AddParagraph("Unlock Ch. 1 Stage 20 3 Stars.", "To use this function put lil deathbringer lvl 28 on slot1!")
 
-local WebHook = "e"
-local interval = 1800
+local T = Window:MakeTab({ Name = "Information", Icon = "rbxassetid://4483345998", PremiumOnly = false })
 
-local WebHookURLBool
-local IntervalBool
-local WebHookActiveBool
+local TotalExperience = T:AddParagraph("Experience", game:GetService("Players").LocalPlayer.PlayerData.Currency.Experience.Value or "0")
+local TotalBricks = T:AddParagraph("Bricks", game:GetService("Players").LocalPlayer.PlayerData.Currency.Bricks.Value or "0")
 
-coroutine.wrap(function()
-    while true do
-        if getgenv().WBhook and getgenv().AF and not getgenv().intervalLock then
-            getgenv().intervalLock = true
-            SendAUTOFARMInfo(Ftime, totalXPGained, XPPerHour)
-            task.wait(interval)
-            getgenv().intervalLock = false
-        end
-        task.wait(1)
-    end
-end)()
+T:AddToggle({
+	Name = "Auto Set Info",
+	Default = false,
+	Callback = function(Value)
+	    repeat
+		    TotalExperience:Set(game:GetService("Players").LocalPlayer.PlayerData.Currency.Experience.Value)
+		    TotalBricks:Set(game:GetService("Players").LocalPlayer.PlayerData.Currency.Bricks.Value)
+		until Value == false
+		return
+	end    
+})
 
 local V = Window:MakeTab({ Name = "Misc", Icon = "rbxassetid://4483345998", PremiumOnly = false })
 
@@ -513,6 +415,7 @@ V:AddButton({
         game:GetService("ReplicatedStorage").Cutscenes.EyeOfRah:Destroy()
         game:GetService("ReplicatedStorage").Cutscenes.RaigQuit:Destroy()
         game:GetService("ReplicatedStorage").Cutscenes.ChangeYourTime:Destroy()
+        -- YouCheated possibly on ServerStorage
     end
 })
 
@@ -540,7 +443,7 @@ local UI = Window:MakeTab({ Name = "GUI", Icon = "rbxassetid://4483345998", Prem
 UI:AddDropdown({
     Name = "Select Menu",
     Default = "N/A",
-    Options = { "Lobby", "Almanac", "Difficulty", "MainMenu", "MainChapter", "SubChapter", "Shop", "Loadout", "StageSelect", "Loading", "FinishedLoading" },
+    Options = { "Lobby", "Almanac", "Difficulty", "MainMenu", "MainChapter", "SubChapter", "Shop", "Loadout", "StageSelect" },
     Callback = function(Value)
         selectedMenu = Value
     end
@@ -550,12 +453,7 @@ UI:AddButton({
     Name = "Change Menu",
     Callback = function()
         local event = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("BindableEvents"):WaitForChild("MenuSelect")
-        
-        if selectedMenu == "Loading" or selectedMenu == "FinishedLoading" then
-            game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("BindableEvents"):WaitForChild("Transition"):Fire()
-        else
-            event:Fire(selectedMenu)
-        end
+        event:Fire(selectedMenu)
     end
 })
 
