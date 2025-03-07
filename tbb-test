@@ -1,0 +1,72 @@
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/jensonhirst/Orion/main/source')))()
+local Slot = game.Players.LocalPlayer.PlayerData.Loadout.Slots
+local Type = game.Players.LocalPlayer.PlayerData.Loadout.Type
+local selectedBank = "Default"
+local selectedCannon = "Default"
+
+local function SaveLoadout(B1, B2, B3, B4, B5, B6, B7, B8, A1, A2, A3, A4, A5, A6, A7, A8, C, B)
+    local args = {
+        [1] = {
+            ["Type"] = {
+                { "Slot1", B1 }, { "Slot2", B2 }, { "Slot3", B3 }, { "Slot4", B4 },
+                { "Slot5", B5 }, { "Slot6", B6 }, { "Slot7", B7 }, { "Slot8", B8 }
+            },
+            ["Slots"] = {
+                { "Slot1", A1 }, { "Slot2", A2 }, { "Slot3", A3 }, { "Slot4", A4 },
+                { "Slot5", A5 }, { "Slot6", A6 }, { "Slot7", A7 }, { "Slot8", A8 }
+            },
+            ["Base"] = {
+                ["Cannon"] = C,
+                ["Bank"] = B
+            }
+        }
+    }
+
+    game:GetService("ReplicatedStorage").Events.RemoteEvents.SaveLoadout:FireServer(unpack(args))
+end
+
+local Window = OrionLib:MakeWindow({ Name = "The Battle Bricks", HidePremium = false, SaveConfig = true, ConfigFolder = "OhioTBB" })
+
+local M = Window:MakeTab({ Name = "Main", Icon = "rbxassetid://4483345998", PremiumOnly = false })
+
+M:AddDropdown({
+    Name = "Select Bank",
+    Default = "Default",
+    Options = { "Default", "Investment", "Powerhouse", "Detonator", "Ignition" },
+    Callback = function(Value) selectedBank = Value end
+})
+
+M:AddDropdown({
+    Name = "Select Cannon",
+    Default = "Default",
+    Options = { "Default", "Gatling", "Slammer", "Recoil", "Treasure", "Absorber", "Liberty" },
+    Callback = function(Value) selectedCannon = Value end
+})
+
+M:AddButton({
+    Name = "Change Bank/Cannon",
+    Callback = function()
+        local bankMap = { Default = 1, Investment = 2, Powerhouse = 3, Detonator = 4, Ignition = 5 }
+        local cannonMap = { Default = 1, Gatling = 2, Slammer = 3, Recoil = 4, Treasure = 5, Absorber = 6, Liberty = 7 }
+        
+        local bankID = bankMap[selectedBank] or 1
+        local cannonID = cannonMap[selectedCannon] or 1
+        
+        SaveLoadout(
+            Type.Slot1.Value, Type.Slot2.Value, Type.Slot3.Value, Type.Slot4.Value,
+            Type.Slot5.Value, Type.Slot6.Value, Type.Slot7.Value, Type.Slot8.Value,
+            Slot.Slot1.Value, Slot.Slot2.Value, Slot.Slot3.Value, Slot.Slot4.Value,
+            Slot.Slot5.Value, Slot.Slot6.Value, Slot.Slot7.Value, Slot.Slot8.Value,
+            cannonID, bankID
+        )
+    end
+})
+
+OrionLib:MakeNotification({
+    Name = "Script Loaded!",
+    Content = "Enjoy!",
+    Image = "rbxassetid://4483345998",
+    Time = 10
+})
+
+OrionLib:Init()
