@@ -65,6 +65,9 @@ Tab:CreateDropdown({
     Name = "Select Bank",
     Default = "Default",
     Options = { "Default", "Investment", "Powerhouse", "Detonator", "Ignition" },
+    CurrentOption = { "Default" },
+    MultipleOptions = false,
+    Flag = "Dropdown",
     Callback = function(Value) selectedBank = Value end
 })
 
@@ -72,6 +75,9 @@ Tab:CreateDropdown({
     Name = "Select Cannon",
     Default = "Default",
     Options = { "Default", "Gatling", "Slammer", "Recoil", "Treasure", "Absorber", "Liberty" },
+    CurrentOption = { "Default" },
+    MultipleOptions = false,
+    Flag = "Dropdown",
     Callback = function(Value) selectedCannon = Value end
 })
 
@@ -91,7 +97,7 @@ Tab:CreateButton({
             Slot.Slot5.Value, Slot.Slot6.Value, Slot.Slot7.Value, Slot.Slot8.Value,
             cannonID, bankID
         )
-    end
+    end,
 })
 
 loadstring(game:HttpGet('https://sirius.menu/sirius'))()
