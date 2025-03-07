@@ -1,0 +1,23 @@
+local function Spawn(Name)
+    while true do
+        game:GetService("ReplicatedStorage").Events.RemoteFunction.PlayerSpawn:InvokeServer(Name)
+        wait(1)
+    end
+end
+
+while true do
+    Spawn("Slot1")
+    Spawn("Bank")
+    local args = {
+        [1] = "Chapter1";
+        [2] = 11;
+        [3] = 2;
+        [4] = 1;
+        [5] = false;
+        [6] = {};
+        [7] = false;
+    }
+
+    game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteFunction"):WaitForChild("StartBattle"):InvokeServer(unpack(args))
+    wait(1)
+end
