@@ -7,43 +7,7 @@ local selectedBank = "Default"
 local selectedCannon = "Default"
 local selectedMenu = "N/A"
 local selectedMusic = "N/A"
-local FcMaster = true
 CamShakeIntensity = 10 
-
-local function enableAntiAFK()
-    if not connection then
-        connection = player.Idled:Connect(function()
-            if getgenv().afk6464 then
-                VirtualUser:CaptureController()
-                VirtualUser:ClickButton2(Vector2.new())
-            end
-        end)
-    end
-end
-
-local function disableAntiAFK()
-    if connection then
-        connection:Disconnect()
-        connection = nil
-    end
-end
-
-local function loop()
-    while FcMaster do
-        if getgenv().afk6464 then
-            enableAntiAFK()
-        else
-            disableAntiAFK()
-        end
-        wait(5)
-    end
-end
-
-task.spawn(loop)
-
-if not getgenv().afk6464 then
-    getgenv().afk6464 = false
-end
 
 local function SaveLoadout(B1, B2, B3, B4, B5, B6, B7, B8, A1, A2, A3, A4, A5, A6, A7, A8, C, B)
     local args = {
@@ -386,18 +350,21 @@ S:AddButton({
     end
 })
 
-S:AddToggle({
+S:AddButton({
     Name = "Anti-Afk",
-    Default = false,
-    Callback = function(Value)
-        getgenv().afk6464 = Value
-        local message = Value and "Anti Afk Enabled!" or "Anti Afk Disabled."
-        
-        OrionLib:MakeNotification({
-            Name = message,
-            Content = "Done!",
-            Image = "rbxassetid://4483345998",
-            Time = 5
+    Callback = function()
+        local VirtualUser = game:GetService('VirtualUser')
+ 
+        game:GetService('Players').LocalPlayer.Idled:Connect(function()
+            VirtualUser:CaptureController()
+            VirtualUser:ClickButton2(Vector2.new())
+        end)
+ 
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Anti-AFK Loaded!",
+            Text = "Cool!",
+            Button1 = "Thanks",
+            Duration = 5
         })
     end
 })
