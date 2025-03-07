@@ -220,23 +220,6 @@ P:AddButton({
 
 P:AddParagraph("Unlock Ch. 2 Stage 10.", "To use this function put dual speed coils on slot1!")
 
-local T = Window:MakeTab({ Name = "Information", Icon = "rbxassetid://4483345998", PremiumOnly = false })
-
-local TotalExperience = T:AddParagraph("Experience", game:GetService("Players").LocalPlayer.PlayerData.Currency.Experience.Value or "0")
-local TotalBricks = T:AddParagraph("Bricks", game:GetService("Players").LocalPlayer.PlayerData.Currency.Bricks.Value or "0")
-
-T:AddToggle({
-	Name = "Auto Set Info",
-	Default = false,
-	Callback = function(Value)
-	    repeat
-		    TotalExperience:Set(game:GetService("Players").LocalPlayer.PlayerData.Currency.Experience.Value)
-		    TotalBricks:Set(game:GetService("Players").LocalPlayer.PlayerData.Currency.Bricks.Value)
-		    wait(3)
-		until Value == false
-	end    
-})
-
 local V = Window:MakeTab({ Name = "Misc", Icon = "rbxassetid://4483345998", PremiumOnly = false })
 
 V:AddButton({
