@@ -58,11 +58,11 @@ end
 Tab:CreateDropdown({
     Name = "Select Bank",
     Options = { "Default", "Investment", "Powerhouse", "Detonator", "Ignition" },
-    CurrentOption = {"Default"},
+    CurrentOption = "Default",
     MultipleOptions = false,
     Flag = "Dropdown",
-    Callback = function(Value) 
-        selectedBank = Value 
+    Callback = function(Value)
+        selectedBank = Value[1] -- Extract the string value from the table
         print("Bank selected:", selectedBank)
     end
 })
@@ -70,11 +70,11 @@ Tab:CreateDropdown({
 Tab:CreateDropdown({
     Name = "Select Cannon",
     Options = { "Default", "Gatling", "Slammer", "Recoil", "Treasure", "Absorber", "Liberty" },
-    CurrentOption = {"Default"},
+    CurrentOption = "Default",
     MultipleOptions = false,
     Flag = "Dropdown2",
-    Callback = function(Value) 
-        selectedCannon = Value 
+    Callback = function(Value)
+        selectedCannon = Value[1] -- Extract the string value from the table
         print("Cannon selected:", selectedCannon)
     end
 })
