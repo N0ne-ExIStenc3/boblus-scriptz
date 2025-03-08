@@ -100,5 +100,3 @@ Tab:CreateButton({
         )
     end,
 })
-
-loadstring(game:HttpGet('https://sirius.menu/sirius'))()
