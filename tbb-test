@@ -1,40 +1,35 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
    Name = "Test",
-   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   Icon = 0,
    LoadingTitle = "Rayfield Interface Suite",
    LoadingSubtitle = "by Test",
-   Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
-
+   Theme = "Default",
    DisableRayfieldPrompts = false,
-   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
-
+   DisableBuildWarnings = false,
    ConfigurationSaving = {
       Enabled = true,
-      FolderName = nil, -- Create a custom folder for your hub/game
+      FolderName = nil,
       FileName = "Big Hub"
    },
-
    Discord = {
-      Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
-      Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
-      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+      Enabled = false,
+      Invite = "noinvitelink",
+      RememberJoins = true
    },
-
-   KeySystem = false, -- Set this to true to use our key system
+   KeySystem = false,
    KeySettings = {
       Title = "Untitled",
       Subtitle = "Key System",
-      Note = "No method of obtaining the key is provided", -- Use this to tell the user how to get a key
-      FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
-      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
-      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
-      Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+      Note = "No method of obtaining the key is provided",
+      FileName = "Key",
+      SaveKey = true,
+      GrabKeyFromSite = false,
+      Key = {"Hello"}
    }
 })
 
-local Tab = Window:CreateTab("Tab Example", 4483362458) -- Title, Image
-
+local Tab = Window:CreateTab("Tab Example", 4483362458)
 local Slot = game.Players.LocalPlayer.PlayerData.Loadout.Slots
 local Type = game.Players.LocalPlayer.PlayerData.Loadout.Type
 local selectedBank = "Default"
@@ -42,7 +37,7 @@ local selectedCannon = "Default"
 
 local function SaveLoadout(B1, B2, B3, B4, B5, B6, B7, B8, A1, A2, A3, A4, A5, A6, A7, A8, C, B)
     local args = {
-        [1] = {
+        {
             ["Type"] = {
                 { "Slot1", B1 }, { "Slot2", B2 }, { "Slot3", B3 }, { "Slot4", B4 },
                 { "Slot5", B5 }, { "Slot6", B6 }, { "Slot7", B7 }, { "Slot8", B8 }
@@ -57,28 +52,31 @@ local function SaveLoadout(B1, B2, B3, B4, B5, B6, B7, B8, A1, A2, A3, A4, A5, A
             }
         }
     }
-
     game:GetService("ReplicatedStorage").Events.RemoteEvents.SaveLoadout:FireServer(unpack(args))
 end
 
 Tab:CreateDropdown({
     Name = "Select Bank",
-    Default = "Default",
     Options = { "Default", "Investment", "Powerhouse", "Detonator", "Ignition" },
-    CurrentOption = { "Default" },
+    CurrentOption = {"Default"},
     MultipleOptions = false,
     Flag = "Dropdown",
-    Callback = function(Value) selectedBank = Value end
+    Callback = function(Value) 
+        selectedBank = Value 
+        print("Bank selected:", selectedBank)
+    end
 })
 
 Tab:CreateDropdown({
     Name = "Select Cannon",
-    Default = "Default",
     Options = { "Default", "Gatling", "Slammer", "Recoil", "Treasure", "Absorber", "Liberty" },
-    CurrentOption = { "Default" },
+    CurrentOption = {"Default"},
     MultipleOptions = false,
-    Flag = "Dropdown",
-    Callback = function(Value) selectedCannon = Value end
+    Flag = "Dropdown2",
+    Callback = function(Value) 
+        selectedCannon = Value 
+        print("Cannon selected:", selectedCannon)
+    end
 })
 
 Tab:CreateButton({
@@ -89,6 +87,9 @@ Tab:CreateButton({
         
         local bankID = bankMap[selectedBank] or 1
         local cannonID = cannonMap[selectedCannon] or 1
+        
+        print("Selected Bank: ", selectedBank, " ID: ", bankID)
+        print("Selected Cannon: ", selectedCannon, " ID: ", cannonID)
         
         SaveLoadout(
             Type.Slot1.Value, Type.Slot2.Value, Type.Slot3.Value, Type.Slot4.Value,
