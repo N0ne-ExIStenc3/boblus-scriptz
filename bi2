@@ -785,7 +785,7 @@ else
 
 	local Section = Tab:CreateSection("Item Giver")
 
-	Tab:CreateParagraph(Title = "Note:", Content = "Getting/Spamming Multiple Of 1 Type Of Items May Cause The Item To Break And Be Unuseable/Unequippable.\nIt Is Recommended To Only Grab 1 Item At Once, Especially If Its An Item Everyone Can Use.")
+	Tab:CreateParagraph({Title = "Note:", Content = "Getting/Spamming Multiple Of 1 Type Of Items May Cause The Item To Break And Be Unuseable/Unequippable.\nIt Is Recommended To Only Grab 1 Item At Once, Especially If Its An Item Everyone Can Use."})
 
 	Tab:CreateDropdown({
 		Name = "Item",
@@ -1636,4 +1636,5 @@ else
 
 	Notify('Loaded!', "Script Successfully Loaded!", 'rbxassetid://4483345998', 15)
 	ScriptLoaded = true
+end
 end
