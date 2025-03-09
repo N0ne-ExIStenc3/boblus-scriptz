@@ -1,0 +1,168 @@
+local function generateRandomName()
+    local chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    local length = math.random(9, 11)
+    local randomName = "S_"
+    for i = 1, length - 2 do
+        local randIndex = math.random(1, #chars)
+        randomName = randomName .. string.sub(chars, randIndex, randIndex)
+    end
+    return randomName
+end
+
+local spyName = generateRandomName()
+
+local HttpSpy = Instance.new("ScreenGui")
+HttpSpy.Name = spyName
+HttpSpy.Parent = game.CoreGui
+
+local Background = Instance.new("Frame")
+local TitleText = Instance.new("TextLabel")
+local CopyToggleButton = Instance.new("TextButton")
+local MainContainer = Instance.new("ScrollingFrame")
+local UIListLayout = Instance.new("UIListLayout")
+
+Background.Name = "Background"
+Background.Parent = HttpSpy
+Background.Active = true
+Background.BackgroundColor3 = Color3.fromRGB(63, 63, 63)
+Background.Position = UDim2.new(0.05, 0, 0.25, 0)
+Background.Size = UDim2.new(0, 450, 0, 250)
+
+TitleText.Name = "TitleText"
+TitleText.Parent = Background
+TitleText.BackgroundTransparency = 1.0
+TitleText.Size = UDim2.new(0.8, 0, 0, 25)
+TitleText.Font = Enum.Font.SourceSansBold
+TitleText.Text = "Cool Spy"
+TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleText.TextScaled = true
+
+CopyToggleButton.Name = "CopyToggleButton"
+CopyToggleButton.Parent = Background
+CopyToggleButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+CopyToggleButton.Size = UDim2.new(0.2, 0, 0, 25)
+CopyToggleButton.Position = UDim2.new(0.8, 0, 0, 0)
+CopyToggleButton.Font = Enum.Font.SourceSansBold
+CopyToggleButton.Text = "Copy: OFF"
+CopyToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CopyToggleButton.TextScaled = true
+
+MainContainer.Name = "MainContainer"
+MainContainer.Parent = Background
+MainContainer.BackgroundColor3 = Color3.fromRGB(46, 46, 46)
+MainContainer.Position = UDim2.new(0, 0, 0.12, 0)
+MainContainer.Size = UDim2.new(1, 0, 0.88, 0)
+MainContainer.ScrollBarThickness = 6
+
+UIListLayout.Parent = MainContainer
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local UIS = game:GetService("UserInputService")
+local Dragging, DragInput, StartPos, DragStart
+
+local function StartDrag(input)
+    Dragging = true
+    DragStart = input.Position
+    StartPos = Background.Position
+end
+
+local function UpdateDrag(input)
+    if Dragging then
+        local Delta = input.Position - DragStart
+        Background.Position = UDim2.new(StartPos.X.Scale, StartPos.X.Offset + Delta.X, StartPos.Y.Scale, StartPos.Y.Offset + Delta.Y)
+    end
+end
+
+Background.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        StartDrag(input)
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                Dragging = false
+            end
+        end)
+    end
+end)
+
+Background.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        DragInput = input
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if input == DragInput then
+        UpdateDrag(input)
+    end
+end)
+
+local CopyMode = false
+CopyToggleButton.MouseButton1Click:Connect(function()
+    CopyMode = not CopyMode
+    CopyToggleButton.Text = CopyMode and "Copy: ON" or "Copy: OFF"
+end)
+
+local function Log(text, headers, isHttp)
+    local Label = Instance.new("TextButton")
+    Label.BackgroundTransparency = 0.5
+    Label.Size = UDim2.new(1, 0, 0, 25)
+    Label.Font = Enum.Font.SourceSans
+    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Label.TextScaled = false
+    Label.TextWrapped = true
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Parent = MainContainer
+
+    local logText = text
+    if headers and type(headers) == "table" then
+        logText = logText .. " | Headers: {"
+        for k, v in pairs(headers) do
+            logText = logText .. k .. ": " .. tostring(v) .. ", "
+        end
+        logText = logText:sub(1, -3) .. "}"
+    end
+    Label.Text = logText
+
+    Label.MouseButton1Click:Connect(function()
+        if CopyMode and not isHttp then
+            if setclipboard then
+                setclipboard(logText)
+                Label.Text = "[Copied!] " .. logText
+                task.wait(3)
+            else
+                Label.Text = "[Error Occurred!] " .. logText
+                task.wait(3)
+            end
+            Label.Text = logText
+        end
+    end)
+end
+
+local function adjustScrolling()
+    MainContainer.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
+end
+UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(adjustScrolling)
+
+local HttpGet = hookfunction(game.HttpGet, function(self, url, ...)
+    Log("[HTTP GET] " .. url, nil, true)
+    return HttpGet(self, url, ...)
+end)
+
+local HttpPost = hookfunction(game.HttpPost, function(self, url, ...)
+    Log("[HTTP POST] " .. url, nil, true)
+    return HttpPost(self, url, ...)
+end)
+
+if syn and syn.request then
+    local SynRequest = hookfunction(syn.request, function(data)
+        Log("[SYN.REQUEST] " .. data.Url .. " (" .. data.Method .. ")", data.Headers, false)
+        return SynRequest(data)
+    end)
+elseif request then
+    local Request = hookfunction(request, function(data)
+        Log("[REQUEST] " .. data.Url .. " (" .. data.Method .. ")", data.Headers, false)
+        return Request(data)
+    end)
+else
+    error("Your exploit does not support HTTP logging!")
+end
