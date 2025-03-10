@@ -42,13 +42,13 @@ if game.PlaceId ~= 13864667823 then
 		Tab:CreateButton({
 			Name = "Free Hacker Role",
 			Callback = function()
-				game:GetService("ReplicatedStorage").RemoteEvents.OutsideRole:FireServer("Phone", true, true)
+				game:GetService("ReplicatedStorage").RemoteEvents.OutsideRole:FireServer("Phone", true, false)
 			end
 		})
 		Tab:CreateButton({
 			Name = "Free Nerd Kid Role",
 			Callback = function()
-				game:GetService("ReplicatedStorage").RemoteEvents.OutsideRole:FireServer("Book", false, true)
+				game:GetService("ReplicatedStorage").RemoteEvents.OutsideRole:FireServer("Book", true, false)
 			end
 		})
 else
