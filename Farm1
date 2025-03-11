@@ -1,13 +1,6 @@
-local function Spawn(Name)
-    while true do
-        game:GetService("ReplicatedStorage").Events.RemoteFunction.PlayerSpawn:InvokeServer(Name)
-        wait(1)
-    end
-end
-
 while true do
-    Spawn("Slot1")
-    Spawn("Bank")
+    game:GetService("ReplicatedStorage").Events.RemoteFunction.PlayerSpawn:InvokeServer("Slot1")
+    game:GetService("ReplicatedStorage").Events.RemoteFunction.PlayerSpawn:InvokeServer("Bank")
     local args = {
         [1] = "Chapter1";
         [2] = 11;
