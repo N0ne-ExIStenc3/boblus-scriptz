@@ -1,4 +1,5 @@
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Giangplay/Script/refs/heads/main/Orion_Library_PE_V2.lua"))()
+local UIS = game:GetService("UserInputService")
+local OrionLib = loadstring(game:HttpGet(("https://raw.githubusercontent.com/Giangplay/Script/main/Orion_Library_PE_V2.lua")))()
 local Player = game.Players.LocalPlayer.DisplayName
 local User = game.Players.LocalPlayer.Name
 local Slot = game.Players.LocalPlayer.PlayerData.Loadout.Slots
@@ -35,13 +36,13 @@ local Window = OrionLib:MakeWindow({ Name = "The Battle Bricks", HidePremium = f
 local H = Window:MakeTab({ Name = "Home", Icon = "rbxassetid://4483345998", PremiumOnly = false })
 H:AddLabel("Welcome! " .. Player .. " (" .. User .. ") Thank you for using my script! :)")
 H:AddParagraph("This script is open-source", "Feel free to improve or take parts of the code, Credits are appreciated!")
-H:AddParagraph("Update 7!", "Change Spam Tab and Auto Farm Due to Unsupported executor.")
+H:AddParagraph("Update 8!", "Add Checking Platform to Fixing Can't Run Script.")
 
 H:AddButton({
     Name = "Remove UI",
     Callback = function()
         OrionLib:MakeNotification({ Name = "Notification!", Content = "Removing The UI... :(", Image = "rbxassetid://4483345998", Time = 3 })
-        wait(3)
+        wait(3.5)
         OrionLib:Destroy()
     end
 })
@@ -89,10 +90,10 @@ W:AddButton({
     Name = "Copy Auto Stage Set-up",
     Callback = function()
         local scriptToCopy = [[
-local val = true -- make it false if u want to disable
+local val = true -- make it false if u want to disable (idk if work or no)
 while val do
     wait(1)
-    -- Paste StartBattle Rrmote Here
+    -- Paste StartBattle Remote Here
 end
         ]]
 
@@ -128,7 +129,7 @@ W:AddButton({
     Name = "Copy Auto Spam Set-up",
     Callback = function()
         local scriptToCopy = [[       
-local val = true -- make it false if u want to disable
+local val = true -- make it false if u want to disable (idk if work or no)
 local Name = "Slot1" -- Change Slot Value or change to Bank, or Cannon if u want
 while val do
     wait(1)
@@ -377,3 +378,10 @@ OrionLib:MakeNotification({
 })
 
 OrionLib:Init()
+
+if UIS.KeyboardEnabled then
+    OrionLib:Destroy()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/tbb-pc"))()
+else
+    return
+end
