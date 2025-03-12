@@ -176,7 +176,7 @@ M:CreateButton({
 M:CreateButton({
     Name = "Free Gamepasses (Only Works in Some Games)",
     Callback = function()
-        loadstring(game:HttpGet("https://pastebin.com/raw/sZpgTVas"))()
+        loadstring(game:HttpGet(('https://raw.githubusercontent.com/BaconBossScript/Crazy/main/Crazy'),true))()
     end,
 })
 
