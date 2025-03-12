@@ -185,6 +185,15 @@ P:AddButton({
 
 P:AddParagraph("Unlock Ch. 2 Stage 10.", "To use this function put dual speed coils on slot1!")
 
+P:AddButton({
+	Name = "Fastest Auto Farm XP (Ch. 2 Stage 10 3 Stars)",
+	Callback = function()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/Farm3"))()
+	end    
+})
+
+P:AddParagraph("Unlock Ch. 2 Stage 10.", "To use this function put chairman on slot1 and use ignition!")
+
 local V = Window:MakeTab({ Name = "Misc", Icon = "rbxassetid://4483345998", PremiumOnly = false })
 
 V:AddButton({
