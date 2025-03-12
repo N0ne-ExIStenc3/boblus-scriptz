@@ -1,6 +1,4 @@
 while true do
-    game:GetService("ReplicatedStorage").Events.RemoteFunction.PlayerSpawn:InvokeServer("Slot1")
-    game:GetService("ReplicatedStorage").Events.RemoteFunction.PlayerSpawn:InvokeServer("Bank")
     local args = {
         [1] = "Chapter2";
         [2] = 10;
@@ -12,5 +10,7 @@ while true do
     }
 
     game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteFunction"):WaitForChild("StartBattle"):InvokeServer(unpack(args))
+    game:GetService("ReplicatedStorage").Events.RemoteFunction.PlayerSpawn:InvokeServer("Slot1")
+    game:GetService("ReplicatedStorage").Events.RemoteFunction.PlayerSpawn:InvokeServer("Bank")
     wait(1)
 end
