@@ -380,8 +380,7 @@ OrionLib:MakeNotification({
 OrionLib:Init()
 
 if UIS.KeyboardEnabled then
-    OrionLib:Destroy()
+    pcall(function() OrionLib:Destroy() end)
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/tbb-pc"))()
-else
     return
 end
