@@ -160,9 +160,9 @@ M:CreateButton({
 })
 
 M:CreateButton({
-    Name = "Game Sub-Place Viewer",
+    Name = "Tool Dropper",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/yofriendfromschool1/Sky-Hub-Backup/main/subplaceviewer.txt"))()
+        loadstring(game:HttpGet("https://pastebin.com/raw/D3inMept"))()
     end,
 })
 
