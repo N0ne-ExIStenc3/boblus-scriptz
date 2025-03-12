@@ -359,9 +359,9 @@ UI:CreateButton({
     end
 })
 
-local S = Window:MakeTab("Scripts", 4483345998)
+local S = Window:CreateTab("Scripts", 4483345998)
 
-S:AddButton({
+S:CreateButton({
     Name = "Dex For Mobile",
     Callback = function()
         local success, result = pcall(loadstring, game:HttpGet("https://raw.githubusercontent.com/realredz/DEX-Explorer/refs/heads/main/Mobile.lua"))
@@ -373,7 +373,7 @@ S:AddButton({
     end,
 })
 
-S:AddButton({
+S:CreateButton({
     Name = "Dex For PC",
     Callback = function()
         local success, result = pcall(loadstring, game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/refs/heads/main/dex.lua"))
@@ -385,7 +385,7 @@ S:AddButton({
     end,
 })
 
-S:AddButton({
+S:CreateButton({
     Name = "Octo Spy",
     Callback = function()
         local success, result = pcall(loadstring, game:HttpGet("https://raw.githubusercontent.com/InfernusScripts/Octo-Spy/refs/heads/main/Main.lua", true))
@@ -397,7 +397,7 @@ S:AddButton({
     end,
 })
 
-S:AddButton({
+S:CreateButton({
     Name = "Anti-Afk",
     Callback = function()
         local VirtualUser = game:GetService('VirtualUser')
