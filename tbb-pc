@@ -40,14 +40,6 @@ local function Notify(T, C, D, I)
     })
 end
 
-local function RemoveOldUI()
-    for _, v in pairs(game.CoreGui:GetChildren()) do
-        if v:IsA("ScreenGui") and (v.Name == "Rayfield" or v.Name == "OrionLib") then
-            v:Destroy()
-        end
-    end
-end
-
 local Window = Rayfield:CreateWindow({
    Name = "The Battle Bricks || PC Version",
    Icon = 0,
@@ -447,5 +439,3 @@ if UIS.TouchEnabled then
 
     return
 end
-
-RemoveOldUI()
