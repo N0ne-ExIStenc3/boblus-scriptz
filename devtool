@@ -1,0 +1,313 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+UserInputService = game:GetService("UserInputService")
+local IsOnMobile = table.find({
+	Enum.Platform.IOS,
+	Enum.Platform.Android
+}, UserInputService:GetPlatform())
+
+local function Notify(T, C, D, I)
+    Rayfield:Notify({
+       Title = T or "Notification Title",
+       Content = C or "Notification Content",
+       Duration = D or 0,
+       Image = I or 4483362458,
+    })
+end
+
+local Window = Rayfield:CreateWindow({
+   Name = "Developer Tools Kit || Universal",
+   Icon = 0,
+   LoadingTitle = "Loading",
+   LoadingSubtitle = "0-o",
+   Theme = "Default",
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false,
+
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = nil,
+      FileName = "OhioTBB"
+   },
+
+   Discord = {
+      Enabled = false,
+      Invite = "noinvitelink",
+      RememberJoins = true
+   },
+
+   KeySystem = false,
+   KeySettings = {
+      Title = "Untitled",
+      Subtitle = "Key System",
+      Note = "No method of obtaining the key is provided",
+      FileName = "Key",
+      SaveKey = true,
+      GrabKeyFromSite = false,
+      Key = {"sigma"}
+   }
+})
+
+local H = Window:CreateTab("Home", 4483362458)
+H:CreateLabel("Welcome! " .. Player .. " (" .. User .. ") Thank you for using my script! :)", 4483362458, Color3.fromRGB(255, 255, 255), false)
+H:CreateParagraph({Title = "This script is open-source", Content = "Feel free to improve or take parts of the code, Credits are appreciated!"})
+H:CreateParagraph({Title = "Contact me!", Content = "DM @velocity_coding on discord to report a bugs or suggestions."})
+H:CreateParagraph({Title = "Credits!", Content = "Thanks to yofriendfromschool1 for most function."})
+
+H:CreateButton({
+    Name = "Credits",
+    Callback = function()
+        Notify("Notification!", "Thanks @yofri2ndfromschool1 on scriptblox for most function.", 3, 4483362458)
+        setclipboard("https://scriptblox.com/script/Universal-Script-Debuggers-11223")
+    end,
+})
+
+H:CreateButton({
+    Name = "Remove UI",
+    Callback = function()
+        Notify("Notification!", "Removing UI :(", 3, 4483362458)
+        wait(3.5)
+        Rayfield:Destroy()
+    end,
+})
+
+local M = Window:CreateTab("Main", 4483345998)
+
+M:CreateButton({
+    Name = "Infinite Yield",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+    end,
+})
+
+M:CreateButton({
+    Name = "Dex Explorer",
+    Callback = function()
+        if IsOnMobile then
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/yofriendfromschool1/Sky-Hub-Backup/main/Dex/Mobile%20Dex%20Explorer.txt"))()
+		else
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"))()
+		end
+    end,
+})
+
+M:CreateButton({
+    Name = "Simple Spy V3",
+    Callback = function()
+        if IsOnMobile then
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/yofriendfromschool1/Sky-Hub-Backup/main/SimpleSpyV3/mobilemain.lua"))()
+		else
+			loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/SimpleSpyV3/main.lua"))()
+		end
+    end,
+})
+
+M:CreateButton({
+    Name = "Hydroxide",
+    Callback = function()
+        local owner = "Upbolt"
+		local branch = "revision"
+		local function webImport(file)
+			return loadstring(game:HttpGetAsync(("https://raw.githubusercontent.com/%s/Hydroxide/%s/%s.lua"):format(owner, branch, file)), file .. '.lua')()
+		end
+		webImport("init")
+		webImport("ui/main")
+    end,
+})
+
+M:CreateButton({
+    Name = "Http Spy (Obfuscated)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/O-HttpSpy"))()
+    end,
+})
+
+M:CreateButton({
+    Name = "Http Spy (Un-obfuscated)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/UO-HttpSpy"))()
+    end,
+})
+
+M:CreateButton({
+    Name = "Tool Giver (Visual)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/yofriendfromschool1/Sky-Hub-Backup/main/gametoolgiver.lua"))()
+    end,
+})
+
+M:CreateButton({
+    Name = "Tool Equipper",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/yofriendfromschool1/Sky-Hub-Backup/main/gametoolequipper.lua"))()
+    end,
+})
+
+M:CreateButton({
+    Name = "UI/Frame Viewer",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/yofriendfromschool1/Sky-Hub-Backup/main/gameuigiver.lua"))()
+    end,
+})
+
+M:CreateButton({
+    Name = "Audio Logger",
+    Callback = function()
+        loadstring(game:HttpGet(('https://raw.githubusercontent.com/infyiff/backup/main/audiologger.lua'),true))()
+    end,
+})
+
+M:CreateButton({
+    Name = "Game Sub-Place Viewer",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/yofriendfromschool1/Sky-Hub-Backup/main/subplaceviewer.txt"))()
+    end,
+})
+
+M:CreateButton({
+    Name = "Game Sub-Place Teleporter",
+    Callback = function()
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Universe-viewer-10546"))()
+    end,
+})
+
+M:CreateButton({
+    Name = "Free Gamepasses (Only Works in Some Games)",
+    Callback = function()
+        loadstring(game:HttpGet("https://pastebin.com/raw/sZpgTVas"))()
+    end,
+})
+
+M:CreateButton({
+    Name = "RogueDZ",
+    Callback = function()
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-RogueDZ-27403"))()
+    end,
+})
+
+M:CreateButton({
+    Name = "FireServer Remote UI",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/yofriendfromschool1/Sky-Hub-Backup/main/gameremotefireserver.lua"))()
+    end,
+})
+
+M:CreateButton({
+    Name = "InvokeClient Remote UI",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/yofriendfromschool1/Sky-Hub-Backup/main/gameremoteinvokeclient.lua"))()
+    end,
+})
+
+M:CreateButton({
+    Name = "InvokeServer Remote UI",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/yofriendfromschool1/Sky-Hub-Backup/main/gameinvokeserver.lua"))()
+    end,
+})
+
+M:CreateButton({
+    Name = "Anti Localscript Kick",
+    Callback = function()
+        local mt = getrawmetatable(game)
+
+		setreadonly(mt, false)
+
+		local oldmt = mt.__namecall
+
+		mt.__namecall = newcclosure(function(Self, ...)
+
+
+		local method = getnamecallmethod()
+
+		if method == 'Kick' then
+			print("Forbidden Request: Kicking from localscript blocked")
+			wait(9e9)
+			return nil
+		end
+
+		return oldmt(Self, ...)
+		end)
+
+		setreadonly(mt, true)
+    end,
+})
+
+M:CreateButton({
+    Name = "Bypass most Anti-Cheat/Kicks",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ADSKerOffical/AntiCheat/main/Bypass"))()
+    end,
+})
+
+M:CreateButton({
+    Name = "Bypass Adonis and newindex",
+    Callback = function()
+        local g = getinfo or debug.getinfo
+        local d = false
+        local h = {}
+
+        local x, y
+
+        setthreadidentity(2)
+
+        for i, v in getgc(true) do
+            if typeof(v) == "table" then
+                local a = rawget(v, "Detected")
+                local b = rawget(v, "Kill")
+    
+                if typeof(a) == "function" and not x then
+                    x = a
+            
+                    local o; o = hookfunction(x, function(c, f, n)
+                        if c ~= "_" then
+                            if d then
+                                warn(`Adonis AntiCheat flagged\nMethod: {c}\nInfo: {f}`)
+                            end
+                        end
+                
+                        return true
+                    end)
+
+                    table.insert(h, x)
+                end
+
+                if rawget(v, "Variables") and rawget(v, "Process") and typeof(b) == "function" and not y then
+                    y = b
+                    local o; o = hookfunction(y, function(f)
+                        if d then
+                            warn(`Adonis AntiCheat tried to kill (fallback): {f}`)
+                        end
+                    end)
+
+                    table.insert(h, y)
+                end
+            end
+        end
+
+        local o; o = hookfunction(getrenv().debug.info, newcclosure(function(...)
+            local a, f = ...
+
+            if x and a == x then
+                if d then
+                    warn(`zins | adonis bypassed`)
+                end
+
+                return coroutine.yield(coroutine.running())
+            end
+    
+            return o(...)
+        end))
+
+        setthreadidentity(7)
+    end,
+})
+
+M:CreateButton({
+    Name = "Bypass Adonis",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Pixeluted/adoniscries/main/Source.lua"))()
+    end,
+})
+
+Notify("Notification!", "Script Loaded!", 5, 4483362458)
