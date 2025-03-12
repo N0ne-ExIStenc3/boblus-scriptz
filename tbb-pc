@@ -88,7 +88,7 @@ H:CreateButton({
     end,
 })
 
-local M = Window:CreateTab({ Name = "Main", Icon = "rbxassetid://4483345998", PremiumOnly = false })
+local M = Window:CreateTab("Main", 4483345998)
 
 M:CreateDropdown({
     Name = "Select Bank",
