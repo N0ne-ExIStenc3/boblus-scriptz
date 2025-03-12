@@ -379,6 +379,18 @@ S:AddButton({
     end
 })
 
+S:AddButton({
+    Name = "Use PC Version",
+    Callback = function()
+        local success, result = pcall(loadstring, game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/tbb-pc"))
+        if success then 
+            result() 
+        else 
+            warn("Failed to load PC Version.") 
+        end
+    end
+})
+
 OrionLib:MakeNotification({
     Name = "Script Loaded!",
     Content = "Enjoy!",
