@@ -270,8 +270,8 @@ for _, v in ipairs(game.SoundService.OST:GetChildren()) do
 end
 
 V:CreateDropdown({
-    Name = "Select Cannon",
-    Options = { ostOptions },
+    Name = "Select OST",
+    Options = ostOptions,
     CurrentOption = "Default",
     MultipleOptions = false,
     Flag = "Dropdown",
@@ -410,8 +410,7 @@ S:AddButton({
 Notify("Script Loaded!", "Enjoy!", 10, 4483362458)
 
 if UIS.TouchEnabled then
-    Rayfield:Destroy()
+    pcall(function() Rayfield:Destroy() end)
     loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/tbb"))()
-else
     return
 end
