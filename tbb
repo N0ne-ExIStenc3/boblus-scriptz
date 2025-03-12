@@ -31,7 +31,7 @@ local function SaveLoadout(B1, B2, B3, B4, B5, B6, B7, B8, A1, A2, A3, A4, A5, A
     game:GetService("ReplicatedStorage").Events.RemoteEvents.SaveLoadout:FireServer(unpack(args))
 end
 
-local Window = OrionLib:MakeWindow({ Name = "The Battle Bricks", HidePremium = false, SaveConfig = true, ConfigFolder = "OhioTBB" })
+local Window = OrionLib:MakeWindow({ Name = "The Battle Bricks || Mobile Version", HidePremium = false, SaveConfig = true, ConfigFolder = "OhioTBB" })
 
 local H = Window:MakeTab({ Name = "Home", Icon = "rbxassetid://4483345998", PremiumOnly = false })
 H:AddLabel("Welcome! " .. Player .. " (" .. User .. ") Thank you for using my script! :)")
