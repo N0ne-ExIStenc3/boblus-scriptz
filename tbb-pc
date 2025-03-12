@@ -40,6 +40,14 @@ local function Notify(T, C, D, I)
     })
 end
 
+local function RemoveOldUI()
+    for _, v in pairs(game.CoreGui:GetChildren()) do
+        if v:IsA("ScreenGui") and (v.Name == "Rayfield" or v.Name == "OrionLib") then
+            v:Destroy()
+        end
+    end
+end
+
 local Window = Rayfield:CreateWindow({
    Name = "The Battle Bricks || PC Version",
    Icon = 0,
@@ -419,7 +427,25 @@ S:CreateButton({
 Notify("Script Loaded!", "Enjoy!", 10, 4483362458)
 
 if UIS.TouchEnabled then
-    pcall(function() Rayfield:Destroy() end)
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/tbb"))()
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Script Loaded!",
+        Text = "Do you want to use the PC Version?",
+        Button1 = "Yes!",
+        Button2 = "No!",
+        Duration = 100
+    })
+
+    game:GetService("StarterGui"):SetCore("PromptSendNotificationCallback", function(buttonPressed)
+        if buttonPressed == "Yes!" then
+            pcall(function() OrionLib:Destroy() end)
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/tbb-pc"))()
+        else
+            pcall(function() Rayfield:Destroy() end)
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/tbb"))()
+        end
+    end)
+
     return
 end
+
+RemoveOldUI()
