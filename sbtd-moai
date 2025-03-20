@@ -60,19 +60,20 @@ H:CreateButton({
 })
 
 local M = Window:CreateTab("Main", 4483345998)
-M:CreateLabel("Help Room 1", "Go to '...' sub place and use this script and copy the code.")
 
 M:CreateButton({
     Name = "Get Code Room 1",
     Callback = function()
-        Sign = workspace.OtherCode.Text.SurfaceGui.TextLabel.Text
+        Sign = workspace:FindFirstChild("OtherCode").Text.SurfaceGui.TextLabel.Text
         Notify("Notification!", "Answer: ".. Sign .. "!", 5, 4483362458)
     end,
 })
 
 M:CreateButton({
-    Name = "Game Sub-Place Teleporter",
+    Name = "Sub-place Teleporter",
     Callback = function()
+        Notify("Notification!", "Go ... Place to get Room 1 Code.", 5, 4483362458)
+        Notify("Notification!", "Go MoYaiaiaiaiai Place to get 🗿", 5, 4483362458)
         loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Universe-viewer-10546"))()
     end,
 })
@@ -80,7 +81,7 @@ M:CreateButton({
 M:CreateButton({
     Name = "Help Room 2",
     Callback = function()
-        USign = workspace.USign.Text.SurfaceGui.TextLabel.Text
+        USign = workspace:FindFirstChild("USign").Text.SurfaceGui.TextLabel.Text
         Notify("Notification!", "Answer: ".. USign .. "!", 5, 4483362458)
     end,
 })
