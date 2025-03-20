@@ -1,0 +1,104 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Player = game.Players.LocalPlayer.DisplayName
+local User = game.Players.LocalPlayer.Name
+
+local function Notify(T, C, D, I)
+    Rayfield:Notify({
+       Title = T or "Notification Title",
+       Content = C or "Notification Content",
+       Duration = D or 0,
+       Image = I or 4483362458,
+    })
+end
+
+local Window = Rayfield:CreateWindow({
+   Name = "🗿 Glove Helper || SBTD",
+   Icon = 0,
+   LoadingTitle = "Loading",
+   LoadingSubtitle = "0-o",
+   Theme = "Default",
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false,
+
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = nil,
+      FileName = "SBTD"
+   },
+
+   Discord = {
+      Enabled = false,
+      Invite = "noinvitelink",
+      RememberJoins = true
+   },
+
+   KeySystem = false,
+   KeySettings = {
+      Title = "Untitled",
+      Subtitle = "Key System",
+      Note = "No method of obtaining the key is provided",
+      FileName = "Key",
+      SaveKey = true,
+      GrabKeyFromSite = false,
+      Key = {"amgis"}
+   }
+})
+
+local H = Window:CreateTab("Home", 4483362458)
+H:CreateLabel("Welcome! " .. Player .. " (" .. User .. ") Thank you for using my script! :)", 4483362458, Color3.fromRGB(255, 255, 255), false)
+H:CreateParagraph({Title = "This script is open-source", Content = "Feel free to improve or take parts of the code, Credits are appreciated!"})
+H:CreateParagraph({Title = "Contact me!", Content = "DM @velocity_coding on discord to report a bugs or suggestions."})
+
+H:CreateButton({
+    Name = "Remove UI",
+    Callback = function()
+        Notify("Notification!", "Removing UI :(", 3, 4483362458)
+        wait(3.5)
+        Rayfield:Destroy()
+    end,
+})
+
+local M = Window:CreateTab("Main", 4483345998)
+M:CreateLabel("Help Room 1", "Go to '...' sub place and use this script and copy the code.")
+
+M:CreateButton({
+    Name = "Get Code Room 1",
+    Callback = function()
+        Sign = workspace.OtherCode.Text.SurfaceGui.TextLabel.Text
+        Notify("Notification!", "Answer: ".. Sign .. "!", 5, 4483362458)
+    end,
+})
+
+M:CreateButton({
+    Name = "Game Sub-Place Teleporter",
+    Callback = function()
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Universe-viewer-10546"))()
+    end,
+})
+
+M:CreateButton({
+    Name = "Help Room 2",
+    Callback = function()
+        USign = workspace.USign.Text.SurfaceGui.TextLabel.Text
+        Notify("Notification!", "Answer: ".. USign .. "!", 5, 4483362458)
+    end,
+})
+
+M:CreateButton({
+    Name = "Help Room 3",
+    Callback = function()
+        Notify("Notification!", "Answer: 209543", 5, 4483362458)
+    end,
+})
+
+M:CreateButton({
+    Name = "Help Room 5",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/MorseSBTD"))()
+        Notify("Notification!", "Type /console in chat to get code.", 5, 4483362458)
+        Notify("Notification!", "Please be patient.", 5, 4483362458)
+    end,
+})
+
+Notify("Notification!", "Script Loaded!", 5, 4483362458)
