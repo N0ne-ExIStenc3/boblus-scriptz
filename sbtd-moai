@@ -19,7 +19,7 @@ local function binaryToText(binary)
     return text
 end
 
-local light = game.Workspace:FindFirstChild("MLight").SpotLight
+local light = workspace:FindFirstChild("MLight").SpotLight
 local lastDisabledTime = nil
 local receivedMorse = ""
 local decodedNumbers = {}
