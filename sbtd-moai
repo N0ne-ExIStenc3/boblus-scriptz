@@ -144,14 +144,17 @@ local function binaryToDecimal(binary)
 end
 
 local function decodeSign()
-    local signText = workspace:FindFirstChild("Sign6").SurfaceGui.TextBox.Text
-    local cleanedMorse = removeBackslashes(signText)
-    local hexCode = decodeMorseToHex(cleanedMorse)
-    local base64Text = hexToText(hexCode)
-    local binaryText = base64Decode(base64Text)
-    local finalCode = binaryToDecimal(binaryText)
-    
-    return finalCode
+    local signText = workspace:FindFirstChild("Sign6")
+    if signText then
+        local cleanedMorse = removeBackslashes(signText.Text.SurfaceGui.TextBox.Text)
+        local hexCode = decodeMorseToHex(cleanedMorse)
+        local base64Text = hexToText(hexCode)
+        local binaryText = base64Decode(base64Text)
+        local finalCode = binaryToDecimal(binaryText)
+        return finalCode
+    else
+        Notify("Warning", "Sign6 doesn't exist. Please check the room.", 5, 4483362458)
+    end
 end
 
 local Window = Rayfield:CreateWindow({
@@ -293,8 +296,7 @@ M:CreateButton({
 M:CreateButton({
     Name = "Help Room 6",
     Callback = function()
-        ensureObjectExists(workspace, "Sign6", function(Sign6)
-            local sign6Text = workspace.Sign6.Text.SurfaceGui.TextLabel.Text 
+        ensureObjectExists(workspace, "Sign6", function()
             local result = decodeSign()
             if result then
                 Notify("Notification!", "Answer: " .. result .. "!", 10, 4483362458)
@@ -304,6 +306,7 @@ M:CreateButton({
         end)
     end,
 })
+
 
 Notify("Notification!", "Script Loaded!", 5, 4483362458)
 return monitorLight
