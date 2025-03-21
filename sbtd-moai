@@ -11,8 +11,140 @@ local function Notify(T, C, D, I)
     })
 end
 
+local function binaryToText(binary)
+    local text = ""
+    for byte in binary:gmatch("%d%d%d%d%d%d%d%d") do
+        text = text .. string.char(tonumber(byte, 2))
+    end
+    return text
+end
+
+local light = game.Workspace.MLight.SpotLight
+local lastDisabledTime = nil
+local receivedMorse = ""
+local decodedNumbers = {}
+local signalCount = 0
+local numberCount = 0
+local decodedResult = nil
+local busy = false
+
+local morseNumbers = {
+    ["-----"] = "0", [".----"] = "1", ["..---"] = "2", ["...--"] = "3",
+    ["....-"] = "4", ["....."] = "5", ["-...."] = "6", ["--..."] = "7",
+    ["---.."] = "8", ["----."] = "9"
+}
+
+local function decodeMorse(morse)
+    return morseNumbers[morse] or "?"
+end
+
+local function monitorLight()
+    if busy then return end
+    busy = true
+
+    while true do
+        if light.Enabled then
+            lastDisabledTime = nil
+            local startTime = os.clock()
+
+            while light.Enabled do task.wait() end
+            local duration = os.clock() - startTime
+
+            receivedMorse = receivedMorse .. (duration >= 0.8 and "-" or ".")
+
+            signalCount = signalCount + 1
+
+            if signalCount >= 5 then
+                table.insert(decodedNumbers, decodeMorse(receivedMorse))
+                receivedMorse = ""
+                signalCount = 0
+                numberCount = numberCount + 1
+
+                if numberCount >= 6 then
+                    task.wait(3)
+                    decodedResult = table.concat(decodedNumbers)
+                    decodedNumbers = {}
+                    numberCount = 0
+                    busy = false
+                    return decodedResult
+                end
+            end
+        else
+            if lastDisabledTime == nil then
+                lastDisabledTime = os.clock()
+            elseif os.clock() - lastDisabledTime >= 3 then
+                receivedMorse = ""
+                decodedNumbers = {}
+                numberCount = 0
+                signalCount = 0
+            end
+        end
+        task.wait(0.1)
+    end
+end
+
+local function removeBackslashes(str)
+    return str:gsub("\\", "")
+end
+
+local morseToHex = {
+    [".-"] = "A", ["-..."] = "B", ["-.-."] = "C", ["-.."] = "D", ["."] = "E",
+    ["..-."] = "F", ["--."] = "G", ["...."] = "H", [".."] = "I", [".---"] = "J",
+    ["-.-"] = "K", [".-.."] = "L", ["--"] = "M", ["-."] = "N", ["---"] = "O",
+    [".--."] = "P", ["--.-"] = "Q", [".-."] = "R", ["..."] = "S", ["-"] = "T",
+    ["..-"] = "U", ["...-"] = "V", [".--"] = "W", ["-..-"] = "X", ["-.--"] = "Y",
+    ["--.."] = "Z", ["-----"] = "0", [".----"] = "1", ["..---"] = "2", ["...--"] = "3",
+    ["....-"] = "4", ["....."] = "5", ["-...."] = "6", ["--..."] = "7", ["---.."] = "8",
+    ["----."] = "9"
+}
+
+local function decodeMorseToHex(morse)
+    local hex = ""
+    for code in morse:gmatch("[.-]+") do
+        hex = hex .. (morseToHex[code] or "")
+    end
+    return hex
+end
+
+local function hexToText(hex)
+    local text = ""
+    for hexPair in hex:gmatch("%x%x") do
+        text = text .. string.char(tonumber(hexPair, 16))
+    end
+    return text
+end
+
+local function base64Decode(base64)
+    local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+    base64 = base64:gsub("[^" .. b .. "=]", ""):gsub("=", "")
+    
+    local binary = ""
+    for i = 1, #base64 do
+        local c = base64:sub(i, i)
+        local index = b:find(c) - 1
+        binary = binary .. string.format("%06b", index)
+    end
+    
+    return binary
+end
+
+local function binaryToDecimal(binary)
+    return tonumber(binary, 2)
+end
+
+local function decodeSign()
+    local signText = workspace:FindFirstChild("Sign6").SurfaceGui.TextBox.Text
+    local cleanedMorse = removeBackslashes(signText)
+    local hexCode = decodeMorseToHex(cleanedMorse)
+    local base64Text = hexToText(hexCode)
+    local binaryText = base64Decode(base64Text)
+    local finalCode = binaryToDecimal(binaryText)
+    
+    return finalCode
+end
+
 local Window = Rayfield:CreateWindow({
-   Name = "🗿 Glove Helper || SBTD",
+   Name = "🗿 Helper || SBTD",
    Icon = 0,
    LoadingTitle = "Loading",
    LoadingSubtitle = "0-o",
@@ -59,47 +191,94 @@ H:CreateButton({
     end,
 })
 
-local M = Window:CreateTab("Main", 4483345998)
+local M = Window:CreateTab("🗿", 4483345998)
 
 M:CreateButton({
-    Name = "Get Code Room 1",
+    Name = "Game Sub-Place Teleporter",
     Callback = function()
-        Sign = workspace:FindFirstChild("OtherCode").Text.SurfaceGui.TextLabel.Text
-        Notify("Notification!", "Answer: ".. Sign .. "!", 5, 4483362458)
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Universe-viewer-10546"))()
     end,
 })
 
 M:CreateButton({
-    Name = "Sub-place Teleporter",
+    Name = "Teleport to '...' or Elude Maze",
     Callback = function()
-        Notify("Notification!", "Go ... Place to get Room 1 Code.", 5, 4483362458)
-        Notify("Notification!", "Go MoYaiaiaiaiai Place to get 🗿", 5, 4483362458)
-        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Universe-viewer-10546"))()
+        game:GetService("TeleportService"):Teleport(15884068862, game.Players.LocalPlayer)
+    end,
+})
+
+M:CreateButton({
+    Name = "Teleport to MoYaiaiai",
+    Callback = function()
+        game:GetService("TeleportService"):Teleport(89174185986190, game.Players.LocalPlayer)
+    end,
+})
+
+M:CreateButton({
+    Name = "Get Code Room 1 (More up-to-date)",
+    Callback = function()
+        Sign = workspace:FindFirstChild("OtherCode").Text.SurfaceGui.TextLabel.Text
+        Notify("Notification!", "Code: ".. Sign .. "!", 5, 4483362458)
+    end,
+})
+
+M:CreateButton({
+    Name = "Fast Help Room 1 (Not up-to-date)",
+    Callback = function()
+        Notify("Notification!", "Answer: 972669!", 5, 4483362458)
     end,
 })
 
 M:CreateButton({
     Name = "Help Room 2",
     Callback = function()
-        USign = workspace:FindFirstChild("USign").Text.SurfaceGui.TextLabel.Text
-        Notify("Notification!", "Answer: ".. USign .. "!", 5, 4483362458)
+        local USign = workspace:FindFirstChild("USign").Text.SurfaceGui.TextLabel.Text
+        Notify("Notification!", "Answer: ".. USign .. "!", 10, 4483362458)
     end,
 })
 
 M:CreateButton({
-    Name = "Help Room 3",
+    Name = "Help Room 3 (May not up-to-date)",
     Callback = function()
-        Notify("Notification!", "Answer: 209543", 5, 4483362458)
+        Notify("Notification!", "Answer: 209543!", 10, 4483362458)
+    end,
+})
+
+M:CreateButton({
+    Name = "Help Room 4",
+    Callback = function()
+        local R4 = workspace:FindFirstChild("Sign4").Text.SurfaceGui.TextLabel.Text
+        local R4D = binaryToText(R4)
+        Notify("Notification!", "Answer: " .. R4D .. "!", 10, 4483362458)
     end,
 })
 
 M:CreateButton({
     Name = "Help Room 5",
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/MorseSBTD"))()
-        Notify("Notification!", "Type /console in chat to get code.", 5, 4483362458)
         Notify("Notification!", "Please be patient.", 5, 4483362458)
+        local result = monitorLight()
+        if result then
+            Notify("Notification!", "Answer: " .. result .. "!", 10, 4483362458)
+        end
+    end,
+})
+
+M:CreateButton({
+    Name = "Go-to Room 6",
+    Callback = function()
+        game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(229, 377, -207))
+        Notify("Notification!", "Teleported!", 5, 4483362458)
+    end,
+})
+
+M:CreateButton({
+    Name = "Help Room 6",
+    Callback = function()
+        local result = decodeSign()
+        Notify("Notification!", "Answer: " .. result .. "!", 10, 4483362458)
     end,
 })
 
 Notify("Notification!", "Script Loaded!", 5, 4483362458)
+return monitorLight
