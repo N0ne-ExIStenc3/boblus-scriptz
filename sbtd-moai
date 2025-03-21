@@ -45,7 +45,7 @@ local function ensureObjectExists(parent, objectName, callback)
             callback(object)
         end)
     else
-        Notify("Warning", "Part or Model '" .. objectName .. "' doesn't exist. Make sure you're in the right place or opened the next room.", 5, 4483362458)
+        Notify("Warning", "Part or Model '" .. objectName .. "' doesn't exist. Make sure you're in the right place or opened the room.", 5, 4483362458)
     end
 end
 
@@ -293,8 +293,17 @@ M:CreateButton({
 M:CreateButton({
     Name = "Help Room 6",
     Callback = function()
-        local result = decodeSign()
-        Notify("Notification!", "Answer: " .. result .. "!", 10, 4483362458)
+        ensureObjectExists(workspace, "Sign6", function(Sign6)
+            local sign6Text = workspace.Sign6.Text.SurfaceGui.TextLabel.Text 
+            local result = decodeSign()
+            if result then
+                Notify("Notification!", "Answer: " .. result .. "!", 10, 4483362458)
+            else
+                Notify("Warning!", "Failed to decode the sign text.", 5, 4483362458)
+            end
+        else
+            Notify("Warning!", "Sign6 doesn't exist. Make sure you're in the right place or have opened the room.", 5, 4483362458)
+        end)
     end,
 })
 
