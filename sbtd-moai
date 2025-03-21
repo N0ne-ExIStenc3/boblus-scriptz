@@ -94,69 +94,6 @@ local function monitorLight()
     end
 end
 
-local function removeBackslashes(str)
-    return str:gsub("\\", "")
-end
-
-local morseToHex = {
-    [".-"] = "A", ["-..."] = "B", ["-.-."] = "C", ["-.."] = "D", ["."] = "E",
-    ["..-."] = "F", ["--."] = "G", ["...."] = "H", [".."] = "I", [".---"] = "J",
-    ["-.-"] = "K", [".-.."] = "L", ["--"] = "M", ["-."] = "N", ["---"] = "O",
-    [".--."] = "P", ["--.-"] = "Q", [".-."] = "R", ["..."] = "S", ["-"] = "T",
-    ["..-"] = "U", ["...-"] = "V", [".--"] = "W", ["-..-"] = "X", ["-.--"] = "Y",
-    ["--.."] = "Z", ["-----"] = "0", [".----"] = "1", ["..---"] = "2", ["...--"] = "3",
-    ["....-"] = "4", ["....."] = "5", ["-...."] = "6", ["--..."] = "7", ["---.."] = "8",
-    ["----."] = "9"
-}
-
-local function decodeMorseToHex(morse)
-    local hex = ""
-    for code in morse:gmatch("[.-]+") do
-        hex = hex .. (morseToHex[code] or "")
-    end
-    return hex
-end
-
-local function hexToText(hex)
-    local text = ""
-    for hexPair in hex:gmatch("%x%x") do
-        text = text .. string.char(tonumber(hexPair, 16))
-    end
-    return text
-end
-
-local function base64Decode(base64)
-    local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-    base64 = base64:gsub("[^" .. b .. "=]", ""):gsub("=", "")
-    
-    local binary = ""
-    for i = 1, #base64 do
-        local c = base64:sub(i, i)
-        local index = b:find(c) - 1
-        binary = binary .. string.format("%06b", index)
-    end
-    
-    return binary
-end
-
-local function binaryToDecimal(binary)
-    return tonumber(binary, 2)
-end
-
-local function decodeSign()
-    local signText = workspace:FindFirstChild("Sign6")
-    if signText then
-        local cleanedMorse = removeBackslashes(signText.Text.SurfaceGui.TextBox.Text)
-        local hexCode = decodeMorseToHex(cleanedMorse)
-        local base64Text = hexToText(hexCode)
-        local binaryText = base64Decode(base64Text)
-        local finalCode = binaryToDecimal(binaryText)
-        return finalCode
-    else
-        Notify("Warning", "Sign6 doesn't exist. Please check the room.", 5, 4483362458)
-    end
-end
-
 local Window = Rayfield:CreateWindow({
    Name = "Glove Helper || SBTD",
    Icon = 0,
@@ -274,7 +211,7 @@ M:CreateButton({
 })
 
 M:CreateButton({
-    Name = "Help Room 5",
+    Name = "Help Room 5 (Can make a mistake)",
     Callback = function()
         Notify("Notification!", "Please be patient.", 5, 4483362458)
         light = workspace:FindFirstChild("MLight").SpotLight
@@ -296,14 +233,7 @@ M:CreateButton({
 M:CreateButton({
     Name = "Help Room 6",
     Callback = function()
-        ensureObjectExists(workspace, "Sign6", function()
-            local result = decodeSign()
-            if result then
-                Notify("Notification!", "Answer: " .. result .. "!", 10, 4483362458)
-            else
-                Notify("Warning!", "Failed to decode the sign text.", 5, 4483362458)
-            end
-        end)
+        Notify("Notification!", "Not Working! cuz idk and can't fixed 😭", 5, 4483362458)
     end,
 })
 
