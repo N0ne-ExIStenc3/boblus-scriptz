@@ -19,7 +19,7 @@ local function binaryToText(binary)
     return text
 end
 
-local light = workspace:FindFirstChild("MLight").SpotLight
+local light
 local lastDisabledTime = nil
 local receivedMorse = ""
 local decodedNumbers = {}
@@ -36,6 +36,17 @@ local morseNumbers = {
 
 local function decodeMorse(morse)
     return morseNumbers[morse] or "?"
+end
+
+local function ensureObjectExists(parent, objectName, callback)
+    local object = parent:FindFirstChild(objectName)
+    if object then
+        pcall(function()
+            callback(object)
+        end)
+    else
+        Notify("Warning", "Part or Model '" .. objectName .. "' doesn't exist. Make sure you're in the right place or opened the next room.", 5, 4483362458)
+    end
 end
 
 local function monitorLight()
@@ -217,8 +228,10 @@ M:CreateButton({
 M:CreateButton({
     Name = "Get Code Room 1 (More up-to-date)",
     Callback = function()
-        Sign = workspace:FindFirstChild("OtherCode").Text.SurfaceGui.TextLabel.Text
-        Notify("Notification!", "Code: ".. Sign .. "!", 5, 4483362458)
+        ensureObjectExists(workspace, "OtherCode", function(OtherCode)
+            local Sign = workspace.OtherCode.Text.SurfaceGui.TextLabel.Text
+            Notify("Notification!", "Code: ".. Sign .. "!", 5, 4483362458)
+        end)
     end,
 })
 
@@ -232,8 +245,10 @@ M:CreateButton({
 M:CreateButton({
     Name = "Help Room 2",
     Callback = function()
-        local USign = workspace:FindFirstChild("USign").Text.SurfaceGui.TextLabel.Text
-        Notify("Notification!", "Answer: ".. USign .. "!", 10, 4483362458)
+        ensureObjectExists(workspace, "USign", function(USign)
+            local USignText = workspace.USign.Text.SurfaceGui.TextLabel.Text
+            Notify("Notification!", "Answer: ".. USignText .. "!", 10, 4483362458)
+        end)
     end,
 })
 
@@ -247,9 +262,11 @@ M:CreateButton({
 M:CreateButton({
     Name = "Help Room 4",
     Callback = function()
-        local R4 = workspace:FindFirstChild("Sign4").Text.SurfaceGui.TextLabel.Text
-        local R4D = binaryToText(R4)
-        Notify("Notification!", "Answer: " .. R4D .. "!", 10, 4483362458)
+        ensureObjectExists(workspace, "Sign4", function(Sign4)
+            local R4 = workspace.Sign4.Text.SurfaceGui.TextLabel.Text
+            local R4D = binaryToText(R4)
+            Notify("Notification!", "Answer: " .. R4D .. "!", 10, 4483362458)
+        end)
     end,
 })
 
@@ -257,6 +274,7 @@ M:CreateButton({
     Name = "Help Room 5",
     Callback = function()
         Notify("Notification!", "Please be patient.", 5, 4483362458)
+        light = workspace:FindFirstChild("MLight").SpotLight
         local result = monitorLight()
         if result then
             Notify("Notification!", "Answer: " .. result .. "!", 10, 4483362458)
