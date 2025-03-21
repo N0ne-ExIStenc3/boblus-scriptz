@@ -301,8 +301,6 @@ M:CreateButton({
             else
                 Notify("Warning!", "Failed to decode the sign text.", 5, 4483362458)
             end
-        else
-            Notify("Warning!", "Sign6 doesn't exist. Make sure you're in the right place or have opened the room.", 5, 4483362458)
         end)
     end,
 })
