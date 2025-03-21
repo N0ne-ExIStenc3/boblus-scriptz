@@ -144,7 +144,7 @@ local function decodeSign()
 end
 
 local Window = Rayfield:CreateWindow({
-   Name = "🗿 Helper || SBTD",
+   Name = "Glove Helper || SBTD",
    Icon = 0,
    LoadingTitle = "Loading",
    LoadingSubtitle = "0-o",
@@ -191,7 +191,7 @@ H:CreateButton({
     end,
 })
 
-local M = Window:CreateTab("🗿", 4483345998)
+local M = Window:CreateTab("Moai", 4483345998)
 
 M:CreateButton({
     Name = "Game Sub-Place Teleporter",
