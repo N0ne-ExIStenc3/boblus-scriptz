@@ -89,6 +89,14 @@ H:CreateButton({
     end,
 })
 
+H:CreateButton({
+    Name = "Copy Discord Server Link",
+    Callback = function()
+        Notify("Notification!", "Copied Discord Server Link!", 3, 4483362458)
+        setclipboard("https://discord.gg/y2jW3MUxdx")
+    end,
+})
+
 local M = Window:CreateTab("Main", 4483345998)
 
 M:CreateDropdown({
@@ -418,25 +426,3 @@ S:CreateButton({
 })
 
 Notify("Script Loaded!", "Enjoy!", 10, 4483362458)
-
-if UIS.TouchEnabled then
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "Script Loaded!",
-        Text = "Do you want to use the PC Version?",
-        Button1 = "Yes!",
-        Button2 = "No!",
-        Duration = 100
-    })
-
-    game:GetService("StarterGui"):SetCore("PromptSendNotificationCallback", function(buttonPressed)
-        if buttonPressed == "Yes!" then
-            pcall(function() OrionLib:Destroy() end)
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/tbb-pc"))()
-        else
-            pcall(function() Rayfield:Destroy() end)
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/tbb"))()
-        end
-    end)
-
-    return
-end
