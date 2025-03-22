@@ -61,6 +61,14 @@ MiscTab:CreateButton({
    end,
 })
 
+H:CreateButton({
+    Name = "Copy Discord Server Link",
+    Callback = function()
+        Notify("Notification!", "Copied Discord Server Link!", 3, 4483362458)
+        setclipboard("https://discord.gg/y2jW3MUxdx")
+    end,
+})
+
 local EnemiesTab = Window:CreateTab("Enemies", 4483362458)
 
 EnemiesTab:CreateButton({
