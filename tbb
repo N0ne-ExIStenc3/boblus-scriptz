@@ -1,5 +1,5 @@
 local UIS = game:GetService("UserInputService")
-local OrionLib = loadstring(game:HttpGet(("https://raw.githubusercontent.com/Giangplay/Script/main/Orion_Library_PE_V2.lua")))()
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Player = game.Players.LocalPlayer.DisplayName
 local User = game.Players.LocalPlayer.Name
 local Slot = game.Players.LocalPlayer.PlayerData.Loadout.Slots
@@ -31,40 +31,97 @@ local function SaveLoadout(B1, B2, B3, B4, B5, B6, B7, B8, A1, A2, A3, A4, A5, A
     game:GetService("ReplicatedStorage").Events.RemoteEvents.SaveLoadout:FireServer(unpack(args))
 end
 
-local Window = OrionLib:MakeWindow({ Name = "The Battle Bricks", HidePremium = false, SaveConfig = true, ConfigFolder = "OhioTBB" })
+local function Notify(T, C, D, I)
+    Rayfield:Notify({
+       Title = T or "Notification Title",
+       Content = C or "Notification Content",
+       Duration = D or 0,
+       Image = I or 4483362458,
+    })
+end
 
-local H = Window:MakeTab({ Name = "Home", Icon = "rbxassetid://4483345998", PremiumOnly = false })
-H:AddLabel("Welcome! " .. Player .. " (" .. User .. ") Thank you for using my script! :)")
-H:AddParagraph("This script is open-source", "Feel free to improve or take parts of the code, Credits are appreciated!")
-H:AddParagraph("Update 8!", "Add Checking Platform to Fixing Can't Run Script.")
-H:AddParagraph("Contact me!", "DM @velocity_coding on discord to report a bugs or suggestions.")
+local Window = Rayfield:CreateWindow({
+   Name = "The Battle Bricks || PC Version",
+   Icon = 0,
+   LoadingTitle = "Loading",
+   LoadingSubtitle = "0-o",
+   Theme = "Default",
 
-H:AddButton({
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false,
+
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = nil,
+      FileName = "OhioTBB"
+   },
+
+   Discord = {
+      Enabled = false,
+      Invite = "noinvitelink",
+      RememberJoins = true
+   },
+
+   KeySystem = false,
+   KeySettings = {
+      Title = "Untitled",
+      Subtitle = "Key System",
+      Note = "No method of obtaining the key is provided",
+      FileName = "Key",
+      SaveKey = true,
+      GrabKeyFromSite = false,
+      Key = {"sigma"}
+   }
+})
+
+local H = Window:CreateTab("Home", 4483362458)
+H:CreateLabel("Welcome! " .. Player .. " (" .. User .. ") Thank you for using my script! :)", 4483362458, Color3.fromRGB(255, 255, 255), false)
+H:CreateParagraph({Title = "This script is open-source", Content = "Feel free to improve or take parts of the code, Credits are appreciated!"})
+H:CreateParagraph({Title = "Update 8!", Content = "Add Checking Platform to Fixing Can't Run Script."})
+H:CreateParagraph({Title = "Contact me!", Content = "DM @velocity_coding on discord to report a bugs or suggestions."})
+
+H:CreateButton({
     Name = "Remove UI",
     Callback = function()
-        OrionLib:MakeNotification({ Name = "Notification!", Content = "Removing The UI... :(", Image = "rbxassetid://4483345998", Time = 3 })
+        Notify("Notification!", "Removing UI :(", 3, 4483362458)
         wait(3.5)
-        OrionLib:Destroy()
+        Rayfield:Destroy()
+    end,
+})
+
+H:CreateButton({
+    Name = "Copy Discord Server Link",
+    Callback = function()
+        Notify("Notification!", "Copied Discord Server Link!", 3, 4483362458)
+        setclipboard("https://discord.gg/y2jW3MUxdx")
+    end,
+})
+
+local M = Window:CreateTab("Main", 4483345998)
+
+M:CreateDropdown({
+    Name = "Select Bank",
+    Options = { "Default", "Investment", "Powerhouse", "Detonator", "Ignition" },
+    CurrentOption = "Default",
+    MultipleOptions = false,
+    Flag = "Dropdown",
+    Callback = function(Value)
+        selectedBank = Value[1]
     end
 })
 
-local M = Window:MakeTab({ Name = "Main", Icon = "rbxassetid://4483345998", PremiumOnly = false })
-
-M:AddDropdown({
-    Name = "Select Bank",
-    Default = "Default",
-    Options = { "Default", "Investment", "Powerhouse", "Detonator", "Ignition" },
-    Callback = function(Value) selectedBank = Value end
-})
-
-M:AddDropdown({
+M:CreateDropdown({
     Name = "Select Cannon",
-    Default = "Default",
     Options = { "Default", "Gatling", "Slammer", "Recoil", "Treasure", "Absorber", "Liberty" },
-    Callback = function(Value) selectedCannon = Value end
+    CurrentOption = "Default",
+    MultipleOptions = false,
+    Flag = "Dropdown2",
+    Callback = function(Value)
+        selectedCannon = Value[1]
+    end
 })
 
-M:AddButton({
+M:CreateButton({
     Name = "Change Bank/Cannon",
     Callback = function()
         local bankMap = { Default = 1, Investment = 2, Powerhouse = 3, Detonator = 4, Ignition = 5 }
@@ -80,14 +137,14 @@ M:AddButton({
             Slot.Slot5.Value, Slot.Slot6.Value, Slot.Slot7.Value, Slot.Slot8.Value,
             cannonID, bankID
         )
-    end
+    end,
 })
 
-local W = Window:MakeTab({ Name = "Spam", Icon = "rbxassetid://4483345998", PremiumOnly = false })
+local W = Window:CreateTab("Spam", 4483362458)
 
-W:AddParagraph("To make auto farm stage.","Use Octo-Spy, Enter Stage, Look for StartBattle, RemoteEvents\nClick Copy Auto Stage Set-up, and paste StartBattle RemoteEvents following the guide!")
+W:CreateParagraph({Title = "To make auto farm stage.", Content = "Use Octo-Spy, Enter Stage, Look for StartBattle, RemoteEvents\nClick Copy Auto Stage Set-up, and paste StartBattle RemoteEvents following the guide!"})
 
-W:AddButton({
+W:CreateButton({
     Name = "Copy Auto Stage Set-up",
     Callback = function()
         local scriptToCopy = [[
@@ -109,24 +166,14 @@ end
         end)
 
         if success then
-            OrionLib:MakeNotification({
-                Name = "Set-up Copied!",
-                Content = "Check clipboard. If there's none, your executor doesn't support clipboard functions.",
-                Image = "rbxassetid://4483345998",
-                Time = 5
-            })
+            Notify("Set-up Copied!", "Check clipboard. If there's none, your executor doesn't support clipboard functions.", 5, 4483345998)
         else
-            OrionLib:MakeNotification({
-                Name = "Error!",
-                Content = "Your executor does not support clipboard copying.",
-                Image = "rbxassetid://4483345998",
-                Time = 5
-            })
+            Notify("Error!", "Your executor does not support clipboard copying.", 5, 4483345998)
         end
-    end
+    end,
 })
 
-W:AddButton({
+W:CreateButton({
     Name = "Copy Auto Spam Set-up",
     Callback = function()
         local scriptToCopy = [[       
@@ -149,55 +196,45 @@ end
         end)
 
         if success then
-            OrionLib:MakeNotification({
-                Name = "Set-up Copied!",
-                Content = "Check clipboard. If there's none, your executor doesn't support clipboard functions.",
-                Image = "rbxassetid://4483345998",
-                Time = 5
-            })
+            Notify("Set-up Copied!", "Check clipboard. If there's none, your executor doesn't support clipboard functions.", 5, 4483345998)
         else
-            OrionLib:MakeNotification({
-                Name = "Error!",
-                Content = "Your executor does not support clipboard copying.",
-                Image = "rbxassetid://4483345998",
-                Time = 5
-            })
+            Notify("Error!", "Your executor does not support clipboard copying.", 5, 4483345998)
         end
-    end
+    end,
 })
 
-local P = Window:MakeTab({ Name = "Auto Farm", Icon = "rbxassetid://4483345998", PremiumOnly = false })
+local P = Window:CreateTab("Auto Farm", 4483345998)
 
-P:AddButton({
+P:CreateButton({
 	Name = "Slow Auto Farm XP (Ch. 1 Stage 11)",
 	Callback = function()
 		loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/Farm1"))()
-	end    
+	end,
 })
 
-P:AddParagraph("Unlock Ch. 1 Stage 11.", "To use this function put good dps on slot1!")
+P:CreateParagraph({Title = "Unlock Ch. 1 Stage 11.", Content = "To use this function put good dps on slot1!"})
 
-P:AddButton({
+P:CreateButton({
 	Name = "Fast Auto Farm XP (Ch. 2 Stage 10)",
 	Callback = function()
 		loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/Farm2"))()
-	end    
+	end,
 })
 
-P:AddParagraph("Unlock Ch. 2 Stage 10.", "To use this function put dual speed coils on slot1!")
+P:CreateParagraph({Title = "Unlock Ch. 2 Stage 10.", Content = "To use this function put dual speed coils on slot1!"})
 
-P:AddButton({
+P:CreateButton({
 	Name = "Fastest Auto Farm XP (Ch. 2 Stage 10 3 Stars)",
 	Callback = function()
 		loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/Farm3"))()
-	end    
+	end,
 })
 
-P:AddParagraph("Unlock Ch. 2 Stage 10.", "To use this function put chairman on slot1 and use ignition!")
+P:CreateParagraph({Title = "Unlock Ch. 2 Stage 10 3 Stars.", Content = "To use this function put chairman on slot1 and use ignition!"})
 
-local V = Window:MakeTab({ Name = "Misc", Icon = "rbxassetid://4483345998", PremiumOnly = false })
+local V = Window:CreateTab("Misc", 4483345998)
 
-V:AddButton({
+V:CreateButton({
     Name = "Change to Casual Difficulty",
     Callback = function()
         local args = {
@@ -206,10 +243,10 @@ V:AddButton({
             }
         }
         game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteEvents"):WaitForChild("ChangeSettings"):FireServer(unpack(args))
-    end
+    end,
 })
 
-V:AddButton({
+V:CreateButton({
     Name = "Change to Normal Difficulty",
     Callback = function()
         local args = {
@@ -218,10 +255,10 @@ V:AddButton({
             }
         }
         game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteEvents"):WaitForChild("ChangeSettings"):FireServer(unpack(args))
-    end
+    end,
 })
 
-V:AddButton({
+V:CreateButton({
     Name = "Change to Tumore Difficulty",
     Callback = function()
         local args = {
@@ -231,10 +268,10 @@ V:AddButton({
             }
         }
         game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteEvents"):WaitForChild("ChangeSettings"):FireServer(unpack(args))
-    end
+    end,
 })
 
-V:AddButton({
+V:CreateButton({
     Name = "Remove Possible Anti-Cheat Cutscenes",
     Callback = function()
         game:GetService("ReplicatedStorage").Cutscenes.TheresNothing:Destroy()
@@ -242,7 +279,7 @@ V:AddButton({
         game:GetService("ReplicatedStorage").Cutscenes.RaigQuit:Destroy()
         game:GetService("ReplicatedStorage").Cutscenes.ChangeYourTime:Destroy()
         -- YouCheated possibly on ServerStorage
-    end
+    end,
 })
 
 local ostOptions = {}
@@ -250,72 +287,80 @@ for _, v in ipairs(game.SoundService.OST:GetChildren()) do
     table.insert(ostOptions, v.Name)
 end
 
-V:AddDropdown({
+V:CreateDropdown({
     Name = "Select OST",
-    Default = "N/A",
     Options = ostOptions,
-    Callback = function(Value) selectedMusic = Value end
+    CurrentOption = "Default",
+    MultipleOptions = false,
+    Flag = "Dropdown",
+    Callback = function(Value)
+        selectedMusic = Value[1]
+    end
 })
 
-V:AddButton({
+V:CreateButton({
     Name = "Change OST",
     Callback = function()
         game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("BindableEvents"):WaitForChild("MusicChange"):Fire(selectedMusic)
-    end
+    end,
 })
 
-local UI = Window:MakeTab({ Name = "GUI", Icon = "rbxassetid://4483345998", PremiumOnly = false })
+local UI = Window:CreateTab("GUI", 4483345998)
 
-UI:AddDropdown({
+UI:CreateDropdown({
     Name = "Select Menu",
-    Default = "N/A",
-    Options = { "Lobby", "Almanac", "Difficulty", "MainMenu", "MainChapter", "SubChapter", "Shop", "Loadout", "StageSelect" },
+    Options = { "Lobby", "Almanac", "Difficulty", "MainMenu", "MainChapter", "SubChapter", "Shop", "Loadout" },
+    CurrentOption = "Default",
+    MultipleOptions = false,
+    Flag = "Dropdown",
     Callback = function(Value)
-        selectedMenu = Value
+        selectedMenu = Value[1]
     end
 })
 
-UI:AddButton({
+UI:CreateButton({
     Name = "Change Menu",
     Callback = function()
         local event = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("BindableEvents"):WaitForChild("MenuSelect")
         event:Fire(selectedMenu)
-    end
+    end,
 })
 
-UI:AddButton({
+UI:CreateButton({
     Name = "Clock Quiz",
     Callback = function()
         local C = game:GetService("ReplicatedStorage").Cutscenes.ClockQuiz:Clone()
         C.Parent = game.Players.LocalPlayer.PlayerGui
-    end
+    end,
 })
 
-UI:AddButton({
+UI:CreateButton({
     Name = "Chronos Intro",
     Callback = function()
         local C = game:GetService("ReplicatedStorage").Cutscenes.ChronosIntro:Clone()
         C.Parent = game.Players.LocalPlayer.PlayerGui
-    end
+    end,
 })
 
-UI:AddButton({
+UI:CreateButton({
     Name = "Make Transition",
     Callback = function()
         game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("BindableEvents"):WaitForChild("Transition"):Fire()
-    end
+    end,
 })
 
-UI:AddTextbox({
-    Name = "Cam Shake Value",
-    Default = "10",
-    TextDisappear = false,
-    Callback = function(Value)
-        CamShakeIntensity = tonumber(Value) or 10 -- Ensure it's a number; default to 10 if invalid
-    end	  
+UI:CreateInput({
+   Name = "Cam Shake Value",
+   CurrentValue = "10",
+   PlaceholderText = "",
+   RemoveTextAfterFocusLost = false,
+   Flag = "Input",
+   Callback = function(Text)
+       CamShakeIntensity = tonumber(Text) or 10
+   end,
 })
 
-UI:AddButton({
+UI:CreateButton({
     Name = "Trigger Cam Shake",
     Callback = function()
         local camShakeEvent = game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("BindableEvents"):WaitForChild("CamShake")
@@ -323,9 +368,9 @@ UI:AddButton({
     end
 })
 
-local S = Window:MakeTab({ Name = "Scripts", Icon = "rbxassetid://4483345998", PremiumOnly = false })
+local S = Window:CreateTab("Scripts", 4483345998)
 
-S:AddButton({
+S:CreateButton({
     Name = "Dex For Mobile",
     Callback = function()
         local success, result = pcall(loadstring, game:HttpGet("https://raw.githubusercontent.com/realredz/DEX-Explorer/refs/heads/main/Mobile.lua"))
@@ -334,10 +379,10 @@ S:AddButton({
         else 
             warn("Failed to load Dex for Mobile.") 
         end
-    end
+    end,
 })
 
-S:AddButton({
+S:CreateButton({
     Name = "Dex For PC",
     Callback = function()
         local success, result = pcall(loadstring, game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/refs/heads/main/dex.lua"))
@@ -346,10 +391,10 @@ S:AddButton({
         else 
             warn("Failed to load Dex for PC.") 
         end
-    end
+    end,
 })
 
-S:AddButton({
+S:CreateButton({
     Name = "Octo Spy",
     Callback = function()
         local success, result = pcall(loadstring, game:HttpGet("https://raw.githubusercontent.com/InfernusScripts/Octo-Spy/refs/heads/main/Main.lua", true))
@@ -358,10 +403,10 @@ S:AddButton({
         else 
             warn("Failed to load Octo Spy.") 
         end
-    end
+    end,
 })
 
-S:AddButton({
+S:CreateButton({
     Name = "Anti-Afk",
     Callback = function()
         local VirtualUser = game:GetService('VirtualUser')
@@ -377,32 +422,7 @@ S:AddButton({
             Button1 = "Thanks",
             Duration = 5
         })
-    end
+    end,
 })
 
-S:AddButton({
-    Name = "Use PC Version",
-    Callback = function()
-        local success, result = pcall(loadstring, game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/tbb-pc"))
-        if success then 
-            result() 
-        else 
-            warn("Failed to load PC Version.") 
-        end
-    end
-})
-
-OrionLib:MakeNotification({
-    Name = "Script Loaded!",
-    Content = "Enjoy!",
-    Image = "rbxassetid://4483345998",
-    Time = 10
-})
-
-OrionLib:Init()
-
-if UIS.KeyboardEnabled then
-    pcall(function() OrionLib:Destroy() end)
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/tbb-pc"))()
-    return
-end
+Notify("Script Loaded!", "Enjoy!", 10, 4483362458)
