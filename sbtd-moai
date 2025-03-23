@@ -178,7 +178,7 @@ M:CreateButton({
     Callback = function()
         ensureObjectExists(workspace, "OtherCode", function(OtherCode)
             local Sign = workspace.OtherCode.Text.SurfaceGui.TextLabel.Text
-            Notify("Notification!", "Code: ".. Sign .. "!", 5, 4483362458)
+            Notify("Notification!", "Code: ".. Sign .. "!", 30, 4483362458)
         end)
     end,
 })
@@ -186,7 +186,7 @@ M:CreateButton({
 M:CreateButton({
     Name = "Fast Help Room 1 (Not up-to-date)",
     Callback = function()
-        Notify("Notification!", "Answer: 972669!", 5, 4483362458)
+        Notify("Notification!", "Answer: 972669!", 30, 4483362458)
     end,
 })
 
@@ -195,7 +195,7 @@ M:CreateButton({
     Callback = function()
         ensureObjectExists(workspace, "USign", function(USign)
             local USignText = workspace.USign.Text.SurfaceGui.TextLabel.Text
-            Notify("Notification!", "Answer: ".. USignText .. "!", 10, 4483362458)
+            Notify("Notification!", "Answer: ".. USignText .. "!", 30, 4483362458)
         end)
     end,
 })
@@ -203,7 +203,7 @@ M:CreateButton({
 M:CreateButton({
     Name = "Help Room 3 (May not up-to-date)",
     Callback = function()
-        Notify("Notification!", "Answer: 209543!", 10, 4483362458)
+        Notify("Notification!", "Answer: 209543!", 30, 4483362458)
     end,
 })
 
@@ -213,7 +213,7 @@ M:CreateButton({
         ensureObjectExists(workspace, "Sign4", function(Sign4)
             local R4 = workspace.Sign4.Text.SurfaceGui.TextLabel.Text
             local R4D = binaryToText(R4)
-            Notify("Notification!", "Answer: " .. R4D .. "!", 10, 4483362458)
+            Notify("Notification!", "Answer: " .. R4D .. "!", 30, 4483362458)
         end)
     end,
 })
@@ -225,7 +225,7 @@ M:CreateButton({
         light = workspace:FindFirstChild("MLight").SpotLight
         local result = monitorLight()
         if result then
-            Notify("Notification!", "Answer: " .. result .. "!", 10, 4483362458)
+            Notify("Notification!", "Answer: " .. result .. "!", 30, 4483362458)
         end
     end,
 })
@@ -241,7 +241,7 @@ M:CreateButton({
 M:CreateButton({
     Name = "Help Room 6",
     Callback = function()
-        Notify("Notification!", "Not Working! cuz idk and can't fixed 😭", 5, 4483362458)
+        Notify("Notification!", "Not Working! can't fixed 😭", 5, 4483362458)
     end,
 })
 
