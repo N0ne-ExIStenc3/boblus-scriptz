@@ -61,7 +61,7 @@ MiscTab:CreateButton({
    end,
 })
 
-H:CreateButton({
+MiscTab:CreateButton({
     Name = "Copy Discord Server Link",
     Callback = function()
         Notify("Notification!", "Copied Discord Server Link!", 3, 4483362458)
