@@ -76,7 +76,7 @@ end
 
 local obby
 
-M:CreateDropdown({
+local UserO = M:CreateDropdown({
    Name = "Select User Obby",
    Options = playerNames,
    CurrentOption = "None",
@@ -98,19 +98,21 @@ M:CreateDropdown({
    end,
 })
 
+local playerNames = {}
+
+local function updatePlayerNames()
+    playerNames = {}
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        table.insert(playerNames, player.Name)
+    end
+end
+
 M:CreateButton({
-   Name = "Refresh Selected Obby",
+   Name = "Refresh User Obby",
    Callback = function()
-       if obby then
-           local Parent = obby.Parent
-           local Clone = obby:Clone()
-           obby:Destroy()
-           Clone.Parent = Parent
-           obby = workspace.Obbies:FindFirstChild(plrname) -- Re-select obby after refreshing
-           Notify("Notification!", "Refreshed " .. plrname .. "'s obby!", 3, 4483362458)
-       else
-           Notify("Warning!", "No obby selected!", 3, 4483362458)
-       end
+       updatePlayerNames()
+       UserO:Refresh(playerNames)
+       Notify("Notification!", "User Obby list refreshed!", 3, 4483362458)
    end,
 })
 
