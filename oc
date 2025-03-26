@@ -231,9 +231,10 @@ M:CreateInput({
    Flag = "Input8",
    Callback = function(Text)
        if obby then
-           local idLabel = obby:FindFirstChild("IdGui", true)
-           if idLabel and idLabel:IsA("TextLabel") then
+           local idLabel = obby.GetObby.NamePlate.Star.IdGui:FindFirstChild("TextLabel")
+           if idLabel:IsA("TextLabel") then
                idLabel.Text = "ObbyID: " .. Text
+               obby:FindFirstChild("IdVAL").Value = Text
                Notify("Notification!", "Obby ID changed!", 3, 4483362458)
            else
                Notify("Warning!", "Obby ID text not found!", 3, 4483362458)
@@ -250,9 +251,10 @@ M:CreateInput({
    Flag = "Input9",
    Callback = function(Text)
        if obby then
-           local creatorLabel = obby:FindFirstChild("NamePlate", true)
-           if creatorLabel and creatorLabel:IsA("TextLabel") then
+           local creatorLabel = obby.GetObby.NamePlate.Main.SurfaceGui:FindFirstChild("TextLabel")
+           if creatorLabel:IsA("TextLabel") then
                creatorLabel.Text = Text
+               obby.OwnerNameVAL.Value = Text
                Notify("Notification!", "Obby Creator changed!", 3, 4483362458)
            else
                Notify("Warning!", "Obby Creator text not found!", 3, 4483362458)
@@ -269,9 +271,10 @@ M:CreateInput({
    Flag = "Input10",
    Callback = function(Text)
        if obby then
-           local obbyNameLabel = obby:FindFirstChild("NameBit", true)
-           if obbyNameLabel and obbyNameLabel:IsA("TextLabel") then
+           local obbyNameLabel = obby.GetObby.Ratings.NameBit.SurfaceGui:FindFirstChild("TextLabel")
+           if obbyNameLabel:IsA("TextLabel") then
                obbyNameLabel.Text = Text
+               obby.ObbyNameVAL.Value = Text
                Notify("Notification!", "Obby Name changed!", 3, 4483362458)
            else
                Notify("Warning!", "Obby Name text not found!", 3, 4483362458)
@@ -288,8 +291,8 @@ M:CreateInput({
    Flag = "Input11",
    Callback = function(Text)
        if obby then
-           local likeLabel = obby:FindFirstChild("Likes", true)
-           if likeLabel and likeLabel:IsA("TextLabel") then
+           local likeLabel = obby.GetObby.Ratings.Likes.SurfaceGui:FindFirstChild("TextLabel")
+           if likeLabel:IsA("TextLabel") then
                likeLabel.Text = Text
                Notify("Notification!", "Like count changed!", 3, 4483362458)
            else
