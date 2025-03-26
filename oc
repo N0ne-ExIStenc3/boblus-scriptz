@@ -12,7 +12,7 @@ local function Notify(T, C, D, I)
 end
 
 local Window = Rayfield:CreateWindow({
-   Name = "Obby Creator",
+   Name = "Obby Creator: Troll Gui",
    Icon = 0,
    LoadingTitle = "Loading",
    LoadingSubtitle = "0-o",
