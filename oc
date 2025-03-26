@@ -98,6 +98,22 @@ M:CreateDropdown({
    end,
 })
 
+M:CreateButton({
+   Name = "Refresh Selected Obby",
+   Callback = function()
+       if obby then
+           local Parent = obby.Parent
+           local Clone = obby:Clone()
+           obby:Destroy()
+           Clone.Parent = Parent
+           obby = workspace.Obbies:FindFirstChild(plrname) -- Re-select obby after refreshing
+           Notify("Notification!", "Refreshed " .. plrname .. "'s obby!", 3, 4483362458)
+       else
+           Notify("Warning!", "No obby selected!", 3, 4483362458)
+       end
+   end
+})
+
 M:CreateDropdown({
    Name = "Skybox Changer (Visual)",
    Options = {"Alien Sunset","Approaching Neptune","Black","Blue Skies","Dark Night","Deep Blue Sky","Deep Space Purple","Default","Dreamy Ocean","Dusty Clouds","Green","Light Night Sky","Mountain Night","Mountain","Open Ocean","Orange Sky","Orbital Scenery","Purple Nebula","Rainy Day","Retro","Rocky Volcanoes","Setting Sun","Stormy Days","The Sky","White"},
@@ -208,50 +224,79 @@ M:CreateInput({
 })
 
 M:CreateInput({
-   Name = "Change Obby ID (Visual) [Only work on selected obby]",
-   CurrentValue = "",
-   PlaceholderText = "(only you can see it)",
-   RemoveTextAfterFocusLost = false,
+   Name = "Change Obby ID (Visual)",
+   PlaceholderText = "Enter new Obby ID",
    Flag = "Input8",
    Callback = function(Text)
-       safeSet({"IdVAL"}, Text, "Obby ID property not found!")
-       safeSet({"GetObby", "NamePlate", "Star", "IdGui", "TextLabel"}, "ObbyID: " .. Text, "Obby ID label not found!", true)
-   end,
+       if obby then
+           local idLabel = obby:FindFirstChild("IdGui", true)
+           if idLabel and idLabel:IsA("TextLabel") then
+               idLabel.Text = "ObbyID: " .. Text
+               Notify("Notification!", "Obby ID changed!", 3, 4483362458)
+           else
+               Notify("Warning!", "Obby ID text not found!", 3, 4483362458)
+           end
+       else
+           Notify("Warning!", "No obby selected!", 3, 4483362458)
+       end
+   end
 })
 
 M:CreateInput({
-   Name = "Change Creator of Obby Name (Visual) [Only work on selected obby]",
-   CurrentValue = "",
-   PlaceholderText = "(only you can see it)",
-   RemoveTextAfterFocusLost = false,
+   Name = "Change Obby Creator (Visual)",
+   PlaceholderText = "Enter new creator name",
    Flag = "Input9",
    Callback = function(Text)
-       safeSet({"OwnerNameVAL"}, Text, "Creator name property not found!")
-       safeSet({"GetObby", "NamePlate", "Main", "SurfaceGui", "TextLabel"}, Text, "SurfaceGui for Creator Name not found!")
-   end,
+       if obby then
+           local creatorLabel = obby:FindFirstChild("NamePlate", true)
+           if creatorLabel and creatorLabel:IsA("TextLabel") then
+               creatorLabel.Text = Text
+               Notify("Notification!", "Obby Creator changed!", 3, 4483362458)
+           else
+               Notify("Warning!", "Obby Creator text not found!", 3, 4483362458)
+           end
+       else
+           Notify("Warning!", "No obby selected!", 3, 4483362458)
+       end
+   end
 })
 
 M:CreateInput({
-   Name = "Change Obby Name (Visual) [Only work on selected obby]",
-   CurrentValue = "",
-   PlaceholderText = "(only you can see it)",
-   RemoveTextAfterFocusLost = false,
+   Name = "Change Obby Name (Visual)",
+   PlaceholderText = "Enter new obby name",
    Flag = "Input10",
    Callback = function(Text)
-       safeSet({"ObbyNameVAL"}, Text, "Obby name property not found!")
-       safeSet({"GetObby", "Ratings", "NameBit", "SurfaceGui", "TextLabel"}, Text, "SurfaceGui for Obby Name not found!")
-   end,
+       if obby then
+           local obbyNameLabel = obby:FindFirstChild("NameBit", true)
+           if obbyNameLabel and obbyNameLabel:IsA("TextLabel") then
+               obbyNameLabel.Text = Text
+               Notify("Notification!", "Obby Name changed!", 3, 4483362458)
+           else
+               Notify("Warning!", "Obby Name text not found!", 3, 4483362458)
+           end
+       else
+           Notify("Warning!", "No obby selected!", 3, 4483362458)
+       end
+   end
 })
 
 M:CreateInput({
-   Name = "Spoof Like Count (Visual) [Only work on selected obby]",
-   CurrentValue = "",
-   PlaceholderText = "(only you can see it)",
-   RemoveTextAfterFocusLost = false,
+   Name = "Spoof Like Count (Visual)",
+   PlaceholderText = "Enter like count",
    Flag = "Input11",
    Callback = function(Text)
-       safeSet({"GetObby", "Ratings", "Likes", "SurfaceGui", "TextLabel"}, Text, "Likes property not found!")
-   end,
+       if obby then
+           local likeLabel = obby:FindFirstChild("Likes", true)
+           if likeLabel and likeLabel:IsA("TextLabel") then
+               likeLabel.Text = Text
+               Notify("Notification!", "Like count changed!", 3, 4483362458)
+           else
+               Notify("Warning!", "Like count text not found!", 3, 4483362458)
+           end
+       else
+           Notify("Warning!", "No obby selected!", 3, 4483362458)
+       end
+   end
 })
 
 M:CreateToggle({
