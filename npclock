@@ -1,18 +1,21 @@
 local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-player.CameraMode = Enum.CameraMode.Classic
-local runService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
+local player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
- StarterGui:SetCore("SendNotification", {
+
+StarterGui:SetCore("SendNotification", {
     Title = "Script Loaded!",
     Text = "Support Dead Rails Only.",
     Duration = 3
 })
- local screenGui = Instance.new("ScreenGui")
+
+local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "NPC_Lock_GUI"
 screenGui.Parent = game:GetService("CoreGui")
- local button = Instance.new("TextButton")
+
+local button = Instance.new("TextButton")
 button.Name = "NPC Lock: ON/OFF"
 button.Size = UDim2.new(0, 150, 0, 50)
 button.Position = UDim2.new(0.5, -75, 0.9, -25)
@@ -21,43 +24,52 @@ button.TextColor3 = Color3.new(1, 1, 1)
 button.Text = "NPC Lock: OFF"
 button.Font = Enum.Font.Fantasy
 button.TextScaled = true
-button.TextSize = 20
 button.Parent = screenGui
- local uicorner = Instance.new("UICorner")
+
+local uicorner = Instance.new("UICorner")
 uicorner.CornerRadius = UDim.new(0, 12)
 uicorner.Parent = button
- local dragging = false
-local dragInput, dragStart, startPos
- local function update(input)
+
+local dragging
+local dragStart
+local startPos
+local dragInput
+
+local function update(input)
     local delta = input.Position - dragStart
-    button.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    button.Position = UDim2.new(0, startPos.X.Offset + delta.X, 0, startPos.Y.Offset + delta.Y)
 end
- button.InputBegan:Connect(function(input)
+
+button.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
         dragStart = input.Position
         startPos = button.Position
-         input.Changed:Connect(function()
+        input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
             end
         end)
     end
 end)
- button.InputChanged:Connect(function(input)
+
+button.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
         dragInput = input
     end
 end)
- game:GetService("UserInputService").InputChanged:Connect(function(input)
+
+UserInputService.InputChanged:Connect(function(input)
     if dragging and input == dragInput then
         update(input)
     end
 end)
- local npcLock = false
-local lastTarget = nil
+
+local npcLock = false
+local lastTarget
 local toggleLoop
- local function addPlayerHighlight()
+
+local function addPlayerHighlight()
     if player.Character then
         local highlight = player.Character:FindFirstChild("PlayerHighlightESP")
         if not highlight then
@@ -71,15 +83,18 @@ local toggleLoop
         end
     end
 end
- local function removePlayerHighlight()
+
+local function removePlayerHighlight()
     if player.Character and player.Character:FindFirstChild("PlayerHighlightESP") then
         player.Character.PlayerHighlightESP:Destroy()
     end
 end
- local function getClosestNPC()
-    local closestNPC = nil
+
+local function getClosestNPC()
+    local closestNPC
     local closestDistance = math.huge
-     for _, object in ipairs(workspace:GetDescendants()) do
+
+    for _, object in ipairs(workspace:GetDescendants()) do
         if object:IsA("Model") then
             local humanoid = object:FindFirstChild("Humanoid") or object:FindFirstChildWhichIsA("Humanoid")
             local hrp = object:FindFirstChild("HumanoidRootPart") or object.PrimaryPart
@@ -101,13 +116,15 @@ end
             end
         end
     end
-     return closestNPC
+    return closestNPC
 end
- button.MouseButton1Click:Connect(function()
+
+button.MouseButton1Click:Connect(function()
     npcLock = not npcLock
+    button.Text = npcLock and "NPC Lock: ON" or "NPC Lock: OFF"
+
     if npcLock then
-        button.Text = "NPC Lock: ON"
-        toggleLoop = runService.RenderStepped:Connect(function()
+        toggleLoop = RunService.RenderStepped:Connect(function()
             local npc = getClosestNPC()
             if npc and npc:FindFirstChild("Humanoid") then
                 local npcHumanoid = npc:FindFirstChild("Humanoid")
@@ -136,7 +153,6 @@ end
             end
         end)
     else
-        button.Text = "NPC Lock: OFF"
         if toggleLoop then
             toggleLoop:Disconnect()
             toggleLoop = nil
