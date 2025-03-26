@@ -1,0 +1,74 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+local NotificationHolder = loadstring(game:HttpGet("https://raw.githubusercontent.com/BocusLuke/UI/main/STX/Module.Lua"))()
+local Notification = loadstring(game:HttpGet("https://raw.githubusercontent.com/BocusLuke/UI/main/STX/Client.Lua"))()
+
+Notification:Notify(
+    {Title = "Script Loaded!", Description = "Support Dead Rails Only."},
+    {OutlineColor = Color3.fromRGB(80, 80, 80), Time = 3, Type = "default"},
+    {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(255, 84, 84)}
+)
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "Delete_Part_GUI"
+screenGui.Parent = game:GetService("CoreGui")
+
+local button = Instance.new("TextButton")
+button.Name = "Delete Mode"
+button.Size = UDim2.new(0, 150, 0, 50)
+button.Position = UDim2.new(0.5, -75, 0.9, -25)
+button.BackgroundColor3 = Color3.new(0, 0, 0)
+button.TextColor3 = Color3.new(1, 1, 1)
+button.Text = "Delete Mode: OFF"
+button.Font = Enum.Font.Fantasy
+button.TextScaled = true
+button.Parent = screenGui
+
+local uicorner = Instance.new("UICorner")
+uicorner.CornerRadius = UDim.new(0, 12)
+uicorner.Parent = button
+
+local deleteMode = false
+local selectedPart = nil
+
+button.MouseButton1Click:Connect(function()
+    deleteMode = not deleteMode
+    button.Text = deleteMode and "Delete Mode: ON" or "Delete Mode: OFF"
+end)
+
+local function onObjectClick(target)
+    if deleteMode and target:IsA("BasePart") then
+        selectedPart = target
+        Notification:Notify(
+            {Title = "Confirm Deletion", Description = "Are you sure you want to delete this part?"},
+            {OutlineColor = Color3.fromRGB(80, 80, 80), Time = 5, Type = "option"},
+            {Image = "http://www.roblox.com/asset/?id=6023426923", ImageColor = Color3.fromRGB(255, 84, 84), Callback = function(State)
+                if State and selectedPart then
+                    selectedPart:Destroy()
+                    selectedPart = nil
+                end
+            end}
+        )
+    end
+end
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        local mouseLocation = UserInputService:GetMouseLocation()
+        local rayOrigin = camera.CFrame.Position
+        local rayDirection = (camera:ViewportPointToRay(mouseLocation.X, mouseLocation.Y)).Direction * 1000
+        local raycastParams = RaycastParams.new()
+        raycastParams.FilterDescendantsInstances = {player.Character}
+        raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+
+        local result = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+        if result then
+            onObjectClick(result.Instance)
+        end
+    end
+end)
