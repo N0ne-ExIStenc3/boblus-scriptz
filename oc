@@ -358,7 +358,7 @@ M:CreateToggle({
     end,
 })
 
-local S = Window:CreateTab("Main (Visual)", 4483345998)
+local S = Window:CreateTab("Scripts", 4483345998)
 
 S:CreateButton({
     Name = "Infinite Yield",
