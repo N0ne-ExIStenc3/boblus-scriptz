@@ -1,10 +1,6 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Player = game.Players.LocalPlayer.DisplayName
 local User = game.Players.LocalPlayer.Name
-pn = None
-pv = 0
-en = None
-ev = 0
 
 local function Notify(T, C, D, I)
     Rayfield:Notify({
@@ -83,11 +79,16 @@ local obby
 M:CreateDropdown({
    Name = "Select User Obby",
    Options = playerNames,
-   CurrentOption = {"None"},
+   CurrentOption = "None",
    MultipleOptions = false,
    Flag = "Dropdown1",
    Callback = function(Selected)
-       plrname = Selected
+       if type(Selected) == "table" then
+           plrname = Selected[1]
+       else
+           plrname = Selected
+       end
+
        obby = workspace.Obbies:FindFirstChild(plrname)
        if obby then
            Notify("Notification!", "Selected " .. plrname .. "'s obby!", 3, 4483362458)
@@ -241,7 +242,7 @@ M:CreateToggle({
    end,
 })
 
-M:CreateButton({
+M:CreateToggle({
    Name = "Give Teleport Tools",
    Callback = function()
        mouse = game.Players.LocalPlayer:GetMouse()
@@ -280,204 +281,6 @@ M:CreateToggle({
             Notify("Warning!", "Obby area not found!", 5, 4483362458)
         end
     end,
-})
-
-local O = Window:CreateTab("Obby", 4483362458)
-local selectedPartPath = nil
-local highlight = nil
-local selecting = false
-
-local function getPath(instance)
-    local path = instance.Name
-    while instance.Parent and instance.Parent ~= game do
-        instance = instance.Parent
-        path = instance.Name .. "." .. path
-    end
-    return path
-end
-
-local function highlightPart(part)
-    if highlight then highlight:Destroy() end -- Remove old highlight
-    highlight = Instance.new("SelectionBox")
-    highlight.Adornee = part
-    highlight.LineThickness = 0.05
-    highlight.Color3 = Color3.fromRGB(255, 0, 0)
-    highlight.Parent = part
-end
-
-local function onPartClicked(part)
-    if selecting and obby and part:IsDescendantOf(obby) then
-        selectedPartPath = getPath(part)
-        highlightPart(part)
-        Notify("Notification!", "Selected part: " .. selectedPartPath, 3, 4483362458)
-    end
-end
-
-local function enablePartSelection(enabled)
-    selecting = enabled
-    if not enabled and highlight then
-        highlight:Destroy()
-        highlight = nil
-    end
-end
-
-O:CreateToggle({
-    Name = "Select Part (Click on a part in the obby)",
-    CurrentValue = false,
-    Flag = "ToggleSelectPart",
-    Callback = function(Val)
-        enablePartSelection(Val)
-        if Val then
-            Notify("Notification!", "Click on a part in the selected obby!", 3, 4483362458)
-        else
-            Notify("Notification!", "Part selection disabled!", 3, 4483362458)
-        end
-    end,
-})
-
-O:CreateInput({
-   Name = "Properties",
-   CurrentValue = "",
-   PlaceholderText = "Properties Name",
-   RemoveTextAfterFocusLost = false,
-   Flag = "Input12",
-   Callback = function(Text)
-       pn = Text
-   end,
-})
-
-O:CreateInput({
-   Name = "Properties Value",
-   CurrentValue = "",
-   PlaceholderText = "number/true or false",
-   RemoveTextAfterFocusLost = false,
-   Flag = "Input13",
-   Callback = function(Text)
-       pv = Text
-   end,
-})
-
-O:CreateInput({
-   Name = "Effects",
-   CurrentValue = "",
-   PlaceholderText = "Effect Name",
-   RemoveTextAfterFocusLost = false,
-   Flag = "Input14",
-   Callback = function(Text)
-       en = Text
-   end,
-})
-
-O:CreateInput({
-   Name = "Effects Value",
-   CurrentValue = "",
-   PlaceholderText = "number/true or false",
-   RemoveTextAfterFocusLost = false,
-   Flag = "Input15",
-   Callback = function(Text)
-       ev = Text
-   end,
-})
-
-game:GetService("UserInputService").InputBegan:Connect(function(input, gpe)
-    if gpe then return end
-    if selecting and input.UserInputType == Enum.UserInputType.MouseButton1 then
-        local mouse = game.Players.LocalPlayer:GetMouse()
-        local target = mouse.Target
-        if target then
-            onPartClicked(target)
-        end
-    end
-end)
-
-local Remote = game.ReplicatedStorage.Events:FindFirstChild("PaintObject")
-local function changePartProperty(property, value)
-    if selectedPartPath then
-        Remote:FireServer(selectedPartPath, property, value)
-        Notify("Notification!", "Changed " .. property .. " to " .. tostring(value), 3, 4483362458)
-    else
-        Notify("Warning!", "No part selected!", 3, 4483362458)
-    end
-end
-
-local Remote1 = game.ReplicatedStorage.Events:FindFirstChild("EffectObject")
-local function changePartEffects(property, value)
-    if selectedPartPath then
-        Remote1:FireServer(selectedPartPath, property, value)
-        Notify("Notification!", "Changed " .. property .. " to " .. tostring(value), 3, 4483362458)
-    else
-        Notify("Warning!", "No part selected!", 3, 4483362458)
-    end
-end
-
-local function changePartSize(newSize)
-    if selectedPartPath and obby and obby:FindFirstChild("Area") then
-        local area = obby.Area
-        local scaledSize = Vector3.new(
-            area.Size.X * newSize.X,
-            area.Size.Y * newSize.Y,
-            area.Size.Z * newSize.Z
-        )
-
-        Remote:FireServer(selectedPartPath, "Size", scaledSize)
-        Notify("Notification!", "Changed size to: " .. tostring(scaledSize), 3, 4483362458)
-    else
-        Notify("Warning!", "No part selected or Obby area not found!", 3, 4483362458)
-    end
-end
-
-local function changePartPosition(newPos)
-    if selectedPartPath and obby and obby:FindFirstChild("Area") then
-        local area = obby.Area
-        local relativePos = Vector3.new(
-            area.Position.X + newPos.X * area.Size.X,
-            area.Position.Y + newPos.Y * area.Size.Y,
-            area.Position.Z + newPos.Z * area.Size.Z
-        )
-
-        Remote:FireServer(selectedPartPath, "Position", relativePos)
-        Notify("Notification!", "Changed position to: " .. tostring(relativePos), 3, 4483362458)
-    else
-        Notify("Warning!", "No part selected or Obby area not found!", 3, 4483362458)
-    end
-end
-
-O:CreateInput({
-   Name = "Size (Relative to Area)",
-   CurrentValue = "",
-   PlaceholderText = "X, Y, Z (e.g., 0.5, 0.5, 0.5)",
-   RemoveTextAfterFocusLost = false,
-   Flag = "Input16",
-   Callback = function(Text)
-       local values = {}
-       for num in Text:gmatch("[^,]+") do
-           table.insert(values, tonumber(num))
-       end
-       if #values == 3 then
-           changePartSize(Vector3.new(values[1], values[2], values[3]))
-       else
-           Notify("Warning!", "Invalid format! Use: X, Y, Z", 3, 4483362458)
-       end
-   end,
-})
-
-O:CreateInput({
-   Name = "Position (Relative to Area)",
-   CurrentValue = "",
-   PlaceholderText = "X, Y, Z (e.g., 0.5, 0.5, 0.5)",
-   RemoveTextAfterFocusLost = false,
-   Flag = "Input17",
-   Callback = function(Text)
-       local values = {}
-       for num in Text:gmatch("[^,]+") do
-           table.insert(values, tonumber(num))
-       end
-       if #values == 3 then
-           changePartPosition(Vector3.new(values[1], values[2], values[3]))
-       else
-           Notify("Warning!", "Invalid format! Use: X, Y, Z", 3, 4483362458)
-       end
-   end,
 })
 
 Notify("Notification!", "Script Loaded!", 5, 4483362458)
