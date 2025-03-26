@@ -317,7 +317,6 @@ M:CreateToggle({
    end,
 })
 
-
 M:CreateButton({
    Name = "Give Teleport Tools",
    Callback = function()
@@ -356,6 +355,29 @@ M:CreateToggle({
         else
             Notify("Warning!", "Obby area not found!", 5, 4483362458)
         end
+    end,
+})
+
+local S = Window:CreateTab("Main (Visual)", 4483345998)
+
+S:CreateButton({
+    Name = "Infinite Yield",
+    Callback = function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/edgeiy/infiniteyield/master/source'))()
+    end,
+})
+
+S:CreateButton({
+    Name = "Nameless Admin",
+    Callback = function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/FilteringEnabled/NamelessAdmin/main/Source'))()
+    end,
+})
+
+S:CreateButton({
+    Name = "Infinite Yield",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/anim"))()
     end,
 })
 
