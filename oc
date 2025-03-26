@@ -118,7 +118,7 @@ M:CreateButton({
 
 M:CreateDropdown({
    Name = "Skybox Changer (Visual)",
-   Options = {"Alien Sunset","Approaching Neptune","Black","Blue Skies","Dark Night","Deep Blue Sky","Deep Space Purple","Default","Dreamy Ocean","Dusty Clouds","Green","Light Night Sky","Mountain Night","Mountain","Open Ocean","Orange Sky","Orbital Scenery","Purple Nebula","Rainy Day","Retro","Rocky Volcanoes","Setting Sun","Stormy Days","The Sky","White"},
+   Options = {"Alien Sunset","Approaching Neptune","Black","Blue Skies","Dark Night","Deep Blue Sky","Deep Space Purple","Default","Dreamy Ocean","Dusty Clouds","Green","Light Night Sky","Mountain Night","Mountains","Open Ocean","Orange Sky","Orbital Scenery","Purple Nebula","Rainy Day","Retro","Rocky Volcanoes","Setting Sun","Stormy Days","The Sky","White"},
    CurrentOption = {"Default"},
    MultipleOptions = false,
    Flag = "Dropdown2",
@@ -358,7 +358,7 @@ M:CreateToggle({
     end,
 })
 
-local S = Window:CreateTab("Scripts", 4483345998)
+local S = Window:CreateTab("Main (Visual)", 4483345998)
 
 S:CreateButton({
     Name = "Infinite Yield",
