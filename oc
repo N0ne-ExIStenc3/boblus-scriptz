@@ -375,7 +375,7 @@ S:CreateButton({
 })
 
 S:CreateButton({
-    Name = "Infinite Yield",
+    Name = "Animation Gui",
     Callback = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/anim"))()
     end,
