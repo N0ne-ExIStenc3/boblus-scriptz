@@ -105,9 +105,30 @@ M:CreateDropdown({
    MultipleOptions = false,
    Flag = "Dropdown2",
    Callback = function(Options)
-       obby.Skybox.Value = Options
+       if obby and obby:FindFirstChild("Skybox") then
+           obby.Skybox.Value = Options[1]
+       else
+           Notify("Warning!", "Obby or Skybox property not found!", 3, 4483362458)
+       end
    end,
 })
+
+local function safeSet(propertyPath, value, message)
+    if obby then
+        local property = obby
+        for _, part in ipairs(propertyPath) do
+            if property:FindFirstChild(part) then
+                property = property[part]
+            else
+                Notify("Warning!", message, 3, 4483362458)
+                return
+            end
+        end
+        property.Value = value
+    else
+        Notify("Warning!", "No obby selected!", 3, 4483362458)
+    end
+end
 
 M:CreateInput({
    Name = "Jump Limit (FE) [Only work on selected obby]",
@@ -116,7 +137,7 @@ M:CreateInput({
    RemoveTextAfterFocusLost = false,
    Flag = "Input1",
    Callback = function(Text)
-       obby.JumpLimit.Value = Text
+       safeSet({"JumpLimit"}, Text, "Jump Limit property not found!")
    end,
 })
 
@@ -127,7 +148,7 @@ M:CreateInput({
    RemoveTextAfterFocusLost = false,
    Flag = "Input2",
    Callback = function(Text)
-       obby.MusicId.Value = Text
+       safeSet({"MusicId"}, Text, "Music ID property not found!")
    end,
 })
 
@@ -138,7 +159,7 @@ M:CreateInput({
    RemoveTextAfterFocusLost = false,
    Flag = "Input3",
    Callback = function(Text)
-       obby.Avatar.Walk.Value = Text
+       safeSet({"Avatar", "Walk"}, Text, "Walkspeed property not found!")
    end,
 })
 
@@ -149,7 +170,7 @@ M:CreateInput({
    RemoveTextAfterFocusLost = false,
    Flag = "Input4",
    Callback = function(Text)
-       obby.Avatar.Jump.Value = Text
+       safeSet({"Avatar", "Jump"}, Text, "Jump Power property not found!")
    end,
 })
 
@@ -160,7 +181,7 @@ M:CreateInput({
    RemoveTextAfterFocusLost = false,
    Flag = "Input5",
    Callback = function(Text)
-       obby.GravityVal.Value = Text
+       safeSet({"GravityVal"}, Text, "Gravity property not found!")
    end,
 })
 
@@ -171,7 +192,7 @@ M:CreateInput({
    RemoveTextAfterFocusLost = false,
    Flag = "Input6",
    Callback = function(Text)
-       obby.Camera.MinZoom.Value = Text
+       safeSet({"Camera", "MinZoom"}, Text, "Minimum Zoom property not found!")
    end,
 })
 
@@ -182,7 +203,7 @@ M:CreateInput({
    RemoveTextAfterFocusLost = false,
    Flag = "Input7",
    Callback = function(Text)
-       obby.Camera.MaxZoom.Value = Text
+       safeSet({"Camera", "MaxZoom"}, Text, "Maximum Zoom property not found!")
    end,
 })
 
@@ -193,8 +214,8 @@ M:CreateInput({
    RemoveTextAfterFocusLost = false,
    Flag = "Input8",
    Callback = function(Text)
-       obby.IdVAL.Value = Text
-       obby.GetObby.NamePlate.Star.IdGui.TextLabel.Text = "ObbyID: " .. Text""
+       safeSet({"IdVAL"}, Text, "Obby ID property not found!")
+       safeSet({"GetObby", "NamePlate", "Star", "IdGui", "TextLabel"}, "ObbyID: " .. Text, "Obby ID label not found!", true)
    end,
 })
 
@@ -205,8 +226,8 @@ M:CreateInput({
    RemoveTextAfterFocusLost = false,
    Flag = "Input9",
    Callback = function(Text)
-       obby.OwnerNameVAL.Value = Text
-       obby.GetObby.NamePlate.Main.SurfaceGui.TextLabel.Text = Text
+       safeSet({"OwnerNameVAL"}, Text, "Creator name property not found!")
+       safeSet({"GetObby", "NamePlate", "Main", "SurfaceGui", "TextLabel"}, Text, "SurfaceGui for Creator Name not found!")
    end,
 })
 
@@ -217,8 +238,8 @@ M:CreateInput({
    RemoveTextAfterFocusLost = false,
    Flag = "Input10",
    Callback = function(Text)
-       obby.ObbyNameVAL.Value = Text
-       obby.GetObby.Ratings.NameBit.SurfaceGui.TextLabel.Text = Text
+       safeSet({"ObbyNameVAL"}, Text, "Obby name property not found!")
+       safeSet({"GetObby", "Ratings", "NameBit", "SurfaceGui", "TextLabel"}, Text, "SurfaceGui for Obby Name not found!")
    end,
 })
 
@@ -229,20 +250,25 @@ M:CreateInput({
    RemoveTextAfterFocusLost = false,
    Flag = "Input11",
    Callback = function(Text)
-       obby.GetObby.Ratings.Likes.SurfaceGui.TextLabel.Text = Text
+       safeSet({"GetObby", "Ratings", "Likes", "SurfaceGui", "TextLabel"}, Text, "Likes property not found!")
    end,
 })
 
 M:CreateToggle({
-   Name = "Give Fly Tool [Only work on selected obby]",
+   Name = "Give Fly Tool [Only works on selected obby]",
    CurrentValue = false,
    Flag = "Toggle1",
    Callback = function(Val)
-       obby.Options.Fly.Value = Val
+       if obby and obby:FindFirstChild("Options") and obby.Options:FindFirstChild("Fly") then
+           obby.Options.Fly.Value = Val
+       else
+           Notify("Warning!", "Fly tool option not found in the selected obby!", 3, 4483362458)
+       end
    end,
 })
 
-M:CreateToggle({
+
+M:CreateButton({
    Name = "Give Teleport Tools",
    Callback = function()
        mouse = game.Players.LocalPlayer:GetMouse()
