@@ -1,0 +1,210 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
+
+local player = Players.LocalPlayer
+local thirdPersonEnabled = false
+local deleteModeEnabled = false
+local Connections = {}
+local HighlightEntities = {}
+
+local function Notify(T, C, D, I)
+    Rayfield:Notify({
+       Title = T or "Notification",
+       Content = C or "Notification Content",
+       Duration = D or 3,
+       Image = I or 4483362458,
+    })
+end
+
+local function setThirdPersonMode(enable)
+    player.CameraMode = enable and Enum.CameraMode.Classic or Enum.CameraMode.LockFirstPerson
+end
+
+local function toggleThirdPerson()
+    thirdPersonEnabled = not thirdPersonEnabled
+    setThirdPersonMode(thirdPersonEnabled)
+end
+
+local function RemoveAllHighlights()
+    for _, highlight in ipairs(HighlightEntities) do
+        if highlight and highlight.Parent then
+            highlight:Destroy()
+        end
+    end
+    HighlightEntities = {}
+end
+
+local function AddHighlightToEntity(entity, fillColor, outlineColor, fillTransparency, outlineTransparency)
+    if entity:IsA("Model") and not entity:FindFirstChild("Highlight") then
+        if entity.Parent and entity.Parent.Name == "SafeZones" then return end
+
+        local newHighlight = Instance.new("Highlight")
+        newHighlight.Parent = entity
+        newHighlight.Adornee = entity
+        newHighlight.FillColor = fillColor or Color3.fromRGB(255, 255, 255)
+        newHighlight.OutlineColor = outlineColor or Color3.fromRGB(255, 255, 255)
+        newHighlight.FillTransparency = fillTransparency or 0.3
+        newHighlight.OutlineTransparency = outlineTransparency or 0.6
+
+        table.insert(HighlightEntities, newHighlight)
+    end
+end
+
+local function getEntityColor(entity)
+    local entityName = string.lower(entity.Name)
+
+    local entityColors = {
+        ["revolveroutlaw"] = {255, 0, 0},
+        ["shotgunoutlaw"] = {255, 0, 0},
+        ["wolf"] = {255, 0, 0},
+        ["runner"] = {0, 0, 255},
+        ["horse"] = {0, 255, 0},
+        ["walker"] = {0, 255, 0},
+        ["vampire"] = {128, 0, 128},
+        ["werewolf"] = {169, 169, 169},
+    }
+
+    for key, color in pairs(entityColors) do
+        if entityName:find(key) then
+            return Color3.fromRGB(color[1], color[2], color[3]), Color3.fromRGB(255, 255, 255), 0.3, 0.6
+        end
+    end
+    return nil
+end
+
+local Window = Rayfield:CreateWindow({
+   Name = "Dead Rails",
+   Icon = 0,
+   LoadingTitle = "Loading",
+   LoadingSubtitle = "0-o",
+   Theme = "Default",
+   ConfigurationSaving = {Enabled = true, FileName = "OC"},
+   Discord = {Enabled = false, Invite = "noinvitelink", RememberJoins = true},
+   KeySystem = false
+})
+
+local M = Window:CreateTab("Main", 4483345998)
+
+M:CreateToggle({
+    Name = "Toggle Third Person",
+    CurrentValue = false,
+    Flag = "Toggle1",
+    Callback = function(Val)
+        thirdPersonEnabled = Val
+        setThirdPersonMode(thirdPersonEnabled)
+    end,
+})
+
+M:CreateKeybind({
+    Name = "Toggle Third Person Keybind",
+    CurrentKeybind = "T",
+    HoldToInteract = false,
+    Flag = "Keybind1",
+    Callback = function()
+        toggleThirdPerson()
+    end,
+})
+
+M:CreateToggle({
+   Name = "ESP Entity and Items",
+   CurrentValue = false,
+   Flag = "Toggle3",
+   Callback = function(Val)
+       if Val then
+           for _, obj in ipairs(game.Workspace:GetDescendants()) do
+               if obj:IsA("Model") then
+                   local colors = {getEntityColor(obj)}
+                   if colors[1] then
+                       AddHighlightToEntity(obj, colors[1], colors[2], colors[3], colors[4])
+                   end
+               end
+           end
+
+           local connection = game.Workspace.DescendantAdded:Connect(function(obj)
+               if obj:IsA("Model") then
+                   local colors = {getEntityColor(obj)}
+                   if colors[1] then
+                       AddHighlightToEntity(obj, colors[1], colors[2], colors[3], colors[4])
+                   end
+               end
+           end)
+           table.insert(Connections, connection)
+       else
+           for _, connection in pairs(Connections) do
+               connection:Disconnect()
+           end
+           Connections = {}
+           RemoveAllHighlights()
+       end
+   end,
+})
+
+M:CreateButton({
+    Name = "Force Daytime (Visual)",
+    Callback = function()
+        game:GetService("Lighting").ClockTime = 12
+    end,
+})
+
+M:CreateButton({
+    Name = "Force Nighttime (Visual)",
+    Callback = function()
+        game:GetService("Lighting").ClockTime = 0
+    end,
+})
+
+local S = Window:CreateTab("Scripts", 4483345998)
+
+S:CreateButton({
+    Name = "Infinite Yield",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/edgeiy/infiniteyield/master/source"))()
+    end,
+})
+
+S:CreateButton({
+    Name = "Nameless Admin",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/FilteringEnabled/NamelessAdmin/main/Source"))()
+    end,
+})
+
+S:CreateButton({
+    Name = "Animation Gui",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/anim"))()
+    end,
+})
+
+S:CreateButton({
+    Name = "Delete Part Gui",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/removepart"))()
+    end,
+})
+
+S:CreateButton({
+    Name = "NPC Lock",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/npclock"))()
+    end,
+})
+
+S:CreateButton({
+    Name = "TBao Hub (Better than mine)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/tbao143/thaibao/refs/heads/main/TbaoHubDeadRails"))()
+    end,
+})
+
+S:CreateButton({
+    Name = "Auto Bonds (idk if patched yet)",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Marce8643/test/refs/heads/main/dead%20rails"))()
+        Notify("Warning!", "Keep in mind the script can break, sometimes it executor fault or script fault.", 5, 4483362458)
+    end,
+})
+
+Notify("Notification!", "Script Loaded!", 5, 4483362458)
