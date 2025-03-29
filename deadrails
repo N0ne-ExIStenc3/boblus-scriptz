@@ -199,12 +199,4 @@ S:CreateButton({
     end,
 })
 
-S:CreateButton({
-    Name = "Auto Bonds (idk if patched yet)",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Marce8643/test/refs/heads/main/dead%20rails"))()
-        Notify("Warning!", "Keep in mind the script can break, sometimes it executor fault or script fault.", 5, 4483362458)
-    end,
-})
-
 Notify("Notification!", "Script Loaded!", 5, 4483362458)
