@@ -2,19 +2,20 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local StarterGui = game:GetService("StarterGui")
+local Lighting = game:GetService("Lighting")
+local Workspace = game:GetService("Workspace")
 
 local player = Players.LocalPlayer
 local thirdPersonEnabled = false
-local deleteModeEnabled = false
 local Connections = {}
 local HighlightEntities = {}
 
-local function Notify(T, C, D, I)
+local function Notify(title, content, duration, image)
     Rayfield:Notify({
-       Title = T or "Notification",
-       Content = C or "Notification Content",
-       Duration = D or 3,
-       Image = I or 4483362458,
+       Title = title or "Notification",
+       Content = content or "Notification Content",
+       Duration = duration or 3,
+       Image = image or 4483362458,
     })
 end
 
@@ -33,13 +34,13 @@ local function RemoveAllHighlights()
             highlight:Destroy()
         end
     end
-    HighlightEntities = {}
+    table.clear(HighlightEntities)
 end
 
 local function AddHighlightToEntity(entity, fillColor, outlineColor, fillTransparency, outlineTransparency)
     if entity:IsA("Model") and not entity:FindFirstChild("Highlight") then
         if entity.Parent and entity.Parent.Name == "SafeZones" then return end
-
+        
         local newHighlight = Instance.new("Highlight")
         newHighlight.Parent = entity
         newHighlight.Adornee = entity
@@ -53,22 +54,21 @@ local function AddHighlightToEntity(entity, fillColor, outlineColor, fillTranspa
 end
 
 local function getEntityColor(entity)
-    local entityName = string.lower(entity.Name)
-
     local entityColors = {
-        ["revolveroutlaw"] = {255, 0, 0},
-        ["shotgunoutlaw"] = {255, 0, 0},
-        ["wolf"] = {255, 0, 0},
-        ["runner"] = {0, 0, 255},
-        ["horse"] = {0, 255, 0},
-        ["walker"] = {0, 255, 0},
-        ["vampire"] = {128, 0, 128},
-        ["werewolf"] = {169, 169, 169},
+        revolveroutlaw = Color3.fromRGB(255, 0, 0),
+        shotgunoutlaw = Color3.fromRGB(255, 0, 0),
+        wolf = Color3.fromRGB(255, 0, 0),
+        runner = Color3.fromRGB(0, 0, 255),
+        horse = Color3.fromRGB(0, 255, 0),
+        walker = Color3.fromRGB(0, 255, 0),
+        vampire = Color3.fromRGB(128, 0, 128),
+        werewolf = Color3.fromRGB(169, 169, 169),
     }
-
+    
+    local entityName = entity.Name:lower()
     for key, color in pairs(entityColors) do
         if entityName:find(key) then
-            return Color3.fromRGB(color[1], color[2], color[3]), Color3.fromRGB(255, 255, 255), 0.3, 0.6
+            return color, Color3.fromRGB(255, 255, 255), 0.3, 0.6
         end
     end
     return nil
@@ -102,9 +102,7 @@ M:CreateKeybind({
     CurrentKeybind = "T",
     HoldToInteract = false,
     Flag = "Keybind1",
-    Callback = function()
-        toggleThirdPerson()
-    end,
+    Callback = toggleThirdPerson,
 })
 
 M:CreateToggle({
@@ -113,7 +111,7 @@ M:CreateToggle({
    Flag = "Toggle3",
    Callback = function(Val)
        if Val then
-           for _, obj in ipairs(game.Workspace:GetDescendants()) do
+           for _, obj in ipairs(Workspace:GetDescendants()) do
                if obj:IsA("Model") then
                    local colors = {getEntityColor(obj)}
                    if colors[1] then
@@ -121,82 +119,41 @@ M:CreateToggle({
                    end
                end
            end
-
-           local connection = game.Workspace.DescendantAdded:Connect(function(obj)
+           
+           table.insert(Connections, Workspace.DescendantAdded:Connect(function(obj)
                if obj:IsA("Model") then
                    local colors = {getEntityColor(obj)}
                    if colors[1] then
                        AddHighlightToEntity(obj, colors[1], colors[2], colors[3], colors[4])
                    end
                end
-           end)
-           table.insert(Connections, connection)
+           end))
        else
            for _, connection in pairs(Connections) do
                connection:Disconnect()
            end
-           Connections = {}
+           table.clear(Connections)
            RemoveAllHighlights()
        end
    end,
 })
 
-M:CreateButton({
-    Name = "Force Daytime (Visual)",
-    Callback = function()
-        game:GetService("Lighting").ClockTime = 12
-    end,
-})
-
-M:CreateButton({
-    Name = "Force Nighttime (Visual)",
-    Callback = function()
-        game:GetService("Lighting").ClockTime = 0
-    end,
-})
+M:CreateButton({ Name = "Force Daytime (Visual)", Callback = function() Lighting.ClockTime = 12 end })
+M:CreateButton({ Name = "Force Nighttime (Visual)", Callback = function() Lighting.ClockTime = 0 end })
 
 local S = Window:CreateTab("Scripts", 4483345998)
 
-S:CreateButton({
-    Name = "Infinite Yield",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/edgeiy/infiniteyield/master/source"))()
-    end,
-})
+local scripts = {
+    {Name = "Infinite Yield", URL = "https://raw.githubusercontent.com/edgeiy/infiniteyield/master/source"},
+    {Name = "Nameless Admin", URL = "https://raw.githubusercontent.com/FilteringEnabled/NamelessAdmin/main/Source"},
+    {Name = "Animation Gui", URL = "https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/anim"},
+    {Name = "Delete Part Gui", URL = "https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/removepart"},
+    {Name = "NPC Lock", URL = "https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/npclock"},
+    {Name = "TBao Hub (Better than mine)", URL = "https://raw.githubusercontent.com/tbao143/thaibao/refs/heads/main/TbaoHubDeadRails"}
+}
 
-S:CreateButton({
-    Name = "Nameless Admin",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/FilteringEnabled/NamelessAdmin/main/Source"))()
-    end,
-})
-
-S:CreateButton({
-    Name = "Animation Gui",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/anim"))()
-    end,
-})
-
-S:CreateButton({
-    Name = "Delete Part Gui",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/removepart"))()
-    end,
-})
-
-S:CreateButton({
-    Name = "NPC Lock",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/npclock"))()
-    end,
-})
-
-S:CreateButton({
-    Name = "TBao Hub (Better than mine)",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/tbao143/thaibao/refs/heads/main/TbaoHubDeadRails"))()
-    end,
-})
+for _, script in ipairs(scripts) do
+    S:CreateButton({ Name = script.Name, Callback = function() loadstring(game:HttpGet(script.URL))() end })
+end
 
 Notify("Notification!", "Script Loaded!", 5, 4483362458)
