@@ -56,7 +56,7 @@ local Window = Rayfield:CreateWindow({
 local H = Window:CreateTab("Home", 4483362458)
 H:CreateLabel("Welcome! " .. Player .. " (" .. User .. ") Thank you for using my script! :)", 4483362458, Color3.fromRGB(255, 255, 255), false)
 H:CreateParagraph({Title = "This script is still open-source until next update", Content = "Feel free to improve or take parts of the code, Credits are appreciated!"})
-H:CreateParagraph({Title = "Update 9!", Content = "Remive Change Bank/Cannon, Add Patched List and Obfuscated Script Will Came Next Update."})
+H:CreateParagraph({Title = "Update 9!", Content = "Remove Change Bank/Cannon, Add Patched List and Obfuscated Script Will Came Next Update."})
 H:CreateParagraph({Title = "Contact me!", Content = "DM @velocity_coding on discord or join the server to report a bugs or suggestions."})
 
 H:CreateButton({
