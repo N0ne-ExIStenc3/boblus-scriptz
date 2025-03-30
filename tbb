@@ -10,27 +10,6 @@ local selectedMenu = "N/A"
 local selectedMusic = "N/A"
 CamShakeIntensity = 10 
 
-local function SaveLoadout(B1, B2, B3, B4, B5, B6, B7, B8, A1, A2, A3, A4, A5, A6, A7, A8, C, B)
-    local args = {
-        [1] = {
-            ["Type"] = {
-                { "Slot1", B1 }, { "Slot2", B2 }, { "Slot3", B3 }, { "Slot4", B4 },
-                { "Slot5", B5 }, { "Slot6", B6 }, { "Slot7", B7 }, { "Slot8", B8 }
-            },
-            ["Slots"] = {
-                { "Slot1", A1 }, { "Slot2", A2 }, { "Slot3", A3 }, { "Slot4", A4 },
-                { "Slot5", A5 }, { "Slot6", A6 }, { "Slot7", A7 }, { "Slot8", A8 }
-            },
-            ["Base"] = {
-                ["Cannon"] = C,
-                ["Bank"] = B
-            }
-        }
-    }
-
-    game:GetService("ReplicatedStorage").Events.RemoteEvents.SaveLoadout:FireServer(unpack(args))
-end
-
 local function Notify(T, C, D, I)
     Rayfield:Notify({
        Title = T or "Notification Title",
@@ -76,9 +55,9 @@ local Window = Rayfield:CreateWindow({
 
 local H = Window:CreateTab("Home", 4483362458)
 H:CreateLabel("Welcome! " .. Player .. " (" .. User .. ") Thank you for using my script! :)", 4483362458, Color3.fromRGB(255, 255, 255), false)
-H:CreateParagraph({Title = "This script is open-source", Content = "Feel free to improve or take parts of the code, Credits are appreciated!"})
-H:CreateParagraph({Title = "Update 8!", Content = "Add Checking Platform to Fixing Can't Run Script."})
-H:CreateParagraph({Title = "Contact me!", Content = "DM @velocity_coding on discord to report a bugs or suggestions."})
+H:CreateParagraph({Title = "This script is still open-source until next update", Content = "Feel free to improve or take parts of the code, Credits are appreciated!"})
+H:CreateParagraph({Title = "Update 9!", Content = "Remive Change Bank/Cannon, Add Patched List and Obfuscated Script Will Came Next Update."})
+H:CreateParagraph({Title = "Contact me!", Content = "DM @velocity_coding on discord or join the server to report a bugs or suggestions."})
 
 H:CreateButton({
     Name = "Remove UI",
@@ -97,48 +76,11 @@ H:CreateButton({
     end,
 })
 
-local M = Window:CreateTab("Main", 4483345998)
+local M = Window:CreateTab("Patched Lists", 4483345998)
 
-M:CreateDropdown({
-    Name = "Select Bank",
-    Options = { "Default", "Investment", "Powerhouse", "Detonator", "Ignition" },
-    CurrentOption = "Default",
-    MultipleOptions = false,
-    Flag = "Dropdown",
-    Callback = function(Value)
-        selectedBank = Value[1]
-    end
-})
-
-M:CreateDropdown({
-    Name = "Select Cannon",
-    Options = { "Default", "Gatling", "Slammer", "Recoil", "Treasure", "Absorber", "Liberty" },
-    CurrentOption = "Default",
-    MultipleOptions = false,
-    Flag = "Dropdown2",
-    Callback = function(Value)
-        selectedCannon = Value[1]
-    end
-})
-
-M:CreateButton({
-    Name = "Change Bank/Cannon",
-    Callback = function()
-        local bankMap = { Default = 1, Investment = 2, Powerhouse = 3, Detonator = 4, Ignition = 5 }
-        local cannonMap = { Default = 1, Gatling = 2, Slammer = 3, Recoil = 4, Treasure = 5, Absorber = 6, Liberty = 7 }
-        
-        local bankID = bankMap[selectedBank] or 1
-        local cannonID = cannonMap[selectedCannon] or 1
-        
-        SaveLoadout(
-            Type.Slot1.Value, Type.Slot2.Value, Type.Slot3.Value, Type.Slot4.Value,
-            Type.Slot5.Value, Type.Slot6.Value, Type.Slot7.Value, Type.Slot8.Value,
-            Slot.Slot1.Value, Slot.Slot2.Value, Slot.Slot3.Value, Slot.Slot4.Value,
-            Slot.Slot5.Value, Slot.Slot6.Value, Slot.Slot7.Value, Slot.Slot8.Value,
-            cannonID, bankID
-        )
-    end,
-})
+M:CreateParagraph({Title = "Patched Right now", Content = "Our script got patches twice and there no major issues with remote rn!"})
+M:CreateParagraph({Title = "Patched Lists!", Content = "Patched Give Unit (By wiped data and fixed remote)\nPatched Change Bank/Cannon (By fixed remote)"})
+M:CreateParagraph({Title = "Gonna start obfuscate the script.", Content = "Our script got patched twice and this script is open-sourced might be the reason"})
 
 local W = Window:CreateTab("Spam", 4483362458)
 
@@ -327,7 +269,7 @@ UI:CreateButton({
 })
 
 UI:CreateButton({
-    Name = "Clock Quiz",
+    Name = "Clock Quiz (Based on selected stars too)",
     Callback = function()
         local C = game:GetService("ReplicatedStorage").Cutscenes.ClockQuiz:Clone()
         C.Parent = game.Players.LocalPlayer.PlayerGui
@@ -369,18 +311,6 @@ UI:CreateButton({
 })
 
 local S = Window:CreateTab("Scripts", 4483345998)
-
-S:CreateButton({
-    Name = "Dex For Mobile",
-    Callback = function()
-        local success, result = pcall(loadstring, game:HttpGet("https://raw.githubusercontent.com/realredz/DEX-Explorer/refs/heads/main/Mobile.lua"))
-        if success then 
-            result() 
-        else 
-            warn("Failed to load Dex for Mobile.") 
-        end
-    end,
-})
 
 S:CreateButton({
     Name = "Dex For PC",
