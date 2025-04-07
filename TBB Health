@@ -126,7 +126,7 @@ local function createBillboard(npc, isFriendly)
 			if waitToMove then
 				waitLabel.Text = "Wait: " .. math.floor(waitToMove + 0.5)
 			else
-				waitLabel.Text = "Wait: 0"
+				waitLabel.Text = "Wait: N/A"
 			end
 		end
 	end)
