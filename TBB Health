@@ -11,21 +11,8 @@ local toggles = {}
 local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
 ScreenGui.Name = "NPCHealthUI"
 
-local mainFrame = Instance.new("ScrollingFrame", ScreenGui)
-mainFrame.Size = UDim2.new(0, 200, 0, 300)
-mainFrame.Position = UDim2.new(0, 50, 0, 50)
-mainFrame.BackgroundTransparency = 0.2
-mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-mainFrame.Active = true
-mainFrame.ScrollBarThickness = 6
-mainFrame.Parent = ScreenGui
-
-local UIListLayout = Instance.new("UIListLayout", mainFrame)
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 5)
-
-local header = Instance.new("Frame", mainFrame)
-header.Size = UDim2.new(1, 0, 0, 30)
+local header = Instance.new("Frame", ScreenGui)
+header.Size = UDim2.new(0.18, 0, 0, 30)
 header.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 header.BackgroundTransparency = 0.3
 header.BorderSizePixel = 0
@@ -50,16 +37,21 @@ closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 closeButton.Font = Enum.Font.SourceSansBold
 closeButton.BorderSizePixel = 0
 
-local minimizeButton = Instance.new("TextButton", header)
-minimizeButton.Size = UDim2.new(0, 30, 1, 0)
-minimizeButton.Position = UDim2.new(1, -60, 0, 0)
-minimizeButton.Text = "-"
-minimizeButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-minimizeButton.Font = Enum.Font.SourceSansBold
-minimizeButton.BorderSizePixel = 0
+local mainFrame = Instance.new("ScrollingFrame", header)
+mainFrame.Size = UDim2.new(0, 200, 0, 300)
+mainFrame.Position = UDim2.new(0, 10, 0, 30)
+mainFrame.BackgroundTransparency = 0.2
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.Active = true
+mainFrame.ScrollBarThickness = 6
 
-local optionsVisible = true
+local UIListLayout = Instance.new("UIListLayout", mainFrame)
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 5)
+
+UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	mainFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
+end)
 
 local function updateDropdown()
 	for _, child in ipairs(mainFrame:GetChildren()) do
@@ -94,6 +86,8 @@ local function updateDropdown()
 			addToggle(npc, false)
 		end
 	end
+
+	mainFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
 end
 
 local function createBillboard(npc, isFriendly)
@@ -132,7 +126,7 @@ local function createBillboard(npc, isFriendly)
 			if waitToMove then
 				waitLabel.Text = "Wait: " .. math.floor(waitToMove + 0.5)
 			else
-				waitLabel.Text = "Wait: N/A"
+				waitLabel.Text = "Wait: 0"
 			end
 		end
 	end)
@@ -149,22 +143,12 @@ task.spawn(function()
 				if toggles[key] then
 					createBillboard(npc, isFriendly)
 				elseif npc:FindFirstChild("BillboardGui") then
+					task.wait(0.5)
 					npc.BillboardGui:Destroy()
 				end
 			end
 		end
-
 		task.wait(1)
-	end
-end)
-
-minimizeButton.MouseButton1Click:Connect(function()
-	optionsVisible = not optionsVisible
-	minimizeButton.Text = optionsVisible and "-" or "+"
-	for _, child in ipairs(mainFrame:GetChildren()) do
-		if child ~= header and child:IsA("TextButton") then
-			child.Visible = optionsVisible
-		end
 	end
 end)
 
