@@ -1,0 +1,173 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local NPCFolders = workspace:WaitForChild("NPCFolders")
+local FriendlyFolder = NPCFolders:WaitForChild("FriendlyFolder")
+local EnemyFolder = NPCFolders:WaitForChild("EnemyFolder")
+
+local toggles = {}
+
+local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+ScreenGui.Name = "NPCHealthUI"
+
+local mainFrame = Instance.new("ScrollingFrame", ScreenGui)
+mainFrame.Size = UDim2.new(0, 200, 0, 300)
+mainFrame.Position = UDim2.new(0, 50, 0, 50)
+mainFrame.BackgroundTransparency = 0.2
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.Active = true
+mainFrame.ScrollBarThickness = 6
+mainFrame.Parent = ScreenGui
+
+local UIListLayout = Instance.new("UIListLayout", mainFrame)
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 5)
+
+local header = Instance.new("Frame", mainFrame)
+header.Size = UDim2.new(1, 0, 0, 30)
+header.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+header.BackgroundTransparency = 0.3
+header.BorderSizePixel = 0
+header.Draggable = true
+header.Active = true
+
+local headerText = Instance.new("TextLabel", header)
+headerText.Size = UDim2.new(1, -60, 1, 0)
+headerText.Text = "NPC Health Toggle"
+headerText.TextColor3 = Color3.fromRGB(255, 255, 255)
+headerText.Font = Enum.Font.SourceSansBold
+headerText.TextSize = 14
+headerText.BackgroundTransparency = 1
+headerText.TextXAlignment = Enum.TextXAlignment.Left
+
+local closeButton = Instance.new("TextButton", header)
+closeButton.Size = UDim2.new(0, 30, 1, 0)
+closeButton.Position = UDim2.new(1, -30, 0, 0)
+closeButton.Text = "X"
+closeButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.Font = Enum.Font.SourceSansBold
+closeButton.BorderSizePixel = 0
+
+local minimizeButton = Instance.new("TextButton", header)
+minimizeButton.Size = UDim2.new(0, 30, 1, 0)
+minimizeButton.Position = UDim2.new(1, -60, 0, 0)
+minimizeButton.Text = "-"
+minimizeButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeButton.Font = Enum.Font.SourceSansBold
+minimizeButton.BorderSizePixel = 0
+
+local optionsVisible = true
+
+local function updateDropdown()
+	for _, child in ipairs(mainFrame:GetChildren()) do
+		if child:IsA("TextButton") then
+			child:Destroy()
+		end
+	end
+
+	local function addToggle(npc, isFriendly)
+		local key = npc.Name .. (isFriendly and "_F" or "_E")
+		if toggles[key] == nil then toggles[key] = false end
+
+		local btn = Instance.new("TextButton")
+		btn.Size = UDim2.new(1, 0, 0, 25)
+		btn.Text = "[" .. (isFriendly and "Friendly" or "Enemy") .. "] " .. npc.Name .. ": " .. (toggles[key] and "ON" or "OFF")
+		btn.TextColor3 = Color3.new(1, 1, 1)
+		btn.BackgroundColor3 = isFriendly and Color3.fromRGB(0, 100, 255) or Color3.fromRGB(255, 50, 50)
+		btn.Parent = mainFrame
+		btn.MouseButton1Click:Connect(function()
+			toggles[key] = not toggles[key]
+			btn.Text = "[" .. (isFriendly and "Friendly" or "Enemy") .. "] " .. npc.Name .. ": " .. (toggles[key] and "ON" or "OFF")
+		end)
+	end
+
+	for _, npc in ipairs(FriendlyFolder:GetChildren()) do
+		if npc:FindFirstChild("Humanoid") then
+			addToggle(npc, true)
+		end
+	end
+	for _, npc in ipairs(EnemyFolder:GetChildren()) do
+		if npc:FindFirstChild("Humanoid") then
+			addToggle(npc, false)
+		end
+	end
+end
+
+local function createBillboard(npc, isFriendly)
+	if npc:FindFirstChild("BillboardGui") then return end
+
+	local gui = Instance.new("BillboardGui")
+	gui.Name = "BillboardGui"
+	gui.Adornee = npc:FindFirstChild("Head")
+	gui.Size = UDim2.new(0, 200, 0, 50)
+	gui.StudsOffset = Vector3.new(0, 3, 0)
+	gui.AlwaysOnTop = true
+	gui.Parent = npc
+
+	local label = Instance.new("TextLabel", gui)
+	label.Size = UDim2.new(1, 0, 0.5, 0)
+	label.Position = UDim2.new(0, 0, 0, 0)
+	label.BackgroundTransparency = 1
+	label.TextColor3 = isFriendly and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+	label.Font = Enum.Font.SourceSansBold
+	label.TextScaled = true
+
+	local waitLabel = Instance.new("TextLabel", gui)
+	waitLabel.Size = UDim2.new(1, 0, 0.5, 0)
+	waitLabel.Position = UDim2.new(0, 0, 0.5, 0)
+	waitLabel.BackgroundTransparency = 1
+	waitLabel.TextColor3 = Color3.fromRGB(0, 170, 255)
+	waitLabel.Font = Enum.Font.SourceSansBold
+	waitLabel.TextScaled = true
+
+	RunService.RenderStepped:Connect(function()
+		if npc:FindFirstChild("Humanoid") then
+			local health = math.floor(npc.Humanoid.Health)
+			label.Text = npc.Name .. " HP: " .. health
+
+			local waitToMove = npc:GetAttribute("WaitToMove")
+			if waitToMove then
+				waitLabel.Text = "Wait: " .. math.floor(waitToMove + 0.5)
+			else
+				waitLabel.Text = "Wait: N/A"
+			end
+		end
+	end)
+end
+
+task.spawn(function()
+	while true do
+		updateDropdown()
+
+		for _, folder in ipairs({FriendlyFolder, EnemyFolder}) do
+			local isFriendly = folder == FriendlyFolder
+			for _, npc in ipairs(folder:GetChildren()) do
+				local key = npc.Name .. (isFriendly and "_F" or "_E")
+				if toggles[key] then
+					createBillboard(npc, isFriendly)
+				elseif npc:FindFirstChild("BillboardGui") then
+					npc.BillboardGui:Destroy()
+				end
+			end
+		end
+
+		task.wait(1)
+	end
+end)
+
+minimizeButton.MouseButton1Click:Connect(function()
+	optionsVisible = not optionsVisible
+	minimizeButton.Text = optionsVisible and "-" or "+"
+	for _, child in ipairs(mainFrame:GetChildren()) do
+		if child ~= header and child:IsA("TextButton") then
+			child.Visible = optionsVisible
+		end
+	end
+end)
+
+closeButton.MouseButton1Click:Connect(function()
+	ScreenGui:Destroy()
+end)
