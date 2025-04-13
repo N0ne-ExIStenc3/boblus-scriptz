@@ -1,0 +1,155 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+
+local espEnabled = false
+local espMode = "Item"
+
+local toggleKey = Enum.KeyCode.Q
+local switchKey = Enum.KeyCode.P
+
+local itemFolders = { workspace:WaitForChild("RuntimeItems") }
+local houseFolders = {
+	workspace:WaitForChild("TeslaLab"),
+	workspace:WaitForChild("RandomBuildings"),
+	workspace:WaitForChild("Towns")
+}
+
+local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+screenGui.Name = "ESPMenu"
+
+local mainFrame = Instance.new("Frame", screenGui)
+mainFrame.Size = UDim2.new(0, 250, 0, 150)
+mainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+mainFrame.Active = true
+mainFrame.Draggable = true
+
+local layout = Instance.new("UIListLayout", mainFrame)
+layout.Padding = UDim.new(0, 5)
+layout.FillDirection = Enum.FillDirection.Vertical
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local function createTextBox(placeholder)
+	local box = Instance.new("TextButton")
+	box.Size = UDim2.new(1, 0, 0, 30)
+	box.Text = placeholder
+	box.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	box.TextColor3 = Color3.new(1, 1, 1)
+	box.Font = Enum.Font.SourceSansBold
+	box.TextScaled = true
+	return box
+end
+
+local toggleBox = createTextBox("Toggle: Q")
+local switchBox = createTextBox("Switch: P")
+
+toggleBox.Parent = mainFrame
+switchBox.Parent = mainFrame
+
+local function getHRP()
+	local char = player.Character or player.CharacterAdded:Wait()
+	return char:WaitForChild("HumanoidRootPart")
+end
+
+local function getModelPart(model)
+	if model:IsA("Model") then
+		if model.PrimaryPart then
+			return model.PrimaryPart
+		else
+			return model:FindFirstChildWhichIsA("BasePart")
+		end
+	end
+end
+
+local function createBillboard(part, name)
+	local gui = Instance.new("BillboardGui")
+	gui.Name = "ItemESP"
+	gui.Size = UDim2.new(0, 200, 0, 50)
+	gui.StudsOffset = Vector3.new(0, 2, 0)
+	gui.AlwaysOnTop = true
+	gui.Adornee = part
+	gui.Parent = part
+
+	local label = Instance.new("TextLabel")
+	label.Name = "TextLabel"
+	label.Size = UDim2.new(1, 0, 1, 0)
+	label.BackgroundTransparency = 1
+	label.TextColor3 = Color3.new(1, 1, 1)
+	label.TextStrokeTransparency = 0
+	label.TextScaled = true
+	label.Font = Enum.Font.SourceSansBold
+	label.Text = name
+	label.Parent = gui
+end
+
+local function clearESP()
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("BillboardGui") and obj.Name == "ItemESP" then
+			obj:Destroy()
+		end
+	end
+end
+
+local function updateESP(folderList)
+	local hrp = getHRP()
+	for _, folder in ipairs(folderList) do
+		if folder.Name == "TeslaLab" then
+			local part = getModelPart(folder)
+			if part then
+				local gui = part:FindFirstChild("ItemESP")
+				local distance = (part.Position - hrp.Position).Magnitude
+				if not gui then
+					createBillboard(part, folder.Name .. " | " .. math.floor(distance))
+				else
+					local label = gui:FindFirstChild("TextLabel")
+					if label then
+						label.Text = folder.Name .. " | " .. math.floor(distance)
+					end
+				end
+			end
+		else
+			for _, model in ipairs(folder:GetChildren()) do
+				local part = getModelPart(model)
+				if part then
+					local gui = part:FindFirstChild("ItemESP")
+					local distance = (part.Position - hrp.Position).Magnitude
+					if not gui then
+						createBillboard(part, model.Name .. " | " .. math.floor(distance))
+					else
+						local label = gui:FindFirstChild("TextLabel")
+						if label then
+							label.Text = model.Name .. " | " .. math.floor(distance)
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+UIS.InputBegan:Connect(function(input, gp)
+	if gp then return end
+	if input.KeyCode == toggleKey then
+		espEnabled = not espEnabled
+		clearESP()
+	elseif input.KeyCode == switchKey then
+		espMode = (espMode == "Item") and "House" or "Item"
+		clearESP()
+	end
+end)
+
+task.spawn(function()
+	while true do
+		if espEnabled then
+			if espMode == "Item" then
+				updateESP(itemFolders)
+			else
+				updateESP(houseFolders)
+			end
+		end
+		task.wait(2)
+	end
+end)
