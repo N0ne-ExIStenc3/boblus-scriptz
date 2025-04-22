@@ -15,3 +15,8 @@ UserInputService.InputBegan:Connect(function(input, processed)
 		sound:Play()
 	end
 end)
+
+Notification:Notify(
+        {Title = "Song Keybind", Description = "Keybind: C"},
+        {OutlineColor = Color3.fromRGB(80, 80, 80), Time = 10, Type = "default"}
+)
