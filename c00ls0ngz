@@ -6,7 +6,7 @@ local soundId = "rbxassetid://83959091660767"
 local sound = Instance.new("Sound")
 sound.Name = "c00ls0ngz"
 sound.SoundId = soundId
-sound.Volume = 1
+sound.Volume = 10
 sound.Looped = false
 sound.Parent = SoundService
 
