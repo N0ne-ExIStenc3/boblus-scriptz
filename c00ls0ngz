@@ -1,5 +1,7 @@
 local UserInputService = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
+local NotificationHolder = loadstring(game:HttpGet("https://raw.githubusercontent.com/BocusLuke/UI/main/STX/Module.Lua"))()
+local Notification = loadstring(game:HttpGet("https://raw.githubusercontent.com/BocusLuke/UI/main/STX/Client.Lua"))()
 
 local soundId = "rbxassetid://83959091660767"
 
