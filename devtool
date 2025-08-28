@@ -53,13 +53,12 @@ local Window = Rayfield:CreateWindow({
 local H = Window:CreateTab("Home", 4483362458)
 H:CreateLabel("Welcome! " .. Player .. " (" .. User .. ") Thank you for using my script! :)", 4483362458, Color3.fromRGB(255, 255, 255), false)
 H:CreateParagraph({Title = "This script is open-source", Content = "Feel free to improve or take parts of the code, Credits are appreciated!"})
-H:CreateParagraph({Title = "Contact me!", Content = "DM @velocity_coding on discord to report a bugs or suggestions."})
 H:CreateParagraph({Title = "Credits!", Content = "Thanks to yofriendfromschool1 for most function."})
 
 H:CreateButton({
     Name = "Credits",
     Callback = function()
-        Notify("Notification!", "Thanks @yofri2ndfromschool1 on scriptblox for most function.", 3, 4483362458)
+        Notify("Notification!", "Thanks @yofriendfromschool1 on scriptblox for most function.", 3, 4483362458)
         setclipboard("https://scriptblox.com/script/Universal-Script-Debuggers-11223")
     end,
 })
@@ -70,14 +69,6 @@ H:CreateButton({
         Notify("Notification!", "Removing UI :(", 3, 4483362458)
         wait(3.5)
         Rayfield:Destroy()
-    end,
-})
-
-H:CreateButton({
-    Name = "Copy Discord Server Link",
-    Callback = function()
-        Notify("Notification!", "Copied Discord Server Link!", 3, 4483362458)
-        setclipboard("https://discord.gg/y2jW3MUxdx")
     end,
 })
 
@@ -122,20 +113,6 @@ M:CreateButton({
 		end
 		webImport("init")
 		webImport("ui/main")
-    end,
-})
-
-M:CreateButton({
-    Name = "Http Spy (Obfuscated)",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/O-HttpSpy"))()
-    end,
-})
-
-M:CreateButton({
-    Name = "Http Spy (Un-obfuscated)",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Blocky69/boblus-scriptz/refs/heads/main/UO-HttpSpy"))()
     end,
 })
 
