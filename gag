@@ -307,7 +307,7 @@ local MS = M:CreateSection("Misc Section")
 
 H:CreateLabel("Welcome! " .. Player .. " (" .. User .. ") Thank you for using my script! :)", 4483362458, Color3.fromRGB(255, 255, 255), false)
 H:CreateParagraph({Title = "This script is open-source", Content = "Feel free to check if there's malicious code in the script."})
-H:CreateParagraph({Title = "Note:", Content = "The purpose of this script is to troll your friends\nWith the fake restock using this script\nReminder: This do not gives you any seed/gears\nAnd doesn't takes your money.\nRejoin and everything will be back to normal!"})
+H:CreateParagraph({Title = "Note:", Content = "The purpose of this script is to troll your friends\nWith the fake restock using this script\nReminder: This do not gives you any seed/gears\nAnd doesn't takes your money.\nAND you can't place the seeds/gears\nRejoin and everything will be back to normal!"})
 
 local sname = "Carrot"
 local sprice = 10
