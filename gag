@@ -262,7 +262,7 @@ local Window = Rayfield:CreateWindow({
    Name = "Grow a Garden (Fake Seed/Gear)",
    Icon = 0,
    LoadingTitle = "Loading..",
-   LoadingSubtitle = "by Blocky69",
+   LoadingSubtitle = "by BlockyBoi",
    ShowText = "UI",
    Theme = "Default",
 
