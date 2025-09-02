@@ -1,0 +1,472 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local Debris = game:GetService("Debris")
+
+local LocalPlayer = Players.LocalPlayer
+local Player = LocalPlayer.DisplayName
+local User = LocalPlayer.Name
+local SeedShop = LocalPlayer.PlayerGui:WaitForChild("Seed_Shop")
+local UI = SeedShop.Frame.ScrollingFrame
+
+local shecklesUI = LocalPlayer.PlayerGui:WaitForChild("Sheckles_UI")
+local shecklesLabel = shecklesUI.TextLabel
+local moneyUI = shecklesUI:WaitForChild("Money")
+local shecklesStat = LocalPlayer:WaitForChild("leaderstats"):WaitForChild("Sheckles")
+
+local items = {}
+
+local normalImage = "rbxassetid://96160773850314"
+local hoverImage = "rbxassetid://71551639169723"
+local soldOutImage = "rbxassetid://104713419928195"
+local soldOutHover = "rbxassetid://138411009141674"
+local purchaseSoundId = "rbxassetid://131886985"
+
+local function formatCommas(n)
+	local sign = n < 0 and "-" or ""
+	n = math.abs(math.floor(n))
+	local s = tostring(n)
+	local i = #s % 3
+	if i == 0 then i = 3 end
+	local t = { s:sub(1, i) }
+	for j = i + 1, #s, 3 do
+		table.insert(t, "," .. s:sub(j, j + 2))
+	end
+	return sign .. table.concat(t)
+end
+
+local function setShecklesLabel(v)
+	shecklesLabel.Text = formatCommas(v) .. "¢"
+end
+
+local function animateSheckles(fromValue, toValue)
+	if fromValue <= toValue then
+		setShecklesLabel(toValue)
+		return
+	end
+	local diff = fromValue - toValue
+	if diff <= 5000 then
+		for i = fromValue, toValue, -1 do
+			setShecklesLabel(i)
+			task.wait(0.1)
+		end
+	else
+		local steps = 60
+		local stepVal = math.ceil(diff / steps)
+		local v = fromValue
+		while v > toValue do
+			v = math.max(toValue, v - stepVal)
+			setShecklesLabel(v)
+			task.wait(0.1)
+		end
+	end
+	setShecklesLabel(toValue)
+end
+
+local function showFloatingCost(cost)
+	local label = moneyUI:Clone()
+	label.Visible = true
+	label.Text = "-" .. formatCommas(cost) .. "¢"
+	label.TextColor3 = Color3.new(1, 0, 0)
+	label.Parent = shecklesUI
+	local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+	local tween = TweenService:Create(label, tweenInfo, {
+		TextTransparency = 1,
+		Position = label.Position - UDim2.new(0, 0, 0.1, 0)
+	})
+	tween:Play()
+	Debris:AddItem(label, 1.1)
+	if purchaseSoundId and purchaseSoundId ~= "" then
+		local s = Instance.new("Sound")
+		s.SoundId = purchaseSoundId
+		s.Parent = shecklesUI
+		s:Play()
+		Debris:AddItem(s, 2)
+	end
+end
+
+local function updateUI(data)
+	local mainFrame = data.ui.Main_Frame
+	local buyButton = data.ui.Frame.Sheckles_Buy
+
+	if data.stock > 0 then
+		mainFrame.Cost_Text.Text = data.displayCost
+		mainFrame.Cost_Text.TEXT.Text = data.displayCost
+		mainFrame.Cost_Text.TextColor3 = Color3.new(0, 1, 0)
+		mainFrame.Cost_Text.TEXT.TextColor3 = Color3.new(0, 1, 0)
+		mainFrame.Stock_Text.Text = "X" .. data.stock .. " Stock"
+
+		buyButton.Image = normalImage
+		buyButton.HoverImage = hoverImage
+		buyButton.In_Stock.Visible = true
+		buyButton.No_Stock.Visible = false
+		if buyButton:IsA("ImageButton") or buyButton:IsA("TextButton") then
+			buyButton.Active = true
+			buyButton.AutoButtonColor = true
+		end
+	else
+		mainFrame.Cost_Text.Text = "NO STOCK"
+		mainFrame.Cost_Text.TEXT.Text = "NO STOCK"
+		mainFrame.Cost_Text.TextColor3 = Color3.new(1, 0, 0)
+		mainFrame.Cost_Text.TEXT.TextColor3 = Color3.new(1, 0, 0)
+		mainFrame.Stock_Text.Text = "X0 Stock"
+
+		buyButton.Image = soldOutImage
+		buyButton.HoverImage = soldOutHover
+		buyButton.In_Stock.Visible = false
+		buyButton.No_Stock.Visible = true
+		if buyButton:IsA("ImageButton") or buyButton:IsA("TextButton") then
+			buyButton.Active = false
+			buyButton.AutoButtonColor = false
+		end
+	end
+end
+
+local function giveItemToBackpack(name)
+	local backpack = LocalPlayer:WaitForChild("Backpack")
+	local existing
+	for _, tool in ipairs(backpack:GetChildren()) do
+		if tool:IsA("Tool") and tool.Name:match("^" .. name) then
+			existing = tool
+			break
+		end
+	end
+	if existing then
+		local num = tonumber(existing.Name:match("%[X(%d+)%]")) or 1
+		num = num + 1
+		existing.Name = name .. " [X" .. num .. "]"
+	else
+		local seed = Instance.new("Tool")
+		seed.Name = name .. " [X1]"
+		seed.Parent = backpack
+	end
+end
+
+local function buyItem(data)
+	if data.stock <= 0 then return end
+	if data.debounce then return end
+	data.debounce = true
+	if shecklesStat.Value < data.cost then
+		data.debounce = false
+		return
+	end
+	local oldVal = shecklesStat.Value
+	shecklesStat.Value = shecklesStat.Value - data.cost
+	task.spawn(animateSheckles, oldVal, shecklesStat.Value)
+	showFloatingCost(data.cost)
+	giveItemToBackpack(data.itemName)
+	data.stock = data.stock - 1
+	updateUI(data)
+	data.debounce = false
+end
+
+for _, data in pairs(items) do
+	local buyButton = data.ui.Frame.Sheckles_Buy
+	if buyButton and (buyButton:IsA("ImageButton") or buyButton:IsA("TextButton")) then
+		buyButton.MouseButton1Click:Connect(function()
+			buyItem(data)
+		end)
+	end
+	updateUI(data)
+end
+
+local GearShop = LocalPlayer.PlayerGui:WaitForChild("Gear_Shop")
+local GUI = GearShop.Frame.ScrollingFrame
+
+local gears = {}
+
+local function updateGUI(data)
+	local mainFrame = data.ui.Main_Frame
+	local buyButton = data.ui.Frame.Sheckles_Buy
+
+	if data.stock > 0 then
+		mainFrame.Cost_Text.Text = data.displayCost
+		mainFrame.Cost_Text.TextColor3 = Color3.new(0, 1, 0)
+		mainFrame.Stock_Text.Text = "X" .. data.stock .. " Stock"
+
+		buyButton.Image = normalImage
+		buyButton.HoverImage = hoverImage
+		buyButton.In_Stock.Visible = true
+		buyButton.No_Stock.Visible = false
+		if buyButton:IsA("ImageButton") or buyButton:IsA("TextButton") then
+			buyButton.Active = true
+			buyButton.AutoButtonColor = true
+		end
+	else
+		mainFrame.Cost_Text.Text = "NO STOCK"
+		mainFrame.Cost_Text.TextColor3 = Color3.new(1, 0, 0)
+		mainFrame.Stock_Text.Text = "X0 Stock"
+
+		buyButton.Image = soldOutImage
+		buyButton.HoverImage = soldOutHover
+		buyButton.In_Stock.Visible = false
+		buyButton.No_Stock.Visible = true
+		if buyButton:IsA("ImageButton") or buyButton:IsA("TextButton") then
+			buyButton.Active = false
+			buyButton.AutoButtonColor = false
+		end
+	end
+end
+
+local function giveGearToBackpack(name)
+	local backpack = LocalPlayer:WaitForChild("Backpack")
+	local existing
+	for _, tool in ipairs(backpack:GetChildren()) do
+		if tool:IsA("Tool") and tool.Name:match("^" .. name) then
+			existing = tool
+			break
+		end
+	end
+	if existing then
+		local num = tonumber(existing.Name:match(" x(%d+)$")) or 1
+		num = num + 1
+		existing.Name = name .. " x" .. num
+	else
+		local gear = Instance.new("Tool")
+		gear.Name = name .. " x1"
+		gear.Parent = backpack
+	end
+end
+
+local function buyGear(data)
+	if data.stock <= 0 then return end
+	if data.debounce then return end
+	data.debounce = true
+	if shecklesStat.Value < data.cost then
+		data.debounce = false
+		return
+	end
+	local oldVal = shecklesStat.Value
+	shecklesStat.Value = shecklesStat.Value - data.cost
+	task.spawn(animateSheckles, oldVal, shecklesStat.Value)
+	showFloatingCost(data.cost)
+	giveGearToBackpack(data.itemName)
+	data.stock = data.stock - 1
+	updateGUI(data)
+	data.debounce = false
+end
+
+for _, data in pairs(items) do
+	local buyButton = data.ui.Frame.Sheckles_Buy
+	if buyButton and (buyButton:IsA("ImageButton") or buyButton:IsA("TextButton")) then
+		buyButton.MouseButton1Click:Connect(function()
+			buyItem(data)
+		end)
+	end
+	updateUI(data)
+end
+
+setShecklesLabel(shecklesStat.Value)
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Window = Rayfield:CreateWindow({
+   Name = "Grow a Garden (Fake Seed/Gear)",
+   Icon = 0,
+   LoadingTitle = "Loading..",
+   LoadingSubtitle = "by Blocky69",
+   ShowText = "UI",
+   Theme = "Default",
+
+   ToggleUIKeybind = "K",
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false,
+
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = nil,
+      FileName = "Fake Seed n Gear"
+   },
+
+   Discord = {
+      Enabled = false,
+      Invite = "noinvitelink",
+      RememberJoins = false
+   },
+
+   KeySystem = false,
+})
+
+local function Notify(T, C, D, I)
+    Rayfield:Notify({
+       Title = T or "Notification Title",
+       Content = C or "Notification Content",
+       Duration = D or 0,
+       Image = I or 4483362458,
+    })
+end
+
+local H = Window:CreateTab("Home", "home")
+local S = Window:CreateTab("Seed Stocker", "sprout")
+local G = Window:CreateTab("Gear Stocker", "wrench")
+local M = Window:CreateTab("Misc", "settings")
+
+local HS = H:CreateSection("Home Section")
+local SS = S:CreateSection("Seed Section")
+local GS = G:CreateSection("Gear Section")
+local MS = M:CreateSection("Misc Section")
+
+H:CreateLabel("Welcome! " .. Player .. " (" .. User .. ") Thank you for using my script! :)", 4483362458, Color3.fromRGB(255, 255, 255), false)
+H:CreateParagraph({Title = "This script is open-source", Content = "Feel free to check if there's malicious code in the script."})
+H:CreateParagraph({Title = "Note:", Content = "The purpose of this script is to troll your friends\nWith the fake restock using this script\nReminder: This do not gives you any seed/gears\nAnd doesn't takes your money.\nRejoin and everything will be back to normal!"})
+
+local sname = "Carrot"
+local sprice = 10
+local sstock = 1
+
+local gname = "Watering Can"
+local gprice = 50000
+local gstock = 1
+
+S:CreateInput({
+   Name = "Seed Name",
+   CurrentValue = "",
+   PlaceholderText = "(need to be uppercase/lowercase)",
+   RemoveTextAfterFocusLost = false,
+   Flag = "Input1",
+   Callback = function(Text)
+       sname = Text
+   end,
+})
+
+S:CreateInput({
+   Name = "Seed Price",
+   CurrentValue = "",
+   PlaceholderText = "The price you want it to be",
+   RemoveTextAfterFocusLost = false,
+   Flag = "Input1",
+   Callback = function(Text)
+       sprice = Text
+   end,
+})
+
+S:CreateInput({
+   Name = "Seed Stock",
+   CurrentValue = "",
+   PlaceholderText = "How much will it be on stock",
+   RemoveTextAfterFocusLost = false,
+   Flag = "Input1",
+   Callback = function(Text)
+       sstock = Text
+   end,
+})
+
+local function addSeedToShop()
+    if not sname or sname == "" then return end
+    local costNum = tonumber(sprice) or 1
+    local stockNum = tonumber(sstock) or 1
+
+    local uiSlot = UI:FindFirstChild(sname)
+    if not uiSlot then
+        warn("Seed UI slot not found: "..sname)
+        return
+    end
+
+    items[sname] = {
+        cost = costNum,
+        displayCost = formatCommas(costNum).."¢",
+        stock = stockNum,
+        itemName = sname.." Seed",
+        ui = uiSlot,
+        debounce = false
+    }
+
+    local buyButton = uiSlot.Frame:FindFirstChild("Sheckles_Buy")
+    if buyButton and (buyButton:IsA("ImageButton") or buyButton:IsA("TextButton")) then
+        buyButton.MouseButton1Click:Connect(function()
+            buyItem(items[sname])
+        end)
+    end
+
+    updateUI(items[sname])
+    Notify("Restocked Seed!", "Seed: " .. sname .. ", Price: " .. sprice .. ", Stock: " .. sstock .. "!", 3, "rewind")
+end
+
+S:CreateButton({
+   Name = "Confirm Seed",
+   Callback = addSeedToShop
+})
+
+G:CreateInput({
+   Name = "Gear Name",
+   CurrentValue = "",
+   PlaceholderText = "(need to be uppercase/lowercase)",
+   RemoveTextAfterFocusLost = false,
+   Flag = "Input1",
+   Callback = function(Text)
+       gname = Text
+   end,
+})
+
+G:CreateInput({
+   Name = "Gear Price",
+   CurrentValue = "",
+   PlaceholderText = "The price you want it to be",
+   RemoveTextAfterFocusLost = false,
+   Flag = "Input1",
+   Callback = function(Text)
+       gprice = Text
+   end,
+})
+
+G:CreateInput({
+   Name = "Gear Stock",
+   CurrentValue = "",
+   PlaceholderText = "How much will it be on stock",
+   RemoveTextAfterFocusLost = false,
+   Flag = "Input1",
+   Callback = function(Text)
+       gstock = Text
+   end,
+})
+
+local function addGearToShop()
+    if not gname or gname == "" then return end
+    local costNum = tonumber(gprice) or 1
+    local stockNum = tonumber(gstock) or 1
+
+    local uiSlot = GUI:FindFirstChild(gname)
+    if not uiSlot then
+        warn("Gear UI slot not found: "..gname)
+        return
+    end
+
+    gears[gname] = {
+        cost = costNum,
+        displayCost = formatCommas(costNum).."¢",
+        stock = stockNum,
+        itemName = gname,
+        ui = uiSlot,
+        debounce = false
+    }
+
+    local buyButton = uiSlot.Frame:FindFirstChild("Sheckles_Buy")
+    if buyButton and (buyButton:IsA("ImageButton") or buyButton:IsA("TextButton")) then
+        buyButton.MouseButton1Click:Connect(function()
+            buyGear(gears[gname])
+        end)
+    end
+
+    updateGUI(gears[gname])
+    Notify("Restocked Gear!", "Gear: " .. gname .. ", Price: " .. gprice .. ", Stock: " .. gstock .. "!", 3, "rewind")
+end
+
+G:CreateButton({
+    Name = "Confirm Gear",
+    Callback = addGearToShop
+})
+
+M:CreateButton({
+   Name = "Remove UI",
+   Callback = function()
+       Rayfield:Notify({
+           Title = "Removing the UI!",
+           Content = "bye ;d",
+           Duration = 3,
+           Image = "rewind",
+       })
+       wait(3)
+       Rayfield:Destroy()
+   end,
+})
+
+Notify("Welcome " .. Player .. " (" .. User .. ") !", "Have fun trolling your friend with this script!", 3, "rewind")
