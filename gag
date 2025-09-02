@@ -328,6 +328,8 @@ S:CreateInput({
    end,
 })
 
+S:CreateParagraph({Title = "Seed Name Disclaimer", Content = "No need for 'Seeds' behind, Example: Romanesco"})
+
 S:CreateInput({
    Name = "Seed Price",
    CurrentValue = "",
