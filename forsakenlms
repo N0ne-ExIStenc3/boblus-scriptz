@@ -1,0 +1,482 @@
+local Debris = game:GetService("Debris")
+local HttpService = game:GetService("HttpService")
+
+local songs = {
+    teapot = {
+        Title = "Teapot Palace || DoD",
+        File  = "teapot",
+        Link  = "https://files.catbox.moe/oaat1o.mp3",
+        Volume= 1
+    },
+    onebounce = {
+        Title = "One Bounce || DoD",
+        File  = "bounce",
+        Link  = "https://files.catbox.moe/w08ydc.mp3",
+        Volume= 1
+    }
+}
+
+local currentSongKey = "teapot"
+local ORIGINAL_LMS_ASSETID = "rbxassetid://71057332615441"
+
+_G.replaceNormalLMS = true
+_G.replaceCustomLMS = true
+
+local storageFolder = "forsaken"
+local storageFile = storageFolder .. "/custom_songs.json"
+
+local connection
+local function display(msg) print(msg) end
+
+if connection then
+    connection:Disconnect()
+    connection = nil
+end
+
+local function httpGet(url)
+    if not url or url == "" then return nil, "no url" end
+    local ok, res = pcall(function()
+        if request then
+            return request({Method = "GET", Url = url})
+        elseif http_request then
+            return http_request({Url = url, Method = "GET"})
+        elseif syn and syn.request then
+            return syn.request({Url = url, Method = "GET"})
+        else
+            error("no supported http request function")
+        end
+    end)
+    if not ok then return nil, res end
+    if not res then return nil, "no response" end
+    return res.Body or res.body, nil
+end
+
+local function ensureStorage()
+    if isfolder and makefolder and not isfolder(storageFolder) then
+        makefolder(storageFolder)
+    end
+end
+
+local function saveCustomSongs()
+    if not (isfolder and writefile) then return false, "no file api" end
+    ensureStorage()
+    local customOnly = {}
+    for k,v in pairs(songs) do
+        if v._custom then
+            customOnly[k] = v
+        end
+    end
+    local ok, err = pcall(function()
+        writefile(storageFile, HttpService:JSONEncode(customOnly))
+    end)
+    return ok, err
+end
+
+local function loadCustomSongs()
+    if not (isfolder and isfile and readfile) then return end
+    ensureStorage()
+    if not isfile(storageFile) then return end
+    local ok, content = pcall(function() return readfile(storageFile) end)
+    if not ok or not content then return end
+    local suc, tbl = pcall(function() return HttpService:JSONDecode(content) end)
+    if not suc or type(tbl) ~= "table" then return end
+    for k,v in pairs(tbl) do
+        v._custom = true
+        songs[k] = v
+    end
+end
+
+function addCustomLMS(key, title, filename, link, volume, autoDownload)
+    if type(key) ~= "string" or key == "" then return false, "invalid key" end
+    if type(link) ~= "string" or link == "" then return false, "invalid link" end
+    local entry = {
+        Title = title or filename or key,
+        File  = filename or key,
+        Link  = link,
+        Volume= (type(volume) == "number" and volume) or 1,
+        _custom = true
+    }
+    songs[key] = entry
+    local ok, err = saveCustomSongs()
+    if not ok then display("warning: couldn't save custom list: ".. tostring(err)) end
+
+    local localPath = storageFolder .. "/" .. entry.File .. ".mp3"
+    if autoDownload and isfolder and writefile and isfile then
+        if not isfile(localPath) then
+            display("downloading " .. entry.Title)
+            local body, herr = httpGet(entry.Link)
+            if not body then
+                display("download failed: ".. tostring(herr))
+                return false, "download failed"
+            end
+            local wok, werr = pcall(function() writefile(localPath, body) end)
+            if not wok then
+                display("save failed: ".. tostring(werr))
+                return false, "save failed"
+            end
+            display("downloaded ".. entry.Title)
+        end
+    end
+    return true
+end
+
+function removeCustomLMS(key)
+    if not songs[key] or not songs[key]._custom then return false, "not found or not custom" end
+    local filename = songs[key].File
+    songs[key] = nil
+    local ok, err = saveCustomSongs()
+    if not ok then display("warning: couldn't save custom list: ".. tostring(err)) end
+    local localPath = storageFolder .. "/" .. filename .. ".mp3"
+    if isfile and pcall and isfile(localPath) then
+        local s, e = pcall(function() delfile(localPath) end)
+        if not s then display("couldn't delete file: ".. tostring(e)) end
+    end
+    return true
+end
+
+function getCustomLMSTable()
+    return songs
+end
+
+if isfolder and isfile and readfile then
+    loadCustomSongs()
+end
+
+if _G.DONOTEXECUTE and _G.DONOTEXECUTE == true then
+    display("script is currently downloading audio; do not execute this script, please.")
+else
+    if isfolder and makefolder and writefile and isfile and (request or http_request or (syn and syn.request)) and getcustomasset then
+        if not isfolder(storageFolder) then makefolder(storageFolder) end
+
+        local songEntry = songs[currentSongKey]
+        if not songEntry then
+            display("invalid currentSongKey: ".. tostring(currentSongKey))
+            return
+        end
+
+        local localPath = storageFolder .. "/" .. songEntry.File .. ".mp3"
+        if not isfile(localPath) then
+            display("downloading ".. songEntry.Title .." — this may take a minute...")
+            _G.DONOTEXECUTE = true
+            local body, err = httpGet(songEntry.Link)
+            _G.DONOTEXECUTE = nil
+
+            if not body then
+                display("failed to download ".. songEntry.File .. ".mp3: ".. tostring(err))
+            else
+                local ok, werr = pcall(function() writefile(localPath, body) end)
+                if not ok then
+                    display("failed to save file: ".. tostring(werr))
+                else
+                    display("downloaded and saved ".. songEntry.File ..".mp3")
+                end
+            end
+        end
+
+        local themesFolder = workspace:FindFirstChild("Themes")
+        if not themesFolder then
+            display("workspace.Themes not found; aborting sound swap.")
+            return
+        end
+
+        connection = themesFolder.ChildAdded:Connect(function(child)
+            if not child:IsA("Sound") then return end
+            if child.Name ~= "LastSurvivor" then return end
+
+            local currentId = tostring(child.SoundId or "")
+            local isOriginal = currentId == ORIGINAL_LMS_ASSETID
+            local isCustom = currentId ~= ORIGINAL_LMS_ASSETID and currentId ~= ""
+
+            local shouldReplace = (isOriginal and _G.replaceNormalLMS) or (isCustom and _G.replaceCustomLMS)
+            if not shouldReplace then return end
+            if _G.isEnabled == false then
+                connection:Disconnect()
+                connection = nil
+                return
+            end
+
+            local success, asset = pcall(function() return getcustomasset(localPath, false) end)
+            if success and asset then
+                child.SoundId = asset
+                child.Volume = songEntry.Volume or 1
+                display("replaced LastSurvivor (".. (isOriginal and "original" or "custom") ..") with ".. songEntry.Title)
+            else
+                display("getcustomasset failed; could not replace sound.")
+            end
+        end)
+    else
+        display("your exploit doesn't support the required functions:\n* isfolder\n* makefolder\n* writefile\n* isfile\n* a http request function (request/http_request/syn.request)\n* getcustomasset\nplease switch to an exploit that provides them.")
+        return
+    end
+end
+
+-- Rayfield UI wiring (replace the Rayfield UI block in your script with this)
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Window = Rayfield:CreateWindow({
+   Name = "Forsaken LMS Replacer",
+   Icon = "archive-restore",
+   LoadingTitle = "Loading..",
+   LoadingSubtitle = "Forsaken",
+   ShowText = "UI",
+   Theme = "Default",
+   ToggleUIKeybind = "K",
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false,
+})
+
+local function notify(header, text, time)
+    Rayfield:Notify({Title = header, Content = text, Duration = time, Image = "circle-alert"})
+end
+
+local T1 = Window:CreateTab("LMS", "boxes")
+local T2 = Window:CreateTab("Custom", "archive")
+local T3 = Window:CreateTab("Settings", "settings")
+
+local TS1 = T1:CreateSection("LMS")
+local TS2 = T2:CreateSection("Custom")
+local TS3 = T3:CreateSection("Settings")
+
+-- state for GUI
+local dropdownRef
+local currentDropdownSelection = nil
+local toggleReplaceNormal = _G.replaceNormalLMS
+local toggleReplaceAll = _G.replaceCustomLMS
+
+local inputTitle = ""
+local inputFile = ""
+local inputLink = ""
+local inputVolume = 1
+
+-- preview player
+local previewSound -- Sound instance
+local previewFolderName = "ForsakenPreview"
+
+local function ensurePreviewFolder()
+    local f = workspace:FindFirstChild(previewFolderName)
+    if not f then
+        f = Instance.new("Folder")
+        f.Name = previewFolderName
+        f.Parent = workspace
+    end
+    return f
+end
+
+local function stopPreview()
+    if previewSound and previewSound.Parent then
+        previewSound:Stop()
+        previewSound:Destroy()
+        previewSound = nil
+    end
+end
+
+local function playPreviewForKey(key)
+    stopPreview()
+    local entry = songs[key]
+    if not entry then
+        notify("Error", "Song not found: "..tostring(key), 3)
+        return
+    end
+
+    local localPath = storageFolder .. "/" .. entry.File .. ".mp3"
+    -- if not downloaded, try to download
+    if isfile and not isfile(localPath) then
+        notify("Downloading", "Downloading "..entry.Title, 3)
+        local ok, err = addCustomLMS(key, entry.Title, entry.File, entry.Link, entry.Volume, true)
+        if not ok then
+            notify("Download failed", tostring(err), 4)
+            return
+        end
+    end
+
+    -- create sound and play
+    local success, asset = pcall(function() return getcustomasset(localPath, false) end)
+    if not success or not asset then
+        notify("Error", "getcustomasset failed; cannot preview", 4)
+        return
+    end
+
+    local folder = ensurePreviewFolder()
+    previewSound = Instance.new("Sound")
+    previewSound.Name = "ForsakenPreviewSound"
+    previewSound.SoundId = asset
+    previewSound.Volume = entry.Volume or 1
+    previewSound.Parent = folder
+    previewSound:Play()
+    -- auto cleanup when finished
+    previewSound.Ended:Connect(function()
+        if previewSound and previewSound.Parent then
+            previewSound:Destroy()
+            previewSound = nil
+        end
+    end)
+end
+
+-- helper to build dropdown options from songs table
+local function buildDropdownOptions()
+    local opts = {}
+    for k,v in pairs(songs) do
+        table.insert(opts, tostring(k))
+    end
+    table.sort(opts)
+    return opts
+end
+
+-- refresh dropdown (recreates it)
+local function refreshDropdown()
+    local options = buildDropdownOptions()
+    if dropdownRef and dropdownRef.Update then
+        -- Rayfield dropdown supports Update method; if not, recreate below
+        pcall(function() dropdownRef:Update(options) end)
+        return
+    end
+    -- fallback: recreate dropdown by destroying tab controls is messy; instead create a new dropdown and hide old one
+end
+
+-- LMS Tab
+dropdownRef = T1:CreateDropdown({
+   Name = "Select Song (key)",
+   Options = buildDropdownOptions(),
+   CurrentOption = {currentSongKey},
+   MultipleOptions = false,
+   Callback = function(Options)
+       -- Options is the selected key string
+       currentDropdownSelection = Options
+       currentSongKey = Options
+       notify("Selected", "Set currentSongKey to "..tostring(Options), 2)
+   end,
+})
+
+_G.replaceNormalLMS = false
+_G.replaceCustomLMS = false
+
+T1:CreateToggle({
+   Name = "Toggle LMS Replace (Only Normal LMS)",
+   CurrentValue = _G.replaceNormalLMS,
+   Callback = function(Value)
+        _G.replaceNormalLMS = Value
+        toggleReplaceNormal = Value
+        notify("Setting", "replaceNormalLMS = "..tostring(Value), 1.8)
+   end,
+})
+
+T1:CreateToggle({
+   Name = "Toggle LMS Replace (All LMS)",
+   CurrentValue = _G.replaceCustomLMS,
+   Callback = function(Value)
+        _G.replaceCustomLMS = Value
+        toggleReplaceAll = Value
+        notify("Setting", "replaceCustomLMS = "..tostring(Value), 1.8)
+   end,
+})
+
+-- Custom Tab inputs
+T2:CreateInput({
+   Name = "Titles",
+   CurrentValue = "",
+   PlaceholderText = "Song title",
+   RemoveTextAfterFocusLost = false,
+   Callback = function(Text)
+        inputTitle = Text
+   end,
+})
+
+T2:CreateInput({
+   Name = "File Name",
+   CurrentValue = "",
+   PlaceholderText = "Filename (no extension)",
+   RemoveTextAfterFocusLost = false,
+   Callback = function(Text)
+        inputFile = Text
+   end,
+})
+
+T2:CreateInput({
+   Name = "Link",
+   CurrentValue = "",
+   PlaceholderText = "Direct raw link (raw.githubusercontent / dl=1 / GoFile direct)",
+   RemoveTextAfterFocusLost = false,
+   Callback = function(Text)
+        inputLink = Text
+   end,
+})
+
+T2:CreateInput({
+   Name = "Volume",
+   CurrentValue = "1",
+   PlaceholderText = "Number (e.g. 1)",
+   RemoveTextAfterFocusLost = false,
+   Callback = function(Text)
+        local n = tonumber(Text)
+        if n then inputVolume = n else inputVolume = 1 end
+   end,
+})
+
+-- Listen / Stop Music
+local isPreviewPlaying = false
+T2:CreateButton({
+   Name = "Listen/Stop Music",
+   Callback = function()
+      if isPreviewPlaying then
+          stopPreview()
+          isPreviewPlaying = false
+          notify("Preview", "Stopped preview", 2)
+          return
+      end
+
+      local keyToPlay = currentDropdownSelection or currentSongKey
+      if not keyToPlay then
+          notify("Error", "No song selected", 2.5)
+          return
+      end
+      playPreviewForKey(keyToPlay)
+      isPreviewPlaying = true
+      notify("Preview", "Playing "..tostring(keyToPlay), 2.5)
+   end,
+})
+
+T2:CreateButton({
+   Name = "Add To Table",
+   Callback = function()
+      if inputLink == "" or inputFile == "" then
+          notify("Error", "File name and Link are required", 3)
+          return
+      end
+      local key = inputFile:gsub("%s+","_"):lower()
+      local ok, err = addCustomLMS(key, inputTitle ~= "" and inputTitle or key, inputFile, inputLink, inputVolume, true)
+      if not ok then
+          notify("Add Failed", tostring(err), 4)
+          return
+      end
+      -- refresh dropdown options
+      local ok2, err2 = pcall(function()
+          dropdownRef:Refresh(buildDropdownOptions())
+      end)
+      notify("Added", "Added "..tostring(key).." to table", 2.5)
+   end,
+})
+
+T2:CreateButton({
+   Name = "Remove Selected Custom",
+   Callback = function()
+      local key = currentDropdownSelection or currentSongKey
+      if not key then notify("Error", "No selection",2); return end
+      if not songs[key] or not songs[key]._custom then notify("Error", "Selection not custom",2); return end
+      local ok, err = removeCustomLMS(key)
+      if not ok then notify("Remove failed", tostring(err), 3); return end
+      pcall(function() dropdownRef:Refresh(buildDropdownOptions()) end)
+      notify("Removed", "Removed "..tostring(key), 2.5)
+   end,
+})
+
+-- Settings Tab
+T3:CreateButton({
+   Name = "Destroy UI",
+   Callback = function()
+      notify("Notification", "Destroying UI!! ;C", 3.5)
+      wait(4.2)
+      Rayfield:Destroy()
+   end,
+})
+
+-- initial selection
+currentDropdownSelection = currentSongKey
