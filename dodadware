@@ -1,0 +1,253 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
+local gui = player.PlayerGui.MainGui.Shop
+local val = "Adware"
+local og = "Badware"
+local cost = "600"
+
+if gui:FindFirstChild("CustomConfirm") then
+    gui.CustomConfirm:Destroy()
+end
+
+if game.SoundService:FindFirstChild("Placeholder") then
+    game.SoundService.Placeholder:Destroy()
+end
+
+local c = gui.Confirm:Clone()
+c.Name = "CustomConfirm"
+c.Parent = gui
+c.Frame.Icon.Image = "rbxassetid://99148727289205"
+c.Frame.Info.Text = "Would you like to buy <u>Adware</u> for"
+c.Frame.Cash.Text = cost
+c.Frame.Warning.Text = "THIS SKIN DOESN'T HAVE MODEL YET, BE CAREFUL WHEN USING IT"
+c.Frame.Size = UDim2.new(0.435, 0, 0.418, 0)
+
+if gui.Skins:FindFirstChild("CustomInfo") then
+    gui.Skins.CustomInfo:Destroy()
+end
+
+local i = gui.Skins.Info:Clone()
+i.Name = "CustomInfo"
+i.Visible = false
+i.Parent = gui.Skins
+i.Bio.RichText = true
+i.Credits:Destroy()
+
+i.Title.Text = val
+i.Bio.Text = "YOU HAVE RECEIVED A FREE <b><u>EXECUTION</u></b>!"
+i.Buttons.Song.Label.Text = "PLACEHOLDER MUSIC"
+i.Buttons.Song.Credits.Text = "By @Placeholder"
+i.Buttons.Action.Cash.Text = cost
+i.Position = UDim2.new(0.516, 0, 0.056, 0)
+i.Buttons.Action.Title.Visible = false
+i.Buttons.Action.Cash.Visible = true
+
+if player.Stats.Skins:FindFirstChild(val) then
+    i.Buttons.Action.Title.Visible = true
+    i.Buttons.Action.Cash.Visible = false
+    i.Buttons.Action.Title.Text = "Equip"
+end
+
+if player.Stats.Killers:FindFirstChild(og):GetAttribute("EquippedSkin") == val then
+    i.Buttons.Action.Title.Visible = true
+    i.Buttons.Action.Cash.Visible = false
+    i.Buttons.Action.Title.Text = "Unequip"
+end
+
+local function showCustomInfo()
+    i.Title.Text = val
+    i.Bio.Text = "YOU HAVE RECEIVED A FREE <b><u>EXECUTION</u></b>!"
+    i.Buttons.Song.Label.Text = "PLACEHOLDER MUSIC"
+    i.Buttons.Song.Credits.Text = "By @Placeholder"
+    i.Buttons.Action.Cash.Text = cost
+
+    gui.Skins.Info.Visible = false
+    i.Visible = true
+end
+
+local function hideCustomInfo()
+    i.Visible = false
+    gui.Skins.Info.Visible = true
+    c.Visible = false
+end
+
+task.spawn(function()
+    while true do
+        task.wait(0.2)
+        local scrollFrame = gui.Skins.Frame.ScrollingFrame
+        local spywareBtn = scrollFrame:FindFirstChild("Spyware")
+        local adwareBtn = scrollFrame:FindFirstChild(val)
+
+        if spywareBtn then
+            if not adwareBtn then
+                adwareBtn = spywareBtn:Clone()
+                adwareBtn.Parent = scrollFrame
+                adwareBtn.Name = val
+            end
+
+            if adwareBtn:FindFirstChild("Frame") then
+                local aFrame = adwareBtn.Frame
+                aFrame.Title.Text = val
+                aFrame.Icon.Image = "rbxassetid://99148727289205"
+            end
+
+            if not adwareBtn:GetAttribute("MirrorSetup") then
+                adwareBtn:SetAttribute("MirrorSetup", true)
+                local aFrame = adwareBtn.Frame
+                aFrame.MouseEnter:Connect(function()
+                    aFrame.Size = UDim2.new(0.95, 0, 0.95, 0)
+                    aFrame.Select.Visible = true
+                end)
+                aFrame.MouseLeave:Connect(function()
+                    aFrame.Size = UDim2.new(1, 0, 1, 0)
+                    aFrame.Select.Visible = false
+                end)
+                task.spawn(function()
+                    while aFrame.Parent do
+                        aFrame.Select.Label.TextColor3 = Color3.fromRGB(146, 240, 255)
+                        task.wait(0.1)
+                        if not aFrame.Parent then break end
+                        aFrame.Select.Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+                        task.wait(0.1)
+                    end
+                end)
+            end
+        elseif adwareBtn then
+            adwareBtn:Destroy()
+        end
+    end
+end)
+
+local function connectSkinClicks()
+    for _, skinBtn in ipairs(gui.Skins.Frame.ScrollingFrame:GetChildren()) do
+        if skinBtn:IsA("ImageButton") and not skinBtn:GetAttribute("ClickConnected") then
+            skinBtn:SetAttribute("ClickConnected", true)
+            skinBtn.MouseButton1Click:Connect(function()
+                if skinBtn.Name == val then
+                    if i.Visible then
+                        hideCustomInfo()
+                    else
+                        showCustomInfo()
+                    end
+                else
+                    hideCustomInfo()
+                end
+            end)
+        end
+    end
+end
+
+connectSkinClicks()
+gui.Skins.Frame.ScrollingFrame.ChildAdded:Connect(connectSkinClicks)
+gui.Skins.Frame.ScrollingFrame.ChildRemoved:Connect(connectSkinClicks)
+
+i.Buttons.Action.MouseButton1Click:Connect(function()
+    local ownsAdware = player.Stats.Skins:FindFirstChild(val)
+    if not ownsAdware then
+        c.Visible = true
+        c.Frame.Size = UDim2.new(0.605, 0, 0.505, 0)
+        c.Frame:TweenSize(UDim2.new(0.75975, 0, 0.80813, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.1, true)
+    else
+        local args = {val, "Skin", og}
+        ReplicatedStorage.Events.RemoteFunctions.PurchaseItem:InvokeServer(unpack(args))
+        if player.Stats.Killers:FindFirstChild(og):GetAttribute("EquippedSkin") == val then
+            i.Buttons.Action.Title.Text = "Unequip"
+        else
+            i.Buttons.Action.Title.Text = "Equip"
+        end
+    end
+end)
+
+c.Frame.Buttons.Confirm.MouseButton1Click:Connect(function()
+    local args = {val, "Skin", og}
+    ReplicatedStorage.Events.RemoteFunctions.PurchaseItem:InvokeServer(unpack(args))
+    c.Visible = false
+    i.Buttons.Action.Title.Visible = true
+    i.Buttons.Action.Cash.Visible = false
+    i.Buttons.Action.Title.Text = "Equip"
+end)
+
+c.Frame.Buttons.Cancel.MouseButton1Click:Connect(function()
+    c.Visible = false
+end)
+
+local function setupAdwareClick()
+    local adwareBtn = gui.Skins.Frame.ScrollingFrame:FindFirstChild(val)
+    if adwareBtn and adwareBtn:FindFirstChild("Frame") and not adwareBtn:GetAttribute("ClickSetup") then
+        adwareBtn:SetAttribute("ClickSetup", true)
+
+        adwareBtn.MouseButton1Click:Connect(function()
+            if not i.Visible then
+                i.Visible = true
+                i.Position = UDim2.new(0.516, 0, 1.2, 0)
+                gui.Skins.Frame.Position = UDim2.new(0.265, 0, 0.056, 0)
+
+                i:TweenPosition(
+                    UDim2.new(0.516, 0, 0.056, 0),
+                    Enum.EasingDirection.Out,
+                    Enum.EasingStyle.Quad,
+                    0.25,
+                    true
+                )
+
+                gui.Skins.Frame:TweenPosition(
+                    UDim2.new(0.033, 0, 0.056, 0),
+                    Enum.EasingDirection.Out,
+                    Enum.EasingStyle.Quad,
+                    0.25,
+                    true
+                )
+            else
+                gui.Skins.Frame:TweenPosition(
+                    UDim2.new(0.265, 0, 0.056, 0),
+                    Enum.EasingDirection.Out,
+                    Enum.EasingStyle.Quad,
+                    0.25,
+                    true
+                )
+
+                i:TweenPosition(
+                    UDim2.new(0.516, 0, 1.2, 0),
+                    Enum.EasingDirection.In,
+                    Enum.EasingStyle.Quad,
+                    0.25,
+                    true,
+                    function()
+                        i.Visible = false
+                    end
+                )
+            end
+        end)
+    end
+end
+
+task.spawn(function()
+    while true do
+        task.wait(0.5)
+        setupAdwareClick()
+    end
+end)
+
+local s = Instance.new("Sound")
+s.Parent = game.SoundService
+s.SoundId = "rbxassetid://103141911887008"
+s.Name = "Placeholder"
+
+local isPlaying = false
+
+i.Buttons.Song.MouseButton1Click:Connect(function()
+    if isPlaying then
+        s:Stop()
+        i.Buttons.Song.Label.Visible = false
+        i.Buttons.Song.Credits.Visible = false
+        isPlaying = false
+    else
+        s:Play()
+        i.Buttons.Song.Label.Visible = true
+        i.Buttons.Song.Credits.Visible = true
+        isPlaying = true
+    end
+end)
