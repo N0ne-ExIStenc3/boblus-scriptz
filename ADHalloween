@@ -1,7 +1,7 @@
-local pastebin = "https://pastebin.com/raw/gDkEPKSc"
+local link = "https://raw.githubusercontent.com/N0ne-ExIStenc3/boblus-scriptz/refs/heads/main/ADHalloween"
 
 if queue_on_teleport then
-	queue_on_teleport(('loadstring(game:HttpGet("%s"))()'):format(pastebin))
+	queue_on_teleport(('loadstring(game:HttpGet("%s"))()'):format(link))
 end
 
 local function waitForValidSuspect(Values)
@@ -41,7 +41,6 @@ local function run()
 	repeat task.wait() until game:IsLoaded()
 	task.wait(2)
 	local player = game:GetService("Players").LocalPlayer
-	local label = player:WaitForChild("PlayerGui"):WaitForChild("MainGui").Holder.Top.Holder.Candy.Amount
 	task.spawn(function()
 		while task.wait(0.5) do
 			local menuGui = player.PlayerGui:FindFirstChild("MenuGui")
