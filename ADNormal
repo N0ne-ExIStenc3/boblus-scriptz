@@ -31,20 +31,18 @@ local function clickMenuAndAccuse(label)
 	local viewport = camera.ViewportSize
 	local x, y = viewport.X * 0.5, viewport.Y * 0.84
 	vim:SendMouseButtonEvent(x, y, 0, true, game, 0)
-	task.wait()
+    task.wait()
 	vim:SendMouseButtonEvent(x, y, 0, false, game, 0)
-	task.wait(2)
 	doAction(label)
 end
 
 local function run()
 	repeat task.wait() until game:IsLoaded()
-	task.wait(2)
 	local player = game:GetService("Players").LocalPlayer
 	task.spawn(function()
 		while task.wait(0.5) do
 			local menuGui = player.PlayerGui:FindFirstChild("MenuGui")
-			if menuGui then
+			if menuGui.Enabled then
 				clickMenuAndAccuse(label)
 			end
 		end
