@@ -1,0 +1,927 @@
+TweenService = game:GetService("TweenService")
+CollectionService = game:GetService("CollectionService")
+SoundService = game:GetService("SoundService")
+GameValues = require(game.ReplicatedStorage.Modules.GameValues)
+ScreenGui = game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild("Scoring")
+Assets = ScreenGui.Assets
+MultiplierList = ScreenGui.MultiplierList
+SFX = ScreenGui.SFX
+ScoreText = ScreenGui.ScoreText
+RandomNum = Random.new()
+TweenService:Create(MultiplierList, TweenInfo.new(0.25, Enum.EasingStyle.Circular, Enum.EasingDirection.In, -1, true), {
+	["Position"] = UDim2.fromScale(0.5, 0.58),
+	["Size"] = UDim2.fromScale(1.1, 0.9)
+}):Play()
+Score = 0
+CurrentMultiplier = 1
+Tier = 1
+CurrentTier = 1
+StarMultiplier = GameValues.Stars
+ScoreText:SetAttribute("TextColor3", ScoreText.TextColor3)
+Camera = workspace.CurrentCamera
+local v1 = {
+    ["OBLITERATED"] = {
+        ["AddedMultiplier"] = -2,
+    },
+	["KILLSTREAK"] = {
+		["AddedMultiplier"] = 0.05,
+		["Stack"] = math.huge
+	},
+	["CLICKED"] = {
+		["AddedMultiplier"] = 0.01,
+		["Stack"] = math.huge
+	},
+	["SPAWNED UNIT"] = {
+		["AddedMultiplier"] = 0.03,
+		["Stack"] = math.huge
+	},
+	["FIRED CANNON"] = {
+		["AddedMultiplier"] = 0.3
+	},
+	["UPGRADED BANK"] = {
+		["AddedMultiplier"] = 0.3
+	},
+	["UNIT SWITCHED"] = {
+		["AddedMultiplier"] = 0.2
+	},
+	["NOT READY YET"] = {
+		["AddedMultiplier"] = -0.2
+	},
+	["PLEASE DON\'T LEAVE"] = {
+		["AddedMultiplier"] = 0.5,
+		["Time"] = 3
+	},
+	["DETONATOR GAMING"] = {
+		["AddedMultiplier"] = 1
+	},
+	["AIR STRIKE INCOMING"] = {
+		["AddedMultiplier"] = 3
+	},
+	["AIR.. TANK??"] = {
+		["AddedMultiplier"] = 3
+	},
+	["MY GOAT"] = {
+		["AddedMultiplier"] = 3
+	},
+	["DON\'T INTERRUPT HIM"] = {
+		["AddedMultiplier"] = -0.2,
+		["Time"] = 5
+	},
+	["CAMPING AT BASE"] = {
+		["AddedMultiplier"] = -0.5
+	},
+	["LOST TOO MANY"] = {
+		["AddedMultiplier"] = -0.5
+	},
+	["HAPPY BIRTHDAY"] = {
+		["AddedMultiplier"] = 1,
+		["Time"] = 3
+	},
+	["BIRTHDAY RUINED"] = {
+		["AddedMultiplier"] = -2,
+		["Time"] = 15
+	},
+	["ON THE EDGE"] = {
+		["AddedMultiplier"] = 0.2,
+		["Stack"] = 5,
+		["Time"] = 2
+	},
+	["LETS GO GAMBLING"] = {
+		["AddedMultiplier"] = 0.1
+	},
+	["GIANT SPIDER"] = {
+		["AddedMultiplier"] = 0.5,
+		["Time"] = 3
+	},
+	["AW DANG IT"] = {
+		["AddedMultiplier"] = -0.5,
+		["Time"] = 15
+	},
+	["BIG WIN"] = {
+		["AddedMultiplier"] = 5,
+		["Time"] = 15
+	},
+	["MULTI KILL"] = {
+		["AddedMultiplier"] = 0.5
+	},
+	["FIVE BIG BOOMS"] = {
+		["AddedMultiplier"] = 0.5
+	},
+	["SLAINED MINIBOSS"] = {
+		["AddedMultiplier"] = 0.5
+	},
+	["BOSS DEFEATED"] = {
+		["AddedMultiplier"] = 2
+	},
+	["GETTING BORED"] = {
+		["AddedMultiplier"] = -0.1,
+		["Stack"] = 10,
+		["Time"] = 3
+	},
+	["VICTORY"] = {
+		["AddedMultiplier"] = 1,
+		["Time"] = (1 / 0)
+	},
+	["LOSER"] = {
+		["AddedMultiplier"] = -1,
+		["Time"] = (1 / 0)
+	}
+}
+MultiplierType = v1
+function FlashMultiplierFrame(p2)
+	local v3 = p2:GetAttribute("Size").X.Scale
+	local v4 = p2:GetAttribute("Size").Y.Scale
+	p2.Size = UDim2.fromScale(v3 * 1.2, v4 * 1.2)
+	p2.TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	TweenService:Create(p2, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		["Size"] = UDim2.fromScale(v3, v4)
+	}):Play()
+	TweenService:Create(p2.TextLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		["TextColor3"] = p2:GetAttribute("TextColor3")
+	}):Play()
+end
+local v_u_5 = false
+function AddMultiplierType(p6)
+	if v_u_5 == true then
+		return
+	else
+		CountAllMultiplier()
+		local v7 = MultiplierList:FindFirstChild(p6)
+		if v7 then
+			FlashMultiplierFrame(v7)
+			if MultiplierType[p6].Stack and MultiplierType[p6].Stack > v7:GetAttribute("Stack") then
+				v7:SetAttribute("Stack", v7:GetAttribute("Stack") + 1)
+				v7:SetAttribute("AddedMultiplier", v7:GetAttribute("AddedMultiplier") + MultiplierType[p6].AddedMultiplier)
+			end
+			local v8 = p6 .. (not (MultiplierType[p6].Stack and v7:GetAttribute("Stack")) and " " or " [x" .. v7:GetAttribute("Stack") .. "] ") .. "[" .. MultiplierType[p6].AddedMultiplier * 100 * v7:GetAttribute("Stack") * StarMultiplier .. "%]"
+			v7.TextLabel.Text = v8
+			v7:SetAttribute("Time", MultiplierType[p6].Time or 5)
+		elseif MultiplierType[p6] then
+			local v_u_9
+			if MultiplierType[p6].AddedMultiplier >= 0 then
+				v_u_9 = Assets.MultiplierFrame:Clone()
+			else
+				v_u_9 = Assets.MultiplierFrameBad:Clone()
+			end
+			local v10 = p6 .. (MultiplierType[p6].Stack and " [x1] " or " ") .. "[" .. MultiplierType[p6].AddedMultiplier * 100 * StarMultiplier .. "%]"
+			v_u_9:SetAttribute("Stack", 1)
+			v_u_9:SetAttribute("TextColor3", v_u_9.TextLabel.TextColor3)
+			v_u_9:SetAttribute("Size", v_u_9.Size)
+			v_u_9:SetAttribute("AddedMultiplier", MultiplierType[p6].AddedMultiplier)
+			v_u_9.Name = p6
+			v_u_9.TextLabel.Text = v10
+			v_u_9.Parent = MultiplierList
+			v_u_9.Visible = true
+			v_u_9:SetAttribute("Time", MultiplierType[p6].Time or 5)
+			FlashMultiplierFrame(v_u_9)
+			local v_u_21 = task.spawn(function()
+				while v_u_9 do
+					local v11 = TweenService
+					local v12 = v_u_9.TextLabel
+					local v13 = TweenInfo.new(0.05)
+					local v14 = {
+						["Rotation"] = RandomNum:NextNumber(0, 3)
+					}
+					local v15 = v11:Create(v12, v13, v14)
+					v15:Play()
+					v15.Completed:Wait()
+					local v16 = TweenService
+					local v17 = v_u_9.TextLabel
+					local v18 = TweenInfo.new(0.05)
+					local v19 = {
+						["Rotation"] = RandomNum:NextNumber(-3, 0)
+					}
+					local v20 = v16:Create(v17, v18, v19)
+					v20:Play()
+					v20.Completed:Wait()
+				end
+			end)
+			task.spawn(function()
+				local _ = v_u_9:GetAttribute("Size").X.Scale
+				local _ = v_u_9:GetAttribute("Size").Y.Scale
+				local v_u_22 = TweenService:Create(v_u_9.TextLabel, TweenInfo.new(0.05, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {
+					["TextColor3"] = Color3.fromRGB(255, 255, 0)
+				})
+				v_u_9:GetAttributeChangedSignal("Time"):Connect(function()
+					if v_u_9:GetAttribute("Time") > 1 then
+						v_u_9.Despawning:Stop()
+						v_u_22:Pause()
+						v_u_9.TextLabel.TextColor3 = v_u_9:GetAttribute("TextColor3")
+					end
+				end)
+				while task.wait(1) and (v_u_9 and v_u_9.Name ~= "Worthless") do
+					v_u_9:SetAttribute("Time", v_u_9:GetAttribute("Time") - 1)
+					if v_u_9:GetAttribute("Time") <= 1 and v_u_9:FindFirstChild("Despawning") then
+						v_u_9.Despawning:Play()
+						v_u_22:Play()
+					end
+					if v_u_9:GetAttribute("Time") <= 0 and v_u_9:FindFirstChild("Despawning") then
+						v_u_9.Despawning:Stop()
+						v_u_9.Name = "Worthless"
+						v_u_9:SetAttribute("AddedMultiplier", 0)
+						if v_u_9.TextLabel:FindFirstChild("GlowEffect") then
+							v_u_9.TextLabel.GlowEffect.Visible = false
+						end
+						TweenService:Create(v_u_9, TweenInfo.new(0.5), {
+							["Size"] = UDim2.fromScale(v_u_9:GetAttribute("Size").X.Scale, 0)
+						}):Play()
+						TweenService:Create(v_u_9.TextLabel, TweenInfo.new(0.5), {
+							["TextTransparency"] = 1
+						}):Play()
+						TweenService:Create(v_u_9.TextLabel.UIStroke, TweenInfo.new(0.5), {
+							["Transparency"] = 1
+						}):Play()
+						SFX.Vanish:Play()
+						task.wait(0.5)
+						if v_u_9 then
+							v_u_9:Destroy()
+						end
+					end
+				end
+			end)
+			v_u_9.Destroying:Connect(function()
+				task.cancel(v_u_21)
+			end)
+			return true
+		end
+	end
+end
+local v_u_23 = ScoreText.Position
+local v_u_24 = ScoreText.Size
+function ChangeScoreTween()
+	local v25 = 0.6 - Tier * 0.1
+	ScoreText.Position = v_u_23
+	ScoreText.Size = v_u_24
+	TweenService:Create(ScoreText, TweenInfo.new(v25, Enum.EasingStyle.Circular, Enum.EasingDirection.InOut, -1, true), {
+		["Position"] = v_u_23 + UDim2.fromScale(0, 0.015),
+		["Size"] = UDim2.fromScale(v_u_24.X.Scale * 1.4, v_u_24.Y.Scale * 1.25)
+	}):Play()
+end
+ChangeScoreTween()
+function CheckTier()
+	if 1 + Tier <= CurrentMultiplier and (Tier < 5 and Tier < 5) then
+		Tier = Tier + 1
+		CheckTier()
+	end
+	if Tier > CurrentMultiplier and Tier > 1 then
+		Tier = Tier - 1
+		CheckTier()
+		if Tier <= 1 then
+			Tier = 1
+		end
+	end
+	if CurrentTier ~= Tier then
+		CurrentTier = Tier
+		ChangeScoreTween()
+	end
+end
+function CountAllMultiplier()
+	CurrentMultiplier = 1
+	for _, v26 in ipairs(MultiplierList:GetChildren()) do
+		if v26:GetAttribute("AddedMultiplier") then
+			CurrentMultiplier = CurrentMultiplier + v26:GetAttribute("AddedMultiplier") * StarMultiplier
+		end
+	end
+	CheckTier()
+	local v27 = ScoreText.Multiplier
+	local v28 = CurrentMultiplier * 100
+	v27.Text = math.floor(v28) / 100 .. "x"
+end
+if StarMultiplier == 2 then
+	Assets.MultiplierFrame.TextLabel.TextColor3 = Color3.fromRGB(255, 246, 114)
+	Assets.MultiplierFrame.TextLabel.UIStroke.Color = Color3.fromRGB(171, 137, 1)
+	Assets.MultiplierFrameBad.TextLabel.TextColor3 = Color3.fromRGB(117, 103, 0)
+	Assets.MultiplierFrameBad.TextLabel.UIStroke.Color = Color3.fromRGB(33, 31, 21)
+	ScoreText.Multiplier.TextColor3 = Color3.fromRGB(255, 246, 114)
+	ScoreText.Multiplier.UIStroke.Color = Color3.fromRGB(171, 137, 1)
+elseif StarMultiplier == 3 then
+	Assets.MultiplierFrame.TextLabel.TextColor3 = Color3.fromRGB(255, 120, 120)
+	Assets.MultiplierFrame.TextLabel.UIStroke.Color = Color3.fromRGB(171, 0, 0)
+	Assets.MultiplierFrameBad.TextLabel.TextColor3 = Color3.fromRGB(117, 0, 0)
+	Assets.MultiplierFrameBad.TextLabel.UIStroke.Color = Color3.fromRGB(33, 22, 22)
+	ScoreText.Multiplier.TextColor3 = Color3.fromRGB(255, 120, 120)
+	ScoreText.Multiplier.UIStroke.Color = Color3.fromRGB(171, 0, 0)
+end
+local v_u_29 = Instance.new("BloomEffect")
+CollectionService:AddTag(v_u_29, "ScoreCleanup")
+v_u_29.Size = Tier * 6
+v_u_29.Intensity = Tier * 0.4
+v_u_29.Threshold = 2.3 - Tier * 0.3
+v_u_29.Parent = game.Lighting
+function FlashScreen()
+	Camera.FieldOfView = 70 + Tier * 2
+	v_u_29.Size = Tier * 6
+	v_u_29.Intensity = Tier * 0.4
+	v_u_29.Threshold = 2.3 - Tier * 0.3
+	TweenService:Create(Camera, TweenInfo.new(0.6, Enum.EasingStyle.Quad), {
+		["FieldOfView"] = 70
+	}):Play()
+	TweenService:Create(v_u_29, TweenInfo.new(0.6, Enum.EasingStyle.Quad), {
+		["Size"] = 0,
+		["Intensity"] = 0,
+		["Threshold"] = 2
+	}):Play()
+end
+ScreenGui.Destroying:Connect(function()
+	for _, v30 in ipairs(CollectionService:GetTagged("ScoreCleanup")) do
+		v30:Destroy()
+	end
+end)
+function CreateParticles(p31, _, _, p32)
+	if Tier >= 2 then
+		local v33 = Assets.PointLight:Clone()
+		v33.Parent = p31
+		local v34 = Assets.Sparkle:Clone()
+		v34.Parent = p31
+		if p32 == "ScoreGivenBig" then
+			TweenService:Create(v33, TweenInfo.new(0.75, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut, 0, true), {
+				["Range"] = 12,
+				["Brightness"] = 2
+			}):Play()
+			v34.Size = NumberSequence.new(6)
+			v34.Color = ColorSequence.new(Color3.fromRGB(255, 255, 0))
+			v34.Lifetime = NumberRange.new(0.7)
+			v34:Emit(6)
+		elseif p32 == "ScoreGivenMassive" then
+			TweenService:Create(v33, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut, 0, true), {
+				["Range"] = 15,
+				["Brightness"] = 4
+			}):Play()
+			v34.Size = NumberSequence.new(8)
+			v34.Color = ColorSequence.new(Color3.fromRGB(255, 0, 0))
+			v34.Lifetime = NumberRange.new(1.1)
+			v34:Emit(10)
+		else
+			TweenService:Create(v33, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut, 0, true), {
+				["Range"] = 6,
+				["Brightness"] = 1.5
+			}):Play()
+			v34:Emit(4)
+		end
+	end
+	if Tier >= 3 then
+		local v35 = Assets.KillSounds:GetChildren()[math.random(1, #Assets.KillSounds:GetChildren())]:Clone()
+		v35.Parent = p31
+		v35.PlaybackSpeed = RandomNum:NextNumber(0.8, 1.5)
+		v35:Play()
+		local v36 = Assets.PointLight:Clone()
+		v36.Parent = p31
+		local v37 = Assets.Smoke:Clone()
+		v37.Parent = p31
+		if p32 == "ScoreGivenBig" then
+			v36.Color = Color3.fromRGB(255, 255, 0)
+			TweenService:Create(v36, TweenInfo.new(0.75, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut, 0, true), {
+				["Range"] = 14,
+				["Brightness"] = 3
+			}):Play()
+			v37.Color = ColorSequence.new(Color3.fromRGB(255, 255, 0))
+			v37.Size = NumberSequence.new(9)
+			v37.Lifetime = NumberRange.new(0.75)
+			v37:Emit(6)
+		elseif p32 == "ScoreGivenMassive" then
+			v36.Color = Color3.fromRGB(255, 0, 0)
+			TweenService:Create(v36, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut, 0, true), {
+				["Range"] = 20,
+				["Brightness"] = 6
+			}):Play()
+			v37.Color = ColorSequence.new(Color3.fromRGB(255, 0, 0))
+			v37.Size = NumberSequence.new(12)
+			v37.Lifetime = NumberRange.new(1)
+			v37:Emit(10)
+		else
+			TweenService:Create(v36, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut, 0, true), {
+				["Range"] = 8,
+				["Brightness"] = 2
+			}):Play()
+			v37:Emit(4)
+		end
+	end
+	if Tier >= 5 then
+		if p32 == "ScoreGivenMassive" then
+			local v38 = Assets.PointLight:Clone()
+			v38.Parent = p31
+			v38.Color = Color3.fromRGB(255, 155, 0)
+			TweenService:Create(v38, TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut, 0, true), {
+				["Range"] = 30,
+				["Brightness"] = 10
+			}):Play()
+			for _, v39 in ipairs(Assets.BossExplosion:GetChildren()) do
+				local v40 = v39:Clone()
+				v40.Parent = p31
+				if v40:IsA("Sound") then
+					v40:Play()
+				end
+				if v40:IsA("ParticleEmitter") then
+					v40:Emit(30)
+				end
+			end
+			return
+		end
+		if p32 == "ScoreGivenBig" then
+			local v41 = Assets.PointLight:Clone()
+			v41.Parent = p31
+			v41.Color = Color3.fromRGB(255, 155, 0)
+			TweenService:Create(v41, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut, 0, true), {
+				["Range"] = 15,
+				["Brightness"] = 6
+			}):Play()
+			local v42 = Assets.Explosion:Clone()
+			v42.Parent = p31
+			v42.Size = NumberSequence.new(9)
+			v42:Emit(8)
+			local v43 = Assets.Boom:Clone()
+			v43.Parent = p31
+			v43.PlaybackSpeed = v43.PlaybackSpeed * 0.8
+			v43.Volume = v43.Volume * 2
+			v43:Play()
+			return
+		end
+		local v44 = Assets.PointLight:Clone()
+		v44.Parent = p31
+		v44.Color = Color3.fromRGB(255, 155, 0)
+		TweenService:Create(v44, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut, 0, true), {
+			["Range"] = 10,
+			["Brightness"] = 4
+		}):Play()
+		local v45 = Assets.Explosion:Clone()
+		v45.Parent = p31
+		v45.Size = NumberSequence.new(6)
+		v45.Speed = NumberRange.new(13)
+		v45:Emit(5)
+		local v46 = Assets.Boom:Clone()
+		v46.Parent = p31
+		v46:Play()
+	end
+end
+function AddPoints(p47, p48, p49, p50)
+	task.spawn(FlashScreen)
+	local v51 = p48 * CurrentMultiplier * StarMultiplier
+	local v52 = math.floor(v51)
+	ScoreText.TextColor3 = Color3.fromRGB(255, 255, 255)
+	Score = Score + v52
+	if Score <= 0 then
+		Score = 0
+	end
+	ScoreText.Text = Score
+	TweenService:Create(ScoreText, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		["TextColor3"] = ScoreText:GetAttribute("TextColor3")
+	}):Play()
+	local v_u_53 = Instance.new("Attachment")
+	v_u_53.Name = "ScoreAttachment"
+	v_u_53.WorldPosition = p50
+	v_u_53.Parent = workspace.Terrain
+	CollectionService:AddTag(v_u_53, "ScoreCleanup")
+	CreateParticles(v_u_53, p47, p48, p49)
+	local v_u_54 = Assets:FindFirstChild(p49):Clone()
+	local v55 = v_u_54.Frame.TextLabel.TextColor3
+	v_u_54.Frame.TextLabel.Text = v52
+	v_u_54.StudsOffsetWorldSpace = Vector3.new(0, -1.5, 0)
+	v_u_54.Frame.TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	local v56 = RandomNum:NextNumber(-15, 15)
+	v_u_54.Frame.Rotation = v56
+	v_u_54.Enabled = true
+	v_u_54.Parent = v_u_53
+	TweenService:Create(v_u_54.Frame.TextLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+		["TextColor3"] = v55
+	}):Play()
+	TweenService:Create(v_u_54, TweenInfo.new(v_u_54:GetAttribute("Duration")), {
+		["StudsOffsetWorldSpace"] = Vector3.new(0, 1.5, 0)
+	}):Play()
+	TweenService:Create(v_u_54.Frame, TweenInfo.new(RandomNum:NextNumber(0.05, 0.15), Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {
+		["Rotation"] = -v56
+	}):Play()
+	task.delay(v_u_54:GetAttribute("Duration") - 0.5, function()
+		TweenService:Create(v_u_54.Frame.TextLabel, TweenInfo.new(0.5), {
+			["TextTransparency"] = 1
+		}):Play()
+		TweenService:Create(v_u_54.Frame.TextLabel.UIStroke, TweenInfo.new(0.5), {
+			["Transparency"] = 1
+		}):Play()
+		task.wait(10)
+		v_u_53:Destroy()
+	end)
+end
+MultiplierConditions = {
+	["KILLSTREAK"] = function(p_u_57)
+		local v_u_58 = {}
+		CollectionService:GetInstanceAddedSignal("Boss"):Connect(function(p59)
+			local v60 = v_u_58
+			table.insert(v60, p59)
+		end)
+		CollectionService:GetInstanceAddedSignal("Dead"):Connect(function(p61)
+			if CollectionService:HasTag(p61, "Enemy") then
+				local v62 = p61.PrimaryPart.Position
+				local v63
+				if p61:FindFirstChild("SFX") and (p61.SFX:FindFirstChild("Spawn") and (p61:GetAttribute("Health") >= 100 and not table.find(v_u_58, p61))) then
+					v63 = "ScoreGivenBig"
+					if AddMultiplierType("SLAINED MINIBOSS") == true then
+						SFX.Death:Play()
+					end
+				else
+					v63 = "ScoreGiven"
+				end
+				if table.find(v_u_58, p61) then
+					v63 = "ScoreGivenMassive"
+					if AddMultiplierType("BOSS DEFEATED") == true then
+						SFX.Airhorn:Play()
+					end
+				end
+				local v64 = p61:GetAttribute("Health")
+				if v64 then
+					if p61:GetAttribute("Summoned") then
+						v64 = v64 * 0.35
+					end
+					AddPoints(p61, v64, v63, v62)
+				end
+				if CurrentMultiplier > 0 then
+					local v65 = 1
+					if MultiplierList:FindFirstChild(p_u_57) then
+						v65 = v65 + MultiplierList:FindFirstChild(p_u_57):GetAttribute("Stack") * 0.03
+					end
+					SFX.Kill.PlaybackSpeed = v65
+					SFX.Kill:Play()
+				else
+					SFX.BadScore:Play()
+				end
+				AddMultiplierType(p_u_57)
+			end
+		end)
+	end,
+	["CLICKED"] = function(p_u_66)
+		game:GetService("Players").LocalPlayer:GetMouse().Button1Down:Connect(function()
+			local v67 = 1
+			if MultiplierList:FindFirstChild(p_u_66) then
+				v67 = v67 + MultiplierList:FindFirstChild(p_u_66):GetAttribute("Stack") * 0.03
+			end
+			SFX.Click.PlaybackSpeed = v67
+			SFX.Click:Play()
+			AddMultiplierType(p_u_66)
+		end)
+	end,
+	["SPAWNED UNIT"] = function(p_u_68)
+		CollectionService:GetInstanceAddedSignal("Friendly"):Connect(function()
+			local v69 = 1
+			if MultiplierList:FindFirstChild(p_u_68) then
+				v69 = v69 + MultiplierList:FindFirstChild(p_u_68):GetAttribute("Stack") * 0.03
+			end
+			SFX.Spawn.PlaybackSpeed = v69
+			SFX.Spawn:Play()
+			AddMultiplierType(p_u_68)
+		end)
+	end,
+	["LOST TOO MANY"] = function(p_u_70)
+		local v_u_71 = 0
+		CollectionService:GetInstanceAddedSignal("Dead"):Connect(function(p72)
+			if CollectionService:HasTag(p72, "Friendly") then
+				v_u_71 = v_u_71 + 1
+			end
+			if v_u_71 >= 5 and AddMultiplierType(p_u_70) == true then
+				SFX.Scream:Play()
+			end
+		end)
+		while task.wait(1) do
+			v_u_71 = 0
+		end
+	end,
+	["OBLITERATED"] = function(p_u_99)
+		local v_u_71 = 0
+		CollectionService:GetInstanceAddedSignal("Dead"):Connect(function(p72)
+			if CollectionService:HasTag(p72, "Friendly") then
+				v_u_71 = v_u_71 + 1
+			end
+			if v_u_71 >= 10 and AddMultiplierType(p_u_99) == true then
+				SFX.Scream:Play()
+			end
+		end)
+		while task.wait(1) do
+			v_u_71 = 0
+		end
+	end,
+	["MULTI KILL"] = function(p_u_73)
+		local v_u_74 = 0
+		CollectionService:GetInstanceAddedSignal("Dead"):Connect(function(p75)
+			if CollectionService:HasTag(p75, "Enemy") then
+				v_u_74 = v_u_74 + 1
+			end
+			if v_u_74 >= 5 and AddMultiplierType(p_u_73) == true then
+				SFX.MultiKill:Play()
+			end
+		end)
+		while task.wait(1) do
+			v_u_74 = 0
+		end
+	end,
+	["ON THE EDGE"] = function(p_u_76)
+		SoundService.SFX.ChildAdded:Connect(function(p77)
+			if p77.Name == "Beep" and AddMultiplierType(p_u_76) == true then
+				SFX.June:Play()
+			end
+		end)
+	end,
+	["FIRED CANNON"] = function(p_u_78)
+		SoundService.SFX.ChildAdded:Connect(function(p79)
+			if p79.Name == "Cannon" and AddMultiplierType(p_u_78) == true then
+				SFX.Boom:Play()
+			end
+		end)
+	end,
+	["UPGRADED BANK"] = function(p_u_80)
+		SoundService.SFX.ChildAdded:Connect(function(p81)
+			if p81.Name == "Upgrade" and AddMultiplierType(p_u_80) == true then
+				SFX.Money:Play()
+			end
+		end)
+	end,
+	["UNIT SWITCHED"] = function(p_u_82)
+		SoundService.SFX.ChildAdded:Connect(function(p83)
+			if p83.Name == "Switch" and AddMultiplierType(p_u_82) == true then
+				SFX.Noice:Play()
+			end
+		end)
+	end,
+	["NOT READY YET"] = function(p_u_84)
+		SoundService.SFX.ChildAdded:Connect(function(p85)
+			if p85.Name == "Error" and AddMultiplierType(p_u_84) == true then
+				SFX.Stop:Play()
+			end
+		end)
+	end,
+	["DETONATOR GAMING"] = function(p_u_86)
+		SoundService.SFX.ChildAdded:Connect(function(p87)
+			if p87.Name == "Timer" and AddMultiplierType(p_u_86) == true then
+				SFX.BombPlanted:Play()
+			end
+		end)
+	end,
+	["PLEASE DON\'T LEAVE"] = function(p_u_88)
+		local v_u_89 = game:GetService("GuiService")
+		local v_u_90 = false
+		v_u_89.MenuOpened:Connect(function()
+			SFX.Alarm:Play()
+			v_u_90 = true
+			local v_u_91 = task.spawn(function()
+				while v_u_90 == true do
+					AddMultiplierType(p_u_88)
+					task.wait(0.5)
+				end
+			end)
+			v_u_89.MenuClosed:Once(function()
+				v_u_90 = false
+				task.cancel(v_u_91)
+				SFX.Alarm:Stop()
+			end)
+		end)
+	end,
+	["LETS GO GAMBLING"] = function(p_u_92)
+		CollectionService:GetInstanceAddedSignal("Friendly"):Connect(function(p93)
+			if p93.Name == "Luckroll Battler" then
+				if AddMultiplierType(p_u_92) == true then
+					SFX.Gambling:Play()
+				end
+				local v94 = p93:WaitForChild("HumanoidRootPart")
+				if v94 then
+					v94.ChildAdded:Connect(function(p95)
+						if p95.Name == "Bang" then
+							if AddMultiplierType("BIG WIN") == true then
+								SFX.Gamblecore:Play()
+								return
+							end
+						elseif p95.Name == "Dud" and AddMultiplierType("AW DANG IT") == true then
+							SFX.DangIt:Play()
+						end
+					end)
+				end
+			end
+		end)
+	end,
+	["CAMPING AT BASE"] = function(p96)
+		local v97 = workspace.NPCFolders.BaseFolder:FindFirstChild("Blue Base")
+		if v97 then
+			while task.wait(1) do
+				local v98 = 0
+				for _, v99 in ipairs(CollectionService:GetTagged("Friendly")) do
+					if v99.PrimaryPart and (not CollectionService:HasTag(v99, "Dead") and (v97.PrimaryPart.Position - v99.PrimaryPart.Position).Magnitude <= 6) then
+						v98 = v98 + 1
+					end
+				end
+				if v98 >= 8 and AddMultiplierType(p96) == true then
+					SFX.CamperAlert:Play()
+				end
+			end
+		end
+	end,
+	["HAPPY BIRTHDAY"] = function(p_u_100)
+		CollectionService:GetInstanceAddedSignal("Friendly"):Connect(function(p_u_101)
+			if p_u_101.Name == "Birthday Battler" then
+				local v_u_102 = false
+				local v_u_103 = task.spawn(function()
+					while p_u_101 and v_u_102 == false do
+						if AddMultiplierType(p_u_100) == true then
+							SFX.HappyBirthday:Play()
+						end
+						task.wait(0.5)
+					end
+				end)
+				local v_u_104 = p_u_101:WaitForChild("Humanoid")
+				if v_u_104 then
+					v_u_104.HealthChanged:Connect(function(_)
+						if v_u_102 ~= true then
+							if v_u_104.Health <= 0 then
+								v_u_102 = true
+								task.cancel(v_u_103)
+								if AddMultiplierType("BIRTHDAY RUINED") == true then
+									SFX.BirthdayFail:Play()
+								end
+							end
+						end
+					end)
+				end
+			end
+		end)
+	end,
+	["AIR STRIKE INCOMING"] = function(p_u_100)
+		CollectionService:GetInstanceAddedSignal("Friendly"):Connect(function(p_u_101)
+			if p_u_101.Name == "Operator" then
+				local v_u_102 = false
+				local v_u_103 = task.spawn(function()
+					while p_u_101 and v_u_102 == false do
+						if AddMultiplierType(p_u_100) == true then
+							SFX.Boom:Play()
+						end
+						task.wait(0.5)
+					end
+				end)
+				local v_u_104 = p_u_101:WaitForChild("Humanoid")
+				if v_u_104 then
+					v_u_104.HealthChanged:Connect(function(_)
+						if v_u_102 ~= true then
+							if v_u_104.Health <= 0 then
+								v_u_102 = true
+								task.cancel(v_u_103)
+							end
+						end
+					end)
+				end
+			end
+		end)
+	end,
+	["AIR.. TANK??"] = function(p_u_100)
+		CollectionService:GetInstanceAddedSignal("Friendly"):Connect(function(p_u_101)
+			if p_u_101.Name == "Commander" then
+				local v_u_102 = false
+				local v_u_103 = task.spawn(function()
+					while p_u_101 and v_u_102 == false do
+						if AddMultiplierType(p_u_100) == true then
+							SFX.Boom:Play()
+						end
+						task.wait(0.5)
+					end
+				end)
+				local v_u_104 = p_u_101:WaitForChild("Humanoid")
+				if v_u_104 then
+					v_u_104.HealthChanged:Connect(function(_)
+						if v_u_102 ~= true then
+							if v_u_104.Health <= 0 then
+								v_u_102 = true
+								task.cancel(v_u_103)
+							end
+						end
+					end)
+				end
+			end
+		end)
+	end,
+	["MY GOAT"] = function(p_u_100)
+		CollectionService:GetInstanceAddedSignal("Friendly"):Connect(function(p_u_101)
+			if p_u_101.Name == "Noir" then
+				local v_u_102 = false
+				local v_u_103 = task.spawn(function()
+					while p_u_101 and v_u_102 == false do
+						if AddMultiplierType(p_u_100) == true then
+							SFX.Victory:Play()
+						end
+						task.wait(0.5)
+					end
+				end)
+				local v_u_104 = p_u_101:WaitForChild("Humanoid")
+				if v_u_104 then
+					v_u_104.HealthChanged:Connect(function(_)
+						if v_u_102 ~= true then
+							if v_u_104.Health <= 0 then
+								v_u_102 = true
+								task.cancel(v_u_103)
+							end
+						end
+					end)
+				end
+			end
+		end)
+	end,
+	["DON\'T INTERRUPT HIM"] = function(p_u_105)
+		CollectionService:GetInstanceAddedSignal("Enemy"):Connect(function(p_u_106)
+			if p_u_106.Name == "Bedridden" or p_u_106.Name == "Treachstone" then
+				task.spawn(function()
+					local v107 = p_u_106:WaitForChild("Humanoid")
+					while p_u_106 and (v107 and v107.Health > 0) do
+						if AddMultiplierType(p_u_105) == true then
+							SFX.Boom:Play()
+						end
+						task.wait(0.5)
+					end
+				end)
+			end
+		end)
+	end,
+	["GIANT SPIDER"] = function(p_u_105)
+		CollectionService:GetInstanceAddedSignal("Friendly"):Connect(function(p_u_106)
+			if p_u_106.Name == "Friendly Blight" then
+				task.spawn(function()
+					local v107 = p_u_106:WaitForChild("Humanoid")
+					while p_u_106 and (v107 and v107.Health > 0) do
+						if AddMultiplierType(p_u_105) == true then
+							SFX.GiantEnemySpider:Play()
+						end
+						task.wait(0.5)
+					end
+				end)
+			end
+		end)
+	end,
+	["FIVE BIG BOOMS"] = function(p_u_108)
+		local v_u_109 = 0
+		workspace.Terrain.ChildAdded:Connect(function(p110)
+			if p110.Name == "VFXAttachment" then
+				v_u_109 = v_u_109 + 1
+				if v_u_109 >= 5 and AddMultiplierType(p_u_108) == true then
+					SFX.BigBooms:Play()
+				end
+			end
+		end)
+		while task.wait(1) do
+			v_u_109 = 0
+		end
+	end,
+	["GETTING BORED"] = function(p111)
+		local v_u_112 = 0
+		CollectionService:GetInstanceAddedSignal("Dead"):Connect(function(_)
+			v_u_112 = 0
+		end)
+		local v113 = v_u_112
+		while task.wait(1) do
+			v_u_112 = v113 + 1
+			if v_u_112 >= 10 and AddMultiplierType(p111) == true then
+				SFX.Snore:Play()
+				v113 = v_u_112
+			else
+				v113 = v_u_112
+			end
+		end
+	end
+}
+local v_u_114 = v_u_5
+local v_u_115 = {}
+for v116, v117 in pairs(MultiplierConditions) do
+	v_u_115[v116] = task.spawn(v117, v116)
+end
+local v_u_118 = false
+ScreenGui:GetAttributeChangedSignal("Win"):Connect(function()
+	if v_u_118 ~= true then
+		v_u_118 = true
+		task.delay(0.5, function()
+			CollectionService:AddTag(ScreenGui, "CreateScene")
+		end)
+		for _, v119 in pairs(v_u_115) do
+			task.cancel(v119)
+		end
+		for _, v120 in ipairs(MultiplierList:GetChildren()) do
+			if v120:IsA("Frame") then
+				v120:Destroy()
+			end
+		end
+		if ScreenGui:GetAttribute("Win") == true then
+			if AddMultiplierType("VICTORY") == true then
+				v_u_114 = true
+				SFX.Victory:Play()
+				return
+			end
+		elseif AddMultiplierType("LOSER") == true then
+			v_u_114 = true
+			SFX.Loser:Play()
+			ScoreText.Text = 0
+		end
+	end
+end)
+MultiplierList.ChildAdded:Connect(function(p_u_121)
+	CountAllMultiplier()
+	local v_u_122 = p_u_121:GetAttributeChangedSignal("AddedMultiplier"):Connect(function()
+		if p_u_121:GetAttribute("AddedMultiplier") then
+			CountAllMultiplier()
+		end
+	end)
+	p_u_121.Destroying:Connect(function()
+		v_u_122:Disconnect()
+	end)
+end)
+MultiplierList.ChildRemoved:Connect(function(_)
+	CountAllMultiplier()
+end)
