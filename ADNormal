@@ -1,52 +1,210 @@
+local RS = game:GetService("ReplicatedStorage")
+local WS = game:GetService("Workspace")
+local Players = game:GetService("Players")
+local LP = Players.LocalPlayer
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
+local traits = {
+    Hair = false, ColdBlooded = false, Poor = false, Clean = false,
+    Writer = false, Food = false, Fingerprints = false, HiddenEvidence = false,
+    Spray = false, Rat = false, Ransacked = false, Vandalize = false,
+    Arson = false, ForgottenShoe = false, Destructive = false, EscapePlan = false,
+    Hacker = false, Believer = false, MessyLibrary = false
+}
+
+local accuseEvent = RS.Events:WaitForChild("AccuseSuspect")
+local accuseQueue = nil
+
+local function exists(obj)
+    return obj ~= nil
+end
+
+local function getMap()
+    local mapValue = RS.Values:FindFirstChild("MapFolder") and RS.Values.MapFolder.Value
+    if typeof(mapValue) == "Instance" then
+        return mapValue.Name
+    else
+        return mapValue
+    end
+end
+
+local function getMapFolder()
+    local mapValue = RS.Values:FindFirstChild("MapFolder") and RS.Values.MapFolder.Value
+    if typeof(mapValue) == "Instance" then
+        return mapValue
+    else
+        return WS:FindFirstChild("Map") and WS.Map:FindFirstChild(tostring(mapValue))
+    end
+end
+
+local function runChecks()
+    local mapName = getMap()
+    local mf = getMapFolder()
+    if not mf then return end
+    for trait, _ in pairs(traits) do
+        traits[trait] = false
+    end
+
+    traits.Hair = exists(WS.ActiveEvidence:FindFirstChild("HairStrand"))
+    traits.Fingerprints = #WS.ActiveEvidence.Fingerprints:GetChildren() > 0
+    traits.Food = #WS.ActiveEvidence.Food:GetChildren() > 0
+    traits.Spray = exists(WS.ActiveEvidence:FindFirstChild("Spray"))
+    traits.Vandalize = exists(WS.ActiveEvidence:FindFirstChild("Graffiti"))
+    traits.Arson = exists(WS.ActiveEvidence:FindFirstChild("Fire"))
+    traits.ForgottenShoe = exists(WS.ActiveEvidence:FindFirstChild("Shoe"))
+    traits.Believer = exists(WS.ActiveEvidence:FindFirstChild("Teeth"))
+    traits.MessyLibrary = exists(WS.ActiveEvidence:FindFirstChild("DestroyedLibrary"))
+
+    if mapName == "Motel Room" or mapName == "Humble Adore" then
+        local gui = mf:FindFirstChild("ThermometerGui")
+        if gui then
+            local c = gui.Temperature.ImageColor3
+            traits.ColdBlooded = (c.R == 245/255 and c.G == 37/255 and c.B == 44/255)
+        end
+        traits.Clean = exists(mf:FindFirstChild("Clean"))
+        traits.Poor = exists(WS.ActiveEvidence:FindFirstChild("Money")) and WS.ActiveEvidence.Money.Name == "Tix"
+        traits.Writer = exists(WS.ActiveEvidence:FindFirstChild("Diaries")) and WS.ActiveEvidence.Diaries.Diary.Bottom.Screen.SurfaceGui.Enabled
+    else
+        traits.Rat = false
+        if mf:FindFirstChild("RatHoles") then
+            for _, hole in pairs(mf.RatHoles:GetChildren()) do
+                local u = hole:FindFirstChild("Union")
+                if u and u:FindFirstChild("ProximityPrompt") then
+                    local oldPos = LP.Character.HumanoidRootPart.CFrame
+                    LP.Character.HumanoidRootPart.CFrame = u.CFrame + Vector3.new(0,3,0)
+                    fireproximityprompt(u.ProximityPrompt)
+                    LP.Character.HumanoidRootPart.CFrame = oldPos
+                end
+            end
+        end
+        traits.Rat = exists(WS.ActiveEvidence:FindFirstChild("Rat"))
+
+        if mapName == "Bathroom" then
+            traits.Ransacked = (mf.RansackedItems:FindFirstChild("Wet Floor Sign") == nil)
+        elseif mapName == "Gas Station" then
+            traits.Destructive = exists(mf:FindFirstChild("Wrecked"))
+            traits.HiddenEvidence = exists(mf:FindFirstChild("Hidden"))
+        elseif mapName == "Abandoned Apartment" then
+            traits.Clean = exists(mf:FindFirstChild("Clean"))
+            traits.EscapePlan = exists(mf:FindFirstChild("Escape"))
+            traits.ForgottenShoe = exists(WS.ActiveEvidence:FindFirstChild("Shoe"))
+            traits.ColdBlooded = exists(mf:FindFirstChild("AirConditioner")) and mf.AirConditioner.WindParticles.Lines.Enabled
+            traits.Hacker = mf:FindFirstChild("Computer") and mf.Computer:GetAttribute("Hacker") == true
+        elseif mapName == "Moolah Manor" then
+            traits.ForgottenShoe = exists(WS.ActiveEvidence:FindFirstChild("Shoe"))
+        end
+    end
+end
+
+local function matchSuspectSafe()
+    local map = getMap()
+    if not map then return end
+
+    local stageName
+    if map == "Motel Room" then
+        stageName = "Suspects1"
+    elseif map == "Humble Adore" then
+        stageName = "SuspectsBathroom"
+    else
+        stageName = "Suspects"..map:gsub(" ","")
+    end
+
+    local stage = RS.Modules.Data.Stages[stageName] or RS.Modules.Data.Stages.Suspects1
+    local allData = require(stage)
+
+    local bestSuspect = nil
+    local bestScore = -1
+    for suspect, data in pairs(allData) do
+        local score = 0
+        local match = true
+        for trait, v in pairs(traits) do
+            if data[trait] ~= nil then
+                if data[trait] == v then
+                    score = score + 1
+                else
+                    match = false
+                    break
+                end
+            end
+        end
+        if match and score > bestScore then
+            bestScore = score
+            bestSuspect = suspect
+        end
+    end
+
+    if bestSuspect then
+        accuseQueue = bestSuspect
+    end
+end
+
+task.spawn(function()
+    while true do
+        runChecks()
+        matchSuspectSafe()
+        if accuseQueue then
+            accuseEvent:FireServer(accuseQueue)
+            accuseQueue = nil
+        end
+        task.wait(1)
+    end
+end)
+
+workspace.ChildAdded:Connect(function(c)
+    if c.Name == "Map" then
+        accuseQueue = nil
+    end
+end)
+
 local link = "https://raw.githubusercontent.com/N0ne-ExIStenc3/boblus-scriptz/refs/heads/main/ADNormal"
-
 if queue_on_teleport then
-	queue_on_teleport(('loadstring(game:HttpGet("%s"))()'):format(link))
+    queue_on_teleport(('loadstring(game:HttpGet("%s"))()'):format(link))
 end
 
-local function waitForValidSuspect(Values)
-	local suspect = Values:WaitForChild("GuiltySuspect")
-	repeat task.wait() until suspect.Value and suspect.Value ~= ""
-	return suspect.Value
+local function doAction()
+    local AccuseRemote = RS.Events:WaitForChild("AccuseSuspect")
+    if accuseQueue then
+        AccuseRemote:FireServer(accuseQueue)
+    end
+    task.wait(10)
+
+    local args = {1, "Moolah Manor", "Friends"}
+    RS.Events:WaitForChild("CreateParty"):FireServer(unpack(args))
+    RS.Events:WaitForChild("RetryMap"):FireServer()
 end
 
-local function doAction(label)
-	local ReplicatedStorage = game:GetService("ReplicatedStorage")
-	local Values = ReplicatedStorage:WaitForChild("Values")
-	local AccuseRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("AccuseSuspect")
-
-	local suspectValue = waitForValidSuspect(Values)
-	AccuseRemote:FireServer(suspectValue)
-	task.wait(10)
-
-	local args = {1, "Moolah Manor", "Friends"}
-	ReplicatedStorage:WaitForChild("Events"):WaitForChild("CreateParty"):FireServer(unpack(args))
-	ReplicatedStorage:WaitForChild("Events"):WaitForChild("RetryMap"):FireServer()
-end
-
-local function clickMenuAndAccuse(label)
-	local player = game:GetService("Players").LocalPlayer
-	local vim = game:GetService("VirtualInputManager")
-	local camera = workspace.CurrentCamera
-	local viewport = camera.ViewportSize
-	local x, y = viewport.X * 0.5, viewport.Y * 0.84
-	vim:SendMouseButtonEvent(x, y, 0, true, game, 0)
+local function clickMenuAndAccuse()
+    local camera = workspace.CurrentCamera
+    local viewport = camera.ViewportSize
+    local x, y = viewport.X * 0.5, viewport.Y * 0.84
+    VirtualInputManager:SendMouseButtonEvent(x, y, 0, true, game, 0)
     task.wait()
-	vim:SendMouseButtonEvent(x, y, 0, false, game, 0)
-	doAction(label)
+    VirtualInputManager:SendMouseButtonEvent(x, y, 0, false, game, 0)
+    doAction()
 end
+
+task.spawn(function()
+    repeat task.wait() until game:IsLoaded()
+    while true do
+        local menuGui = LP.PlayerGui:FindFirstChild("MenuGui")
+        if menuGui and menuGui.Enabled then
+            clickMenuAndAccuse()
+        end
+        task.wait(0.5)
+    end
+end)
 
 local function run()
-	repeat task.wait() until game:IsLoaded()
-	local player = game:GetService("Players").LocalPlayer
-	task.spawn(function()
-		while task.wait(0.5) do
-			local menuGui = player.PlayerGui:FindFirstChild("MenuGui")
-			if menuGui.Enabled then
-				clickMenuAndAccuse(label)
-			end
-		end
-	end)
+    repeat task.wait() until game:IsLoaded()
+    local player = LP
+    task.spawn(function()
+        while task.wait(0.5) do
+            local menuGui = player.PlayerGui:FindFirstChild("MenuGui")
+            if menuGui.Enabled then
+                clickMenuAndAccuse()
+            end
+        end
+    end)
 end
 
 run()
