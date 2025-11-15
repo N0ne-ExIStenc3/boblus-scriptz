@@ -142,6 +142,7 @@ task.spawn(function()
     while true do
         runChecks()
         matchSuspectSafe()
+        print(accuseQueue)
         task.wait(1)
     end
 end)
