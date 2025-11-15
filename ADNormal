@@ -161,16 +161,21 @@ if queue_on_teleport then
     queue_on_teleport(('loadstring(game:HttpGet("%s"))()'):format(link))
 end
 
-local function doAction()
-    local AccuseRemote = RS.Events:WaitForChild("AccuseSuspect")
-    if accuseQueue then
-        AccuseRemote:FireServer(accuseQueue)
-    end
+local function waitAndRetry()
     task.wait(10)
-
+    
     local args = {1, "Moolah Manor", "Friends"}
     RS.Events:WaitForChild("CreateParty"):FireServer(unpack(args))
     RS.Events:WaitForChild("RetryMap"):FireServer()
+end
+
+local function doAction()
+    local AccuseRemote = RS.Events:WaitForChild("AccuseSuspect")
+    if accuseQueue and accuseQueue ~= "" then
+        AccuseRemote:FireServer(accuseQueue)
+        waitAndRetry()
+        accuseQueue = nil
+    end
 end
 
 local function clickMenuAndAccuse()
