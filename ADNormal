@@ -142,10 +142,6 @@ task.spawn(function()
     while true do
         runChecks()
         matchSuspectSafe()
-        if accuseQueue then
-            accuseEvent:FireServer(accuseQueue)
-            accuseQueue = nil
-        end
         task.wait(1)
     end
 end)
