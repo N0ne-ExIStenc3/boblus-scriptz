@@ -1,7 +1,6 @@
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local TeleportService = game:GetService("TeleportService")
-local RunService = game:GetService("RunService")
 local VirtualUser = game:GetService("VirtualUser")
 local PlaceLimbo = 91569927171575
 local PlaceMain = 93249115521759
@@ -20,15 +19,6 @@ LP.Idled:Connect(function()
     VirtualUser:CaptureController()
     VirtualUser:ClickButton2(Vector2.new(0,0))
 end)
-
-local function antiAFK()
-    LP.Idled:Connect(function()
-        VirtualUser:CaptureController()
-        VirtualUser:ClickButton2(Vector2.new(0,0))
-    end)
-end
-
-antiAFK()
 
 local function fireTouch(part)
     if LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") and part then
@@ -72,7 +62,6 @@ task.spawn(function()
     while true do
         task.wait(2)
         if game.PlaceId == PlaceLimbo then
-            antiAFK()
             local gui = LP:FindFirstChild("PlayerGui")
             if gui then
                 local gameGui = gui:FindFirstChild("GameGui")
@@ -84,13 +73,10 @@ task.spawn(function()
                 end
             end
         elseif game.PlaceId == PlaceMain then
-            antiAFK()
             local startTime = tick()
-            repeat
-                collectCandies()
-                collectFinish()
-                task.wait(1)
-            until tick() - startTime >= 120
+            collectCandies()
+            collectFinish()
+            task.wait(3)
             teleportTo(PlaceLimbo)
         end
     end
@@ -104,25 +90,5 @@ task.spawn(function()
         elseif game.PlaceId == PlaceMain then
             teleportTo(PlaceLimbo)
         end
-    end
-end)
-        if gui then
-            local gameGui = gui:FindFirstChild("GameGui")
-            if gameGui then
-                local exit = gameGui:FindFirstChild("Exit")
-                if exit and exit.Visible then
-                    pcall(function()
-                        TeleportService:Teleport(PlaceID, LP)
-                    end)
-                end
-            end
-        end
-    end
-end)
-
-task.spawn(function()
-    while true do
-        task.wait(120)
-        teleportIfNeeded()
     end
 end)
