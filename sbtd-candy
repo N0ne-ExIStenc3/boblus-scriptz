@@ -15,14 +15,10 @@ elseif queue_on_teleport then
     ]])
 end
 
-local function antiAFK()
-    Players.Idled:Connect(function()
-        VirtualUser:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-        VirtualUser:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
-    end)
-end
-
-antiAFK()
+LP.Idled:Connect(function()
+    VirtualUser:CaptureController()
+    VirtualUser:ClickButton2(Vector2.new(0,0))
+end)
 
 local function teleportIfNeeded()
     if game.PlaceId ~= PlaceID then
