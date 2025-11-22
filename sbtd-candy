@@ -1,0 +1,60 @@
+local Players = game:GetService("Players")
+local LP = Players.LocalPlayer
+local TeleportService = game:GetService("TeleportService")
+local RunService = game:GetService("RunService")
+local VirtualUser = game:GetService("VirtualUser")
+local PlaceID = 91569927171575
+
+if syn and syn.queue_on_teleport then
+    syn.queue_on_teleport([[
+        loadstring(game:HttpGet("PASTE_THIS_SCRIPT_URL_HERE"))()
+    ]])
+elseif queue_on_teleport then
+    queue_on_teleport([[
+        loadstring(game:HttpGet("PASTE_THIS_SCRIPT_URL_HERE"))()
+    ]])
+end
+
+local function antiAFK()
+    Players.Idled:Connect(function()
+        VirtualUser:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+        VirtualUser:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+    end)
+end
+
+antiAFK()
+
+local function teleportIfNeeded()
+    if game.PlaceId ~= PlaceID then
+        pcall(function()
+            TeleportService:Teleport(PlaceID, LP)
+        end)
+    end
+end
+
+teleportIfNeeded()
+
+task.spawn(function()
+    while true do
+        task.wait(2)
+        local gui = LP:FindFirstChild("PlayerGui")
+        if gui then
+            local gameGui = gui:FindFirstChild("GameGui")
+            if gameGui then
+                local exit = gameGui:FindFirstChild("Exit")
+                if exit and exit.Visible then
+                    pcall(function()
+                        TeleportService:Teleport(PlaceID, LP)
+                    end)
+                end
+            end
+        end
+    end
+end)
+
+task.spawn(function()
+    while true do
+        task.wait(120)
+        teleportIfNeeded()
+    end
+end)
