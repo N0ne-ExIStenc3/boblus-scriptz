@@ -7,7 +7,7 @@ local PlaceID = 91569927171575
 
 if syn and syn.queue_on_teleport then
     syn.queue_on_teleport([[
-        loadstring(game:HttpGet('https://raw.githubusercontent.com/N0ne-ExIStenc3/boblus-scriptz/refs/heads/main/sbtd-candy'))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/N0ne-ExIStenc3/boblus-scriptz/refs/heads/main/sbtd-candy"))()
     ]])
 elseif queue_on_teleport then
     queue_on_teleport([[
