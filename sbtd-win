@@ -1,0 +1,129 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local TeleportService = game:GetService("TeleportService")
+local VirtualUser = game:GetService("VirtualUser")
+
+local LP = Players.LocalPlayer
+local Functions = ReplicatedStorage:WaitForChild("Functions")
+
+local PLACE_MAIN = 93249115521759
+local PLACE_DESERT = 76471028557198
+
+local function queueScript()
+    local url = "https://raw.githubusercontent.com/N0ne-ExIStenc3/boblus-scriptz/refs/heads/main/sbtd-win"
+    if syn and syn.queue_on_teleport then
+        syn.queue_on_teleport('loadstring(game:HttpGet("'..url..'"))()')
+    elseif queue_on_teleport then
+        queue_on_teleport('loadstring(game:HttpGet("'..url..'"))()')
+    end
+end
+queueScript()
+
+LP.Idled:Connect(function()
+    VirtualUser:CaptureController()
+    VirtualUser:ClickButton2(Vector2.new())
+end)
+
+local function touchFinish()
+    local finish = workspace:FindFirstChild("Obby") and workspace.Obby:FindFirstChild("Finish")
+    if finish and LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
+        firetouchinterest(LP.Character.HumanoidRootPart, finish, 0)
+        task.wait()
+        firetouchinterest(LP.Character.HumanoidRootPart, finish, 1)
+    end
+end
+
+local function teleport(placeId)
+    if game.PlaceId ~= placeId then
+        TeleportService:Teleport(placeId, LP)
+    end
+end
+
+local function getSlaps()
+    local ls = LP:FindFirstChild("leaderstats")
+    if not ls then return 0 end
+    local slaps = ls:FindFirstChild("Slaps")
+    return slaps and slaps.Value or 0
+end
+
+local function waitForSlaps(amount)
+    while getSlaps() < amount do
+        RunService.Heartbeat:Wait()
+    end
+end
+
+local POTATO_CF = CFrame.new(26.44, 157.94, 39.46)
+local BULL_CF = CFrame.new(32.81, 158.00, 35.59)
+
+local function farmDesert()
+    local friesTowers = {}
+
+    for i = 1, 3 do
+        local potato = Functions.SpawnTower:InvokeServer("Potato", POTATO_CF)
+        if not potato then continue end
+
+        waitForSlaps(1700)
+        local fries = Functions.SpawnTower:InvokeServer("Fries", POTATO_CF, potato)
+        if fries then
+            table.insert(friesTowers, fries)
+        end
+    end
+
+    waitForSlaps(27550)
+
+    local function maxOutBull()
+        local tower = Functions.SpawnTower:InvokeServer("Bull", BULL_CF)
+        if not tower then return end
+        for _, upgrade in {"Wall", "Brickwall", "Brickedup", "Brickfort"} do
+            tower = Functions.SpawnTower:InvokeServer(upgrade, BULL_CF, tower) or tower
+            task.wait(0.1)
+        end
+        return tower
+    end
+
+    maxOutBull()
+
+    for _, tower in ipairs(friesTowers) do
+        pcall(function() Functions.SellTower:InvokeServer(tower) end)
+    end
+
+    print("[SBTD] Entering infinite Bull spam...")
+    while task.wait(0.5) do
+        if getSlaps() >= 27550 then
+            maxOutBull()
+        end
+    end
+end
+
+task.spawn(function()
+    while task.wait(1) do
+        local placeId = game.PlaceId
+
+        if placeId == PLACE_DESERT then
+            if not LP:FindFirstChild("FarmingDesert") then
+                LP:WaitForChild("Character")
+                local tag = Instance.new("BoolValue")
+                tag.Name = "FarmingDesert"
+                tag.Parent = LP
+                farmDesert()
+            end
+
+            local gui = LP.PlayerGui:FindFirstChild("GameGui")
+            if gui and gui:FindFirstChild("Exit") and gui.Exit.Visible then
+                teleport(PLACE_MAIN)
+            end
+
+        elseif placeId == PLACE_MAIN then
+            touchFinish()
+            task.wait(3)
+            teleport(PLACE_DESERT)
+
+            task.delay(120, function()
+                if game.PlaceId == PLACE_MAIN then
+                    teleport(PLACE_DESERT)
+                end
+            end)
+        end
+    end
+end)
