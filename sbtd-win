@@ -96,16 +96,15 @@ local function farmDesert()
     end
 end
 
+local farm = false
+
 task.spawn(function()
     while task.wait(1) do
         local placeId = game.PlaceId
 
         if placeId == PLACE_DESERT then
-            if not LP:FindFirstChild("FarmingDesert") then
-                LP:WaitForChild("Character")
-                local tag = Instance.new("BoolValue")
-                tag.Name = "FarmingDesert"
-                tag.Parent = LP
+            if farm == false then
+                farm = true
                 farmDesert()
             end
 
