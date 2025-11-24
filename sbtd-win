@@ -52,6 +52,14 @@ local function waitForSlaps(amount)
     end
 end
 
+local function offsetCF(cf)
+    return cf + Vector3.new(
+        math.random(-1, 1) * 0.25,
+        0,
+        math.random(-1, 1) * 0.25
+    )
+end
+
 local POTATO_CF = CFrame.new(26.44, 157.94, 39.46)
 local BULL_CF = CFrame.new(32.81, 158.00, 35.59)
 
@@ -60,35 +68,47 @@ local function farmDesert()
     local friesTowers = {}
 
     for i = 1, 3 do
-        local potato = Functions.SpawnTower:InvokeServer("Potato", POTATO_CF)
-        if not potato then continue end
+        local potCF = offsetCF(POTATO_CF)
+        local potato = Functions.SpawnTower:InvokeServer("Potato", potCF)
 
-        waitForSlaps(1700)
-        local fries = Functions.SpawnTower:InvokeServer("Fries", POTATO_CF, potato)
-        if fries then
-            table.insert(friesTowers, fries)
+        if potato then
+            waitForSlaps(1700)
+
+            local fries = Functions.SpawnTower:InvokeServer("Fries", potCF, potato)
+            if fries then
+                friesTowers[#friesTowers + 1] = fries
+            end
         end
     end
 
     waitForSlaps(27550)
 
     local function maxOutBull()
-        local tower = Functions.SpawnTower:InvokeServer("Bull", BULL_CF)
-        if not tower then return end
-        for _, upgrade in {"Wall", "Brickwall", "Brickedup", "Brickfort"} do
-            tower = Functions.SpawnTower:InvokeServer(upgrade, BULL_CF, tower) or tower
-            task.wait(0.1)
+        local bullCF = offsetCF(BULL_CF)
+
+        local bull = Functions.SpawnTower:InvokeServer("Bull", bullCF)
+        if not bull then return end
+
+        local upgrades = {"Wall", "Brickwall", "Brickedup", "Brickfort"}
+        for _, up in ipairs(upgrades) do
+            task.wait(0.15)
+            local new = Functions.SpawnTower:InvokeServer(up, bullCF, bull)
+            if new then
+                bull = new
+            end
         end
-        return tower
+
+        return bull
     end
 
     maxOutBull()
 
     for _, tower in ipairs(friesTowers) do
-        pcall(function() Functions.SellTower:InvokeServer(tower) end)
+        pcall(function()
+            Functions.SellTower:InvokeServer(tower)
+        end)
     end
 
-    print("[SBTD] Entering infinite Bull spam...")
     while task.wait(0.5) do
         if getSlaps() >= 27550 then
             maxOutBull()
