@@ -134,25 +134,18 @@ local function farmDesert()
 end
 
 local farm = false
+local placeId = game.PlaceId
 
 task.spawn(function()
-    while task.wait(3) do
-        local placeId = game.PlaceId
-
+    while task.wait(2) do
         if placeId == PLACE_DESERT then
-            if farm == false then
-                farm = true
-                farmDesert()
-            end
-
-            if game.PlaceId == PlaceLimbo then
             local gui = LP:FindFirstChild("PlayerGui")
             if gui then
                 local gameGui = gui:FindFirstChild("GameGui")
                 if gameGui then
                     local exit = gameGui:FindFirstChild("Exit")
                     if exit and exit.Visible then
-                        teleportTo(PlaceMain)
+                        teleport(PLACE_MAIN)
                     end
                 end
             end
@@ -170,3 +163,7 @@ task.spawn(function()
         end
     end
 end)
+
+if placeId == PLACE_DESERT then
+    farmDesert()
+end
