@@ -133,18 +133,6 @@ local function farmDesert()
     end
 end
 
-local function exitVisible()
-    for _, gui in ipairs(LP:WaitForChild("PlayerGui"):GetChildren()) do
-        if gui:IsA("ScreenGui") then
-            local exit = gui:FindFirstChild("Exit", true)
-            if exit and exit:IsA("GuiObject") and exit.Visible == true then
-                return true
-            end
-        end
-    end
-    return false
-end
-
 local farm = false
 
 task.spawn(function()
@@ -155,10 +143,6 @@ task.spawn(function()
             if farm == false then
                 farm = true
                 farmDesert()
-            end
-
-            if exitVisible() then
-                teleport(PLACE_MAIN)
             end
 
         elseif placeId == PLACE_MAIN then
