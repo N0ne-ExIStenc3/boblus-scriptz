@@ -57,21 +57,20 @@ local BULL_CF = CFrame.new(32.81, 158.00, 35.59)
 
 local function farmDesert()
     local Functions = ReplicatedStorage:WaitForChild("Functions")
-    local friesTowers = {}
 
-    local function getFriesCount()
-        local count = 0
+    local function countFries()
+        local c = 0
         for _, v in ipairs(workspace.Towers:GetChildren()) do
             if v.Name == "Fries" then
-                count += 1
+                c += 1
             end
         end
-        return count
+        return c
     end
 
     local function getFriesObjects()
         local list = {}
-       for _, v in ipairs(workspace.Towers:GetChildren()) do
+        for _, v in ipairs(workspace.Towers:GetChildren()) do
             if v.Name == "Fries" then
                 table.insert(list, v)
             end
@@ -79,25 +78,23 @@ local function farmDesert()
         return list
     end
 
-    while getFriesCount() < 3 do
-        local needed = 3 - getFriesCount()
+    local friesTowers = {}
 
-        for i = 1, needed do
-            local potato = Functions.SpawnTower:InvokeServer("Potato", POTATO_CF)
-            if potato then
-                waitForSlaps(1700)
-                local fries = Functions.SpawnTower:InvokeServer("Fries", POTATO_CF, potato)
-                if fries then
-                    friesTowers[#friesTowers + 1] = fries
-                end
+    while countFries() < 3 do
+        local potato = Functions.SpawnTower:InvokeServer("Potato", POTATO_CF)
+        if potato then
+            waitForSlaps(1700)
+
+            local fries = Functions.SpawnTower:InvokeServer("Fries", POTATO_CF, potato)
+            if fries then
+                table.insert(friesTowers, fries)
             end
-            task.wait(0.1)
         end
+
+        task.wait(0.2)
     end
 
-    if #friesTowers < 3 then
-        friesTowers = getFriesObjects()
-    end
+    friesTowers = getFriesObjects()
 
     waitForSlaps(27550)
 
@@ -109,9 +106,9 @@ local function farmDesert()
 
         for _, up in ipairs(upgrades) do
             task.wait(0.1)
-            local newBull = Functions.SpawnTower:InvokeServer(up, BULL_CF, bull)
-            if newBull then
-                bull = newBull
+            local upgraded = Functions.SpawnTower:InvokeServer(up, BULL_CF, bull)
+            if upgraded then
+                bull = upgraded
             end
         end
 
