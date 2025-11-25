@@ -61,7 +61,7 @@ local function farmDesert()
 
     local function getFriesCount()
         local count = 0
-        for _, v in ipairs(workspace:GetChildren()) do
+        for _, v in ipairs(workspace.Towers:GetChildren()) do
             if v.Name == "Fries" then
                 count += 1
             end
@@ -71,7 +71,7 @@ local function farmDesert()
 
     local function getFriesObjects()
         local list = {}
-       for _, v in ipairs(workspace:GetChildren()) do
+       for _, v in ipairs(workspace.Towers:GetChildren()) do
             if v.Name == "Fries" then
                 table.insert(list, v)
             end
