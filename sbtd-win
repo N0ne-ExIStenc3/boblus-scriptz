@@ -25,17 +25,22 @@ LP.Idled:Connect(function()
 end)
 
 local function touchFinish()
-    local finish = workspace:FindFirstChild("Obby") and workspace.Obby:FindFirstChild("Finish")
-    if finish and LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
-        firetouchinterest(LP.Character.HumanoidRootPart, finish, 0)
-        task.wait()
-        firetouchinterest(LP.Character.HumanoidRootPart, finish, 1)
-    end
+    local obby = workspace:FindFirstChild("Obby")
+    if not obby then return end
+    local finish = obby:FindFirstChild("Finish")
+    if not finish then return end
+    local char = LP.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    firetouchinterest(hrp, finish, 0)
+    task.wait()
+    firetouchinterest(hrp, finish, 1)
 end
 
-local function teleport(placeId)
-    if game.PlaceId ~= placeId then
-        TeleportService:Teleport(placeId, LP)
+local function teleport(id)
+    if game.PlaceId ~= id then
+        TeleportService:Teleport(id, LP)
     end
 end
 
@@ -43,11 +48,12 @@ local function getSlaps()
     local ls = LP:FindFirstChild("leaderstats")
     if not ls then return 0 end
     local slaps = ls:FindFirstChild("Slaps")
-    return slaps and slaps.Value or 0
+    if not slaps then return 0 end
+    return slaps.Value
 end
 
-local function waitForSlaps(amount)
-    while getSlaps() < amount do
+local function waitForSlaps(n)
+    while getSlaps() < n do
         RunService.Heartbeat:Wait()
     end
 end
@@ -57,101 +63,90 @@ local BULL_CF = CFrame.new(32.81, 158.00, 35.59)
 
 local function farmDesert()
     local Functions = ReplicatedStorage:WaitForChild("Functions")
-    local friesTowers = {}
 
-    local function getFriesCount()
-        local count = 0
+    local function getFries()
+        local t = {}
         for _, v in ipairs(workspace.Towers:GetChildren()) do
             if v.Name == "Fries" then
-                count += 1
+                table.insert(t, v)
             end
         end
-        return count
+        return t
     end
 
-    local function getFriesObjects()
-        local list = {}
-       for _, v in ipairs(workspace.Towers:GetChildren()) do
-            if v.Name == "Fries" then
-                table.insert(list, v)
-            end
+    while #getFries() < 3 do
+        local p = Functions.SpawnTower:InvokeServer("Potato", POTATO_CF)
+        if p then
+            waitForSlaps(1700)
+            Functions.SpawnTower:InvokeServer("Fries", POTATO_CF, p)
         end
-        return list
+        task.wait(0.1)
     end
 
-    while getFriesCount() < 3 do
-        local needed = 3 - getFriesCount()
+    local fries = getFries()
 
-        for i = 1, needed do
-            local potato = Functions.SpawnTower:InvokeServer("Potato", POTATO_CF)
-            if potato then
-                waitForSlaps(1700)
-                local fries = Functions.SpawnTower:InvokeServer("Fries", POTATO_CF, potato)
-                if fries then
-                    friesTowers[#friesTowers + 1] = fries
-                end
-            end
-            task.wait(0.1)
-        end
-    end
+    waitForSlaps(15500)
 
-    if #friesTowers < 3 then
-        friesTowers = getFriesObjects()
-    end
-
-    waitForSlaps(27550)
-
-    local function maxOutBull()
+    local function spawnBrickfort()
         local bull = Functions.SpawnTower:InvokeServer("Bull", BULL_CF)
-        if not bull then return end
-
-        local upgrades = {"Wall", "Brickwall", "Brickedup", "Brickfort"}
-
-        for _, up in ipairs(upgrades) do
-            task.wait(0.1)
-            local newBull = Functions.SpawnTower:InvokeServer(up, BULL_CF, bull)
-            if newBull then
-                bull = newBull
-            end
+        if bull then
+            Functions.SpawnTower:InvokeServer("Brickfort", BULL_CF, bull)
         end
-
-        return bull
     end
 
-    maxOutBull()
+    spawnBrickfort()
 
-    for _, tower in ipairs(friesTowers) do
+    for _, v in ipairs(fries) do
         pcall(function()
-            Functions.SellTower:InvokeServer(tower)
+            Functions.SellTower:InvokeServer(v)
         end)
     end
 
-    while task.wait(0.5) do
-        if getSlaps() >= 27550 then
-            maxOutBull()
+    while task.wait(0.4) do
+        if getSlaps() >= 15500 then
+            spawnBrickfort()
         end
     end
 end
 
-local farm = false
-local placeId = game.PlaceId
+local function equipPnB()
+    local pg = LP:WaitForChild("PlayerGui", 5)
+    if not pg then return end
+
+    local shopGui = pg:WaitForChild("ShopGui", 5)
+    if not shopGui then return end
+
+    local inv = shopGui:WaitForChild("Inventory", 5)
+    if not inv then return end
+
+    if not inv:FindFirstChild("Bull") then
+        ReplicatedStorage:WaitForChild("InteractItem"):InvokeServer("Bull")
+    end
+
+    if not inv:FindFirstChild("Potato") then
+        ReplicatedStorage:WaitForChild("InteractItem"):InvokeServer("Potato")
+    end
+end
 
 task.spawn(function()
     while task.wait(2) do
-        if placeId == PLACE_DESERT then
-            local gui = LP:FindFirstChild("PlayerGui")
-            if gui then
-                local gameGui = gui:FindFirstChild("GameGui")
-                if gameGui then
-                    local exit = gameGui:FindFirstChild("Exit")
+        local id = game.PlaceId
+
+        if id == PLACE_DESERT then
+            local pg = LP.PlayerGui
+            if pg then
+                local gg = pg:FindFirstChild("GameGui")
+                if gg then
+                    local exit = gg:FindFirstChild("Exit")
                     if exit and exit.Visible then
                         teleport(PLACE_MAIN)
                     end
                 end
             end
 
-        elseif placeId == PLACE_MAIN then
+        elseif id == PLACE_MAIN then
             touchFinish()
+            equipPnB()
             task.wait(3)
             teleport(PLACE_DESERT)
 
@@ -164,6 +159,6 @@ task.spawn(function()
     end
 end)
 
-if placeId == PLACE_DESERT then
+if game.PlaceId == PLACE_DESERT then
     farmDesert()
 end
