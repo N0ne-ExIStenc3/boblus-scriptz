@@ -6,102 +6,149 @@ end
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Values = ReplicatedStorage:WaitForChild("Values")
-local Players = game:GetService("Players")
-
-local Suspects = require(ReplicatedStorage.Modules.Data.Stages.SuspectsChristmas)
-local Traits = require(ReplicatedStorage.Modules.Data.Traits).traits
 
 Values.GuiltySuspect.Value = ""
 
-local function addTrait(list, trait)
-	if not table.find(list, trait) then
-		table.insert(list, trait)
-	end
+local Traits = {
+    NICE = "XmasNice",
+    NAUGHTY = "XmasNaughty",
+    SNEAKY = "Sneaky",
+    TARGET = "TargetAttack",
+    DESTRUCTIVE = "Destructive",
+    SHOE = "Shoe",
+    PEEKER = "XmasPeeker",
+    CREEPY = "Creepy",
+}
+
+local Suspects = {
+    Bauble = { Traits = {Traits.NICE, Traits.SNEAKY, Traits.PEEKER} },
+    Catchy = { Traits = {Traits.NAUGHTY, Traits.SNEAKY, Traits.PEEKER} },
+    Chuckle = { Traits = {Traits.NICE, Traits.SNEAKY, Traits.TARGET} },
+    Cocoa = { Traits = {Traits.NAUGHTY, Traits.SNEAKY, Traits.TARGET} },
+    Fiddle = { Traits = {Traits.NICE, Traits.SNEAKY, Traits.DESTRUCTIVE} },
+    Giggles = { Traits = {Traits.NAUGHTY, Traits.SNEAKY, Traits.DESTRUCTIVE} },
+    Icky = { Traits = {Traits.NICE, Traits.SNEAKY, Traits.CREEPY} },
+    Lamp = { Traits = {Traits.NAUGHTY, Traits.SNEAKY, Traits.CREEPY} },
+    Merry = { Traits = {Traits.NICE, Traits.PEEKER, Traits.TARGET} },
+    Mittens = { Traits = {Traits.NAUGHTY, Traits.PEEKER, Traits.TARGET} },
+    Noodle = { Traits = {Traits.NICE, Traits.PEEKER, Traits.DESTRUCTIVE} },
+    Pinky = { Traits = {Traits.NAUGHTY, Traits.PEEKER, Traits.DESTRUCTIVE} },
+    Smarty = { Traits = {Traits.NICE, Traits.PEEKER, Traits.CREEPY} },
+    Snozzle = { Traits = {Traits.NAUGHTY, Traits.PEEKER, Traits.CREEPY} },
+    Socks = { Traits = {Traits.NICE, Traits.TARGET, Traits.DESTRUCTIVE} },
+    Sprinkle = { Traits = {Traits.NAUGHTY, Traits.TARGET, Traits.DESTRUCTIVE} },
+    Star = { Traits = {Traits.NICE, Traits.TARGET, Traits.CREEPY} },
+    Sugarplum = { Traits = {Traits.NAUGHTY, Traits.TARGET, Traits.CREEPY} },
+    Tammy = { Traits = {Traits.NICE, Traits.DESTRUCTIVE, Traits.CREEPY} },
+    Tin = { Traits = {Traits.NAUGHTY, Traits.DESTRUCTIVE, Traits.CREEPY} },
+    Tinsel = { Traits = {Traits.NICE, Traits.SHOE, Traits.CREEPY} },
+    Twinkle = { Traits = {Traits.NAUGHTY, Traits.SHOE, Traits.TARGET} },
+    Vanilla = { Traits = {Traits.NICE, Traits.SHOE, Traits.PEEKER} },
+    Zomby = { Traits = {Traits.NAUGHTY, Traits.SHOE, Traits.DESTRUCTIVE} },
+}
+
+local function getTraits()
+    local traits = {}
+
+    local map = workspace:FindFirstChild("Map")
+    local workshop = map and map:FindFirstChild("Santa's Workshop")
+
+    if workshop then
+        local conveyor = workshop:FindFirstChild("ConveyorGiftItem")
+        if conveyor then
+            if conveyor.Value == "Coal" then
+                traits[#traits+1] = Traits.NAUGHTY
+            else
+                traits[#traits+1] = Traits.NICE
+            end
+        end
+
+        if workshop:FindFirstChild("HiddenEvidence") then
+            traits[#traits+1] = Traits.SNEAKY
+        end
+
+        if workshop:FindFirstChild("Wrecked") then
+            traits[#traits+1] = Traits.DESTRUCTIVE
+        end
+    end
+
+    local active = workspace:FindFirstChild("ActiveEvidence")
+    if active then
+        local shoe = active:FindFirstChild("Shoe")
+        if shoe then
+            if #shoe:GetChildren() > 0 or shoe:FindFirstChild("ElfShoe") then
+                traits[#traits+1] = Traits.SHOE
+            end
+        end
+
+        local imagePart = active:FindFirstChild("Image")
+        if imagePart and imagePart:FindFirstChild("Image") then
+            if imagePart.Image.Image == "rbxassetid://73874117311257" then
+                traits[#traits+1] = Traits.TARGET
+            end
+        end
+
+        local debris = ReplicatedStorage:FindFirstChild("Debris")
+        if debris and debris:FindFirstChild("OpenGifts") then
+            traits[#traits+1] = Traits.PEEKER
+        end
+    end
+
+    while #traits < 3 do
+        traits[#traits+1] = Traits.CREEPY
+    end
+
+    return traits
 end
 
-local function DetermineTraits()
-	local results = {}
-	local workshop = workspace.Map:FindFirstChild("Santa's Workshop")
-
-	if workshop then
-		if workshop:FindFirstChild("Wrecked") then
-			addTrait(results, Traits.DESTRUCTIVE)
-		end
-		if workshop:FindFirstChild("HiddenEvidence") then
-			local model = workshop.HiddenEvidence:FindFirstChild("Model")
-			if model and model.WorldPivot then
-				local pos = model.WorldPivot.Position
-				if pos.X == 918.271545 and pos.Y == 81.6603241 and pos.Z == 103.707344 then
-					addTrait(results, Traits.SNEAKY)
-				end
-			end
-		end
-		if workshop:FindFirstChild("ConveyorGiftItem") then
-			if workshop.ConveyorGiftItem.Value == "Coal" then
-				addTrait(results, Traits.NAUGHTY)
-			else
-				addTrait(results, Traits.NICE)
-			end
-		end
-	end
-
-	local active = workspace:FindFirstChild("ActiveEvidence")
-	if active then
-		if active:FindFirstChild("Shoe") and active.Shoe:FindFirstChild("Inside") then
-			addTrait(results, Traits.SHOE)
-		end
-		if active:FindFirstChild("ClosedGifts") then
-			addTrait(results, Traits.PEEKER)
-		end
-		if active:FindFirstChild("FakeLines") then
-			addTrait(results, Traits.TARGETTEDATTACK)
-		end
-	end
-
-	while #results < 3 do addTrait(results, Traits.CREEPY) end
-	while #results > 3 do table.remove(results, 4) end
-
-	return results
+local function findSuspect(traits)
+    for name, data in pairs(Suspects) do
+        local matches = 0
+        for _, t in ipairs(traits) do
+            if table.find(data.Traits, t) then
+                matches += 1
+            end
+        end
+        if matches == 3 then
+            return name
+        end
+    end
+    return nil
 end
 
-local function FindSuspect(finalTraits)
-	for name, data in pairs(Suspects) do
-		local m = 0
-		for _, t in ipairs(finalTraits) do
-			if table.find(data.Traits, t) then
-				m = m + 1
-			end
-		end
-		if m == 3 then return name end
-	end
-	return nil
+local function process()
+    local foundTraits = getTraits()
+    local suspect = findSuspect(foundTraits)
+    if suspect then
+        Values.GuiltySuspect.Value = suspect
+        print("Guilty suspect:", suspect)
+    else
+        print("No suspect matches 3 traits")
+    end
 end
 
-local function ProcessEvidence()
-	local traits = DetermineTraits()
-	local guilty = FindSuspect(traits)
-	if guilty then Values.GuiltySuspect.Value = guilty end
-end
-
-local function waitForValidSuspect()
-	local v = Values:WaitForChild("GuiltySuspect")
-	repeat task.wait() until v.Value ~= ""
-	return v.Value
+local function waitForValidSuspect(Values)
+	local suspect = Values:WaitForChild("GuiltySuspect")
+	repeat task.wait() until suspect.Value and suspect.Value ~= ""
+	return suspect.Value
 end
 
 local function doAction()
-	local Events = ReplicatedStorage:WaitForChild("Events")
-	ProcessEvidence()
+	local AccuseRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("AccuseSuspect")
+	
+	process()
 	task.wait(2)
-	local suspectValue = waitForValidSuspect()
-	Events.AccuseSuspect:FireServer(suspectValue)
+	local suspectValue = waitForValidSuspect(Values)
+	AccuseRemote:FireServer(suspectValue)
 	task.wait(10)
-	Events.CreateParty:FireServer(1, "Santa's Workshop", "Friends")
-	Events.RetryMap:FireServer()
+
+	local args = {1, "Santa's Workshop", "Friends"}
+	ReplicatedStorage:WaitForChild("Events"):WaitForChild("CreateParty"):FireServer(unpack(args))
+	ReplicatedStorage:WaitForChild("Events"):WaitForChild("RetryMap"):FireServer()
 end
 
-local function clickMenuOnce()
-	local player = Players.LocalPlayer
+local function clickMenuAndAccuse()
+	local player = game:GetService("Players").LocalPlayer
 	local vim = game:GetService("VirtualInputManager")
 	local camera = workspace.CurrentCamera
 	local viewport = camera.ViewportSize
@@ -109,16 +156,22 @@ local function clickMenuOnce()
 	vim:SendMouseButtonEvent(x, y, 0, true, game, 0)
 	task.wait()
 	vim:SendMouseButtonEvent(x, y, 0, false, game, 0)
-end
-
-task.spawn(function()
-	repeat task.wait() until game:IsLoaded()
-	task.wait(2)
-
-	local player = Players.LocalPlayer
-	local menuGui = player.PlayerGui:WaitForChild("MenuGui")
-
-	clickMenuOnce()
 	task.wait(2)
 	doAction()
-end)
+end
+
+local function run()
+	repeat task.wait() until game:IsLoaded()
+	task.wait(2)
+	local player = game:GetService("Players").LocalPlayer
+	task.spawn(function()
+		while task.wait(0.5) do
+			local menuGui = player.PlayerGui:FindFirstChild("MenuGui")
+			if menuGui then
+				clickMenuAndAccuse()
+			end
+		end
+	end)
+end
+
+run()
