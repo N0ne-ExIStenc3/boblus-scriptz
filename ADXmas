@@ -1,0 +1,162 @@
+local link = "https://raw.githubusercontent.com/N0ne-ExIStenc3/boblus-scriptz/refs/heads/main/ADXmas"
+
+if queue_on_teleport then
+	queue_on_teleport(('loadstring(game:HttpGet("%s"))()'):format(link))
+end
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Values = ReplicatedStorage:WaitForChild("Values")
+
+local Suspects = require(ReplicatedStorage.Modules.Data.Stages.SuspectsChristmas)
+local Traits = require(ReplicatedStorage.Modules.Data.Traits).traits
+
+Values.GuiltySuspect.Value = ""
+
+local function addTrait(list, trait)
+    if not table.find(list, trait) then
+        table.insert(list, trait)
+    end
+end
+
+local function DetermineTraits()
+    local results = {}
+
+    local workshop = workspace.Map:FindFirstChild("Santa's Workshop")
+
+    if workshop then
+        if workshop:FindFirstChild("Wrecked") then
+            addTrait(results, Traits.DESTRUCTIVE)
+        else
+            return
+        end
+
+        if workshop:FindFirstChild("HiddenEvidence") then
+            local model = workshop.HiddenEvidence:FindFirstChild("Model")
+
+            if model and model.WorldPivot then
+                local pos = model.WorldPivot.Position
+                local rot = model.WorldPivot.CFrame
+
+                if pos.X == 918.271545 and pos.Y == 81.6603241 and pos.Z == 103.707344 then
+                    addTrait(results, Traits.SNEAKY)
+                end
+            end
+        end
+
+        if workshop:FindFirstChild("ConveyorGiftItem") then
+            if workshop.ConveyorGiftItem.Value == "Coal" then
+                addTrait(results, Traits.NAUGHTY)
+            else
+                addTrait(results, Traits.NICE)
+            end
+        end
+    end
+
+    local active = workspace:FindFirstChild("ActiveEvidence")
+    if active then
+        if active:FindFirstChild("Shoe") then
+            if active.Shoe:FindFirstChild("Inside") then
+                addTrait(results, Traits.SHOE)
+            end
+        end
+
+        if active:FindFirstChild("ClosedGifts") then
+            addTrait(results, Traits.PEEKER)
+        end
+
+        if active:FindFirstChild("FakeLines") then
+            addTrait(results, Traits.TARGETTEDATTACK)
+        end
+    end
+
+    while #results < 3 do
+        addTrait(results, Traits.CREEPY)
+    end
+
+    while #results > 3 do
+        table.remove(results, 4)
+    end
+
+    return results
+end
+
+local function FindSuspect(finalTraits)
+    for name, data in pairs(Suspects) do
+        local matchCount = 0
+
+        for _, trait in ipairs(finalTraits) do
+            if table.find(data.Traits, trait) then
+                matchCount += 1
+            end
+        end
+
+        if matchCount == 3 then
+            return name
+        end
+    end
+
+    return nil
+end
+
+local function ProcessEvidence()
+    local traits = DetermineTraits()
+    local guilty = FindSuspect(traits)
+
+    if guilty then
+        Values.GuiltySuspect.Value = guilty
+        print("Guilty suspect found:", guilty)
+    else
+        print("No suspect matches all 3 traits.")
+    end
+end
+
+local function waitForValidSuspect(Values)
+	local suspect = Values:WaitForChild("GuiltySuspect")
+	repeat task.wait() until suspect.Value and suspect.Value ~= ""
+	return suspect.Value
+end
+
+local function doAction()
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
+	local Values = ReplicatedStorage:WaitForChild("Values")
+	local AccuseRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("AccuseSuspect")
+	
+	ProcessEvidence()
+	task.wait(2)
+	local suspectValue = waitForValidSuspect(Values)
+	AccuseRemote:FireServer(suspectValue)
+	task.wait(10)
+
+	local args = {1, "Santa's Workshop", "Friends"}
+	ReplicatedStorage:WaitForChild("Events"):WaitForChild("CreateParty"):FireServer(unpack(args))
+	ReplicatedStorage:WaitForChild("Events"):WaitForChild("RetryMap"):FireServer()
+end
+
+local function clickMenuAndAccuse()
+	local player = game:GetService("Players").LocalPlayer
+	local vim = game:GetService("VirtualInputManager")
+	local camera = workspace.CurrentCamera
+	local viewport = camera.ViewportSize
+	local x, y = viewport.X * 0.5, viewport.Y * 0.84
+	vim:SendMouseButtonEvent(x, y, 0, true, game, 0)
+	task.wait()
+	vim:SendMouseButtonEvent(x, y, 0, false, game, 0)
+	task.wait(2)
+	doAction()
+end
+
+local function run()
+	repeat task.wait() until game:IsLoaded()
+	task.wait(2)
+	local player = game:GetService("Players").LocalPlayer
+	task.spawn(function()
+		while task.wait(0.5) do
+			local menuGui = player.PlayerGui:FindFirstChild("MenuGui")
+			if menuGui then
+				clickMenuAndAccuse()
+			end
+		end
+	end)
+end
+
+run()
