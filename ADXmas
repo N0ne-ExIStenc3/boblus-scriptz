@@ -26,17 +26,12 @@ local function DetermineTraits()
     if workshop then
         if workshop:FindFirstChild("Wrecked") then
             addTrait(results, Traits.DESTRUCTIVE)
-        else
-            return
         end
 
         if workshop:FindFirstChild("HiddenEvidence") then
             local model = workshop.HiddenEvidence:FindFirstChild("Model")
-
             if model and model.WorldPivot then
                 local pos = model.WorldPivot.Position
-                local rot = model.WorldPivot.CFrame
-
                 if pos.X == 918.271545 and pos.Y == 81.6603241 and pos.Z == 103.707344 then
                     addTrait(results, Traits.SNEAKY)
                 end
@@ -81,15 +76,17 @@ local function DetermineTraits()
 end
 
 local function FindSuspect(finalTraits)
+    if not finalTraits or typeof(finalTraits) ~= "table" then
+        return nil
+    end
+
     for name, data in pairs(Suspects) do
         local matchCount = 0
-
         for _, trait in ipairs(finalTraits) do
             if table.find(data.Traits, trait) then
                 matchCount += 1
             end
         end
-
         if matchCount == 3 then
             return name
         end
@@ -117,8 +114,6 @@ local function waitForValidSuspect(Values)
 end
 
 local function doAction()
-	local ReplicatedStorage = game:GetService("ReplicatedStorage")
-	local Values = ReplicatedStorage:WaitForChild("Values")
 	local AccuseRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("AccuseSuspect")
 	
 	ProcessEvidence()
