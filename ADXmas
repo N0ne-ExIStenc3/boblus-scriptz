@@ -4,174 +4,144 @@ if queue_on_teleport then
 	queue_on_teleport(('loadstring(game:HttpGet("%s"))()'):format(link))
 end
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Values = ReplicatedStorage:WaitForChild("Values")
+local RS = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local VIM = game:GetService("VirtualInputManager")
+
+local Values = RS:WaitForChild("Values")
+local Events = RS:WaitForChild("Events")
+local Player = Players.LocalPlayer
 
 Values.GuiltySuspect.Value = ""
 
 local Traits = {
-    NICE = "XmasNice",
-    NAUGHTY = "XmasNaughty",
-    SNEAKY = "Sneaky",
-    TARGET = "TargetAttack",
-    DESTRUCTIVE = "Destructive",
-    SHOE = "Shoe",
-    PEEKER = "XmasPeeker",
-    CREEPY = "Creepy",
+	NICE = "XmasNice",
+	NAUGHTY = "XmasNaughty",
+	SNEAKY = "Sneaky",
+	TARGET = "TargetAttack",
+	DESTRUCTIVE = "Destructive",
+	SHOE = "Shoe",
+	PEEKER = "XmasPeeker",
+	CREEPY = "Creepy",
 }
 
 local Suspects = {
-    Bauble = { Traits = {Traits.NICE, Traits.SNEAKY, Traits.PEEKER} },
-    Catchy = { Traits = {Traits.NAUGHTY, Traits.SNEAKY, Traits.PEEKER} },
-    Chuckle = { Traits = {Traits.NICE, Traits.SNEAKY, Traits.TARGET} },
-    Cocoa = { Traits = {Traits.NAUGHTY, Traits.SNEAKY, Traits.TARGET} },
-    Fiddle = { Traits = {Traits.NICE, Traits.SNEAKY, Traits.DESTRUCTIVE} },
-    Giggles = { Traits = {Traits.NAUGHTY, Traits.SNEAKY, Traits.DESTRUCTIVE} },
-    Icky = { Traits = {Traits.NICE, Traits.SNEAKY, Traits.CREEPY} },
-    Lamp = { Traits = {Traits.NAUGHTY, Traits.SNEAKY, Traits.CREEPY} },
-    Merry = { Traits = {Traits.NICE, Traits.PEEKER, Traits.TARGET} },
-    Mittens = { Traits = {Traits.NAUGHTY, Traits.PEEKER, Traits.TARGET} },
-    Noodle = { Traits = {Traits.NICE, Traits.PEEKER, Traits.DESTRUCTIVE} },
-    Pinky = { Traits = {Traits.NAUGHTY, Traits.PEEKER, Traits.DESTRUCTIVE} },
-    Smarty = { Traits = {Traits.NICE, Traits.PEEKER, Traits.CREEPY} },
-    Snozzle = { Traits = {Traits.NAUGHTY, Traits.PEEKER, Traits.CREEPY} },
-    Socks = { Traits = {Traits.NICE, Traits.TARGET, Traits.DESTRUCTIVE} },
-    Sprinkle = { Traits = {Traits.NAUGHTY, Traits.TARGET, Traits.DESTRUCTIVE} },
-    Star = { Traits = {Traits.NICE, Traits.TARGET, Traits.CREEPY} },
-    Sugarplum = { Traits = {Traits.NAUGHTY, Traits.TARGET, Traits.CREEPY} },
-    Tammy = { Traits = {Traits.NICE, Traits.DESTRUCTIVE, Traits.CREEPY} },
-    Tin = { Traits = {Traits.NAUGHTY, Traits.DESTRUCTIVE, Traits.CREEPY} },
-    Tinsel = { Traits = {Traits.NICE, Traits.SHOE, Traits.CREEPY} },
-    Twinkle = { Traits = {Traits.NAUGHTY, Traits.SHOE, Traits.TARGET} },
-    Vanilla = { Traits = {Traits.NICE, Traits.SHOE, Traits.PEEKER} },
-    Zomby = { Traits = {Traits.NAUGHTY, Traits.SHOE, Traits.DESTRUCTIVE} },
+	Bauble={Traits={Traits.NICE,Traits.SNEAKY,Traits.PEEKER}},
+	Catchy={Traits={Traits.NAUGHTY,Traits.SNEAKY,Traits.PEEKER}},
+	Chuckle={Traits={Traits.NICE,Traits.SNEAKY,Traits.TARGET}},
+	Cocoa={Traits={Traits.NAUGHTY,Traits.SNEAKY,Traits.TARGET}},
+	Fiddle={Traits={Traits.NICE,Traits.SNEAKY,Traits.DESTRUCTIVE}},
+	Giggles={Traits={Traits.NAUGHTY,Traits.SNEAKY,Traits.DESTRUCTIVE}},
+	Icky={Traits={Traits.NICE,Traits.SNEAKY,Traits.CREEPY}},
+	Lamp={Traits={Traits.NAUGHTY,Traits.SNEAKY,Traits.CREEPY}},
+	Merry={Traits={Traits.NICE,Traits.PEEKER,Traits.TARGET}},
+	Mittens={Traits={Traits.NAUGHTY,Traits.PEEKER,Traits.TARGET}},
+	Noodle={Traits={Traits.NICE,Traits.PEEKER,Traits.DESTRUCTIVE}},
+	Pinky={Traits={Traits.NAUGHTY,Traits.PEEKER,Traits.DESTRUCTIVE}},
+	Smarty={Traits={Traits.NICE,Traits.PEEKER,Traits.CREEPY}},
+	Snozzle={Traits={Traits.NAUGHTY,Traits.PEEKER,Traits.CREEPY}},
+	Socks={Traits={Traits.NICE,Traits.TARGET,Traits.DESTRUCTIVE}},
+	Sprinkle={Traits={Traits.NAUGHTY,Traits.TARGET,Traits.DESTRUCTIVE}},
+	Star={Traits={Traits.NICE,Traits.TARGET,Traits.CREEPY}},
+	Sugarplum={Traits={Traits.NAUGHTY,Traits.TARGET,Traits.CREEPY}},
+	Tammy={Traits={Traits.NICE,Traits.DESTRUCTIVE,Traits.CREEPY}},
+	Tin={Traits={Traits.NAUGHTY,Traits.DESTRUCTIVE,Traits.CREEPY}},
+	Tinsel={Traits={Traits.NICE,Traits.SHOE,Traits.CREEPY}},
+	Twinkle={Traits={Traits.NAUGHTY,Traits.SHOE,Traits.TARGET}},
+	Vanilla={Traits={Traits.NICE,Traits.SHOE,Traits.PEEKER}},
+	Zomby={Traits={Traits.NAUGHTY,Traits.SHOE,Traits.DESTRUCTIVE}},
 }
 
 local function getTraits()
-    local traits = {}
+	local traits = {}
+	local map = workspace:FindFirstChild("Map")
+	local workshop = map and map:FindFirstChild("Santa's Workshop")
 
-    local map = workspace:FindFirstChild("Map")
-    local workshop = map and map:FindFirstChild("Santa's Workshop")
+	if workshop then
+		local conveyor = workshop:FindFirstChild("ConveyorGiftItem")
+		if conveyor then
+			traits[#traits+1] = conveyor.Value == "Coal" and Traits.NAUGHTY or Traits.NICE
+		end
+		if workshop:FindFirstChild("HiddenEvidence") then traits[#traits+1] = Traits.SNEAKY end
+		if workshop:FindFirstChild("Wrecked") then traits[#traits+1] = Traits.DESTRUCTIVE end
+	end
 
-    if workshop then
-        local conveyor = workshop:FindFirstChild("ConveyorGiftItem")
-        if conveyor then
-            if conveyor.Value == "Coal" then
-                traits[#traits+1] = Traits.NAUGHTY
-            else
-                traits[#traits+1] = Traits.NICE
-            end
-        end
+	local active = workspace:FindFirstChild("ActiveEvidence")
+	if active then
+		local shoe = active:FindFirstChild("Shoe")
+		if shoe then
+			if shoe:FindFirstChild("ElfShoe") or #shoe:GetChildren() > 0 then
+				traits[#traits+1] = Traits.SHOE
+			end
+		end
 
-        if workshop:FindFirstChild("HiddenEvidence") then
-            traits[#traits+1] = Traits.SNEAKY
-        end
+		local imgHolder = active:FindFirstChild("Image")
+		local img = imgHolder and imgHolder:FindFirstChild("Image")
+		if img and img.Image == "rbxassetid://73874117311257" then
+			traits[#traits+1] = Traits.TARGET
+		end
 
-        if workshop:FindFirstChild("Wrecked") then
-            traits[#traits+1] = Traits.DESTRUCTIVE
-        end
-    end
+		local debris = RS:FindFirstChild("Debris")
+		if debris and debris:FindFirstChild("OpenGifts") then
+			traits[#traits+1] = Traits.PEEKER
+		end
+	end
 
-    local active = workspace:FindFirstChild("ActiveEvidence")
-    if active then
-        local shoe = active:FindFirstChild("Shoe")
-        if shoe then
-            if #shoe:GetChildren() > 0 or shoe:FindFirstChild("ElfShoe") then
-                traits[#traits+1] = Traits.SHOE
-            end
-        end
-
-        local imagePart = active:FindFirstChild("Image")
-        if imagePart and imagePart:FindFirstChild("Image") then
-            if imagePart.Image.Image == "rbxassetid://73874117311257" then
-                traits[#traits+1] = Traits.TARGET
-            end
-        end
-
-        local debris = ReplicatedStorage:FindFirstChild("Debris")
-        if debris and debris:FindFirstChild("OpenGifts") then
-            traits[#traits+1] = Traits.PEEKER
-        end
-    end
-
-    while #traits < 3 do
-        traits[#traits+1] = Traits.CREEPY
-    end
-
-    return traits
+	while #traits < 3 do traits[#traits+1] = Traits.CREEPY end
+	return traits
 end
 
 local function findSuspect(traits)
-    for name, data in pairs(Suspects) do
-        local matches = 0
-        for _, t in ipairs(traits) do
-            if table.find(data.Traits, t) then
-                matches += 1
-            end
-        end
-        if matches == 3 then
-            return name
-        end
-    end
-    return nil
+	for name, data in next, Suspects do
+		local m = 0
+		for _, t in ipairs(traits) do
+			if table.find(data.Traits, t) then m += 1 end
+		end
+		if m == 3 then return name end
+	end
 end
 
 local function process()
-    local foundTraits = getTraits()
-    local suspect = findSuspect(foundTraits)
-    if suspect then
-        Values.GuiltySuspect.Value = suspect
-        print("Guilty suspect:", suspect)
-    else
-        print("No suspect matches 3 traits")
-    end
+	local suspect = findSuspect(getTraits())
+	Values.GuiltySuspect.Value = suspect or ""
+	return suspect
 end
 
-local function waitForValidSuspect(Values)
-	local suspect = Values:WaitForChild("GuiltySuspect")
-	repeat task.wait() until suspect.Value and suspect.Value ~= ""
-	return suspect.Value
+local function waitSuspect()
+	local v = Values.GuiltySuspect
+	repeat task.wait() until v.Value ~= ""
+	return v.Value
 end
 
 local function doAction()
-	local AccuseRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("AccuseSuspect")
-	
 	process()
-	task.wait(2)
-	local suspectValue = waitForValidSuspect(Values)
-	AccuseRemote:FireServer(suspectValue)
-	task.wait(10)
-
-	local args = {1, "Santa's Workshop", "Friends"}
-	ReplicatedStorage:WaitForChild("Events"):WaitForChild("CreateParty"):FireServer(unpack(args))
-	ReplicatedStorage:WaitForChild("Events"):WaitForChild("RetryMap"):FireServer()
+	task.wait(1.2)
+	local s = waitSuspect()
+	Events.AccuseSuspect:FireServer(s)
+	task.wait(4)
+	Events.CreateParty:FireServer(1, "Santa's Workshop", "Friends")
+	Events.RetryMap:FireServer()
 end
 
-local function clickMenuAndAccuse()
-	local player = game:GetService("Players").LocalPlayer
-	local vim = game:GetService("VirtualInputManager")
-	local camera = workspace.CurrentCamera
-	local viewport = camera.ViewportSize
-	local x, y = viewport.X * 0.5, viewport.Y * 0.84
-	vim:SendMouseButtonEvent(x, y, 0, true, game, 0)
+local function clickMenu()
+	local cam = workspace.CurrentCamera
+	local size = cam.ViewportSize
+	local x, y = size.X * 0.5, size.Y * 0.84
+	VIM:SendMouseButtonEvent(x, y, 0, true, game, 0)
 	task.wait()
-	vim:SendMouseButtonEvent(x, y, 0, false, game, 0)
-	task.wait(2)
-	doAction()
+	VIM:SendMouseButtonEvent(x, y, 0, false, game, 0)
 end
 
-local function run()
+task.spawn(function()
 	repeat task.wait() until game:IsLoaded()
 	task.wait(2)
-	local player = game:GetService("Players").LocalPlayer
-	task.spawn(function()
-		while task.wait(0.5) do
-			local menuGui = player.PlayerGui:FindFirstChild("MenuGui")
-			if menuGui then
-				clickMenuAndAccuse()
-			end
-		end
-	end)
-end
 
-run()
+	while task.wait(0.5) do
+		local gui = Player.PlayerGui:FindFirstChild("MenuGui")
+		if gui then
+			clickMenu()
+			task.wait(1)
+			doAction()
+		end
+	end
+end)
