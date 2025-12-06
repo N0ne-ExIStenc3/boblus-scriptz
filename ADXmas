@@ -115,10 +115,10 @@ end
 
 local function doAction()
 	process()
-	task.wait(1.2)
+	task.wait(3)
 	local s = waitSuspect()
 	Events.AccuseSuspect:FireServer(s)
-	task.wait(4)
+	task.wait(10)
 	Events.CreateParty:FireServer(1, "Santa's Workshop", "Friends")
 	Events.RetryMap:FireServer()
 end
@@ -130,6 +130,8 @@ local function clickMenu()
 	VIM:SendMouseButtonEvent(x, y, 0, true, game, 0)
 	task.wait()
 	VIM:SendMouseButtonEvent(x, y, 0, false, game, 0)
+    task wait(2)
+    doAction()
 end
 
 task.spawn(function()
@@ -140,8 +142,6 @@ task.spawn(function()
 		local gui = Player.PlayerGui:FindFirstChild("MenuGui")
 		if gui then
 			clickMenu()
-			task.wait(1)
-			doAction()
 		end
 	end
 end)
