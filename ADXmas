@@ -54,31 +54,48 @@ local Suspects = {
 
 local function getTraits()
 	local traits = {}
-	local workshop = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Santa's Workshop")
+
+	local workshop = workspace.Map:FindFirstChild("Santa's Workshop")
 	if workshop then
 		local conveyor = workshop:FindFirstChild("ConveyorGiftItem")
-		if conveyor and conveyor.Value == "Coal" then
-			table.insert(traits, Traits.NAUGHTY)
-		else
-			table.insert(traits, Traits.NICE)
+		if conveyor then
+			if conveyor.Value == "Coal" then
+				table.insert(traits, Traits.NAUGHTY)
+			else
+				table.insert(traits, Traits.NICE)
+			end
 		end
-		if workshop:FindFirstChild("HiddenEvidence") then table.insert(traits, Traits.SNEAKY) end
-		if workshop:FindFirstChild("Wrecked") then table.insert(traits, Traits.DESTRUCTIVE) end
+
+		if workshop:FindFirstChild("HiddenEvidence") then
+			table.insert(traits, Traits.SNEAKY)
+		end
+
+		if workshop:FindFirstChild("Wrecked") then
+			table.insert(traits, Traits.DESTRUCTIVE)
+		end
 	end
 
 	local active = workspace:FindFirstChild("ActiveEvidence")
 	if active then
 		local shoe = active:FindFirstChild("Shoe")
-		if shoe and (shoe:FindFirstChild("ElfShoe") or #shoe:GetChildren() > 0) then
-			table.insert(traits, Traits.SHOE)
+		if shoe then
+			if shoe:FindFirstChild("ElfShoe") or (#shoe:GetChildren() > 0) then
+				table.insert(traits, Traits.SHOE)
+			end
 		end
-		local imageFolder = active:FindFirstChild("Image")
-		local decal = imageFolder and imageFolder:FindFirstChildWhichIsA("Decal")
-		if decal and decal.Texture == "rbxassetid://73874117311257" then
-			table.insert(traits, Traits.TARGET)
+	end
+
+	local debris = RS:FindFirstChild("Debris")
+	if debris then
+		local imagePart = debris:FindFirstChild("Image")
+		if imagePart then
+			local decal = imagePart:FindFirstChildWhichIsA("Decal")
+			if decal and decal.Texture == "rbxassetid://73874117311257" then
+				table.insert(traits, Traits.TARGET)
+			end
 		end
-		local debris = RS:FindFirstChild("Debris")
-		if debris and debris:FindFirstChild("OpenGifts") then
+
+		if debris:FindFirstChild("OpenGifts") then
 			table.insert(traits, Traits.PEEKER)
 		end
 	end
@@ -86,6 +103,7 @@ local function getTraits()
 	while #traits < 3 do
 		table.insert(traits, Traits.CREEPY)
 	end
+
 	return traits
 end
 
