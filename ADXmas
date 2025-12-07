@@ -131,7 +131,7 @@ local function clickMenu()
 	VIM:SendMouseButtonEvent(x, y, 0, true, game, 0)
 	task.wait()
 	VIM:SendMouseButtonEvent(x, y, 0, false, game, 0)
-    task.wait(2)
+    task.wait(5)
     doAction()
 end
 
