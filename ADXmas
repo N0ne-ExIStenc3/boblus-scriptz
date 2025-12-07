@@ -53,6 +53,7 @@ local Suspects = {
 }
 
 local function getTraits()
+    local debris = RS:FindFirstChild("Debris")
 	local traits = {}
 	local map = workspace:FindFirstChild("Map")
 	local workshop = map and map:FindFirstChild("Santa's Workshop")
@@ -75,8 +76,8 @@ local function getTraits()
 			end
 		end
 
-		local imgHolder = active:FindFirstChild("Image")
-		local img = imgHolder and imgHolder:FindFirstChild("Image")
+		local imgHolder = debris:FindFirstChild("Image")
+		local img = imgHolder and imgHolder:FindFirstChild("Image").Decal
 		if img and img.Image == "rbxassetid://73874117311257" then
 			traits[#traits+1] = Traits.TARGET
 		end
