@@ -77,10 +77,11 @@ local function getTraits()
 		end
 
 		local imgHolder = debris:FindFirstChild("Image")
-		local img = imgHolder and imgHolder:FindFirstChild("Image").Decal
-		if img and img.Image == "rbxassetid://73874117311257" then
-			traits[#traits+1] = Traits.TARGET
-		end
+        local imgObj = imgHolder and imgHolder:FindFirstChildWhichIsA("Decal")
+
+        if imgObj and imgObj.Texture == "rbxassetid://73874117311257" then
+            traits[#traits+1] = Traits.TARGET
+        end
 
 		local debris = RS:FindFirstChild("Debris")
 		if debris and debris:FindFirstChild("OpenGifts") then
