@@ -26,124 +26,119 @@ local Traits = {
 }
 
 local Suspects = {
-	Bauble={Traits={Traits.NICE,Traits.SNEAKY,Traits.PEEKER}},
-	Catchy={Traits={Traits.NAUGHTY,Traits.SNEAKY,Traits.PEEKER}},
-	Chuckle={Traits={Traits.NICE,Traits.SNEAKY,Traits.TARGET}},
-	Cocoa={Traits={Traits.NAUGHTY,Traits.SNEAKY,Traits.TARGET}},
-	Fiddle={Traits={Traits.NICE,Traits.SNEAKY,Traits.DESTRUCTIVE}},
-	Giggles={Traits={Traits.NAUGHTY,Traits.SNEAKY,Traits.DESTRUCTIVE}},
-	Icky={Traits={Traits.NICE,Traits.SNEAKY,Traits.CREEPY}},
-	Lamp={Traits={Traits.NAUGHTY,Traits.SNEAKY,Traits.CREEPY}},
-	Merry={Traits={Traits.NICE,Traits.PEEKER,Traits.TARGET}},
-	Mittens={Traits={Traits.NAUGHTY,Traits.PEEKER,Traits.TARGET}},
-	Noodle={Traits={Traits.NICE,Traits.PEEKER,Traits.DESTRUCTIVE}},
-	Pinky={Traits={Traits.NAUGHTY,Traits.PEEKER,Traits.DESTRUCTIVE}},
-	Smarty={Traits={Traits.NICE,Traits.PEEKER,Traits.CREEPY}},
-	Snozzle={Traits={Traits.NAUGHTY,Traits.PEEKER,Traits.CREEPY}},
-	Socks={Traits={Traits.NICE,Traits.TARGET,Traits.DESTRUCTIVE}},
-	Sprinkle={Traits={Traits.NAUGHTY,Traits.TARGET,Traits.DESTRUCTIVE}},
-	Star={Traits={Traits.NICE,Traits.TARGET,Traits.CREEPY}},
-	Sugarplum={Traits={Traits.NAUGHTY,Traits.TARGET,Traits.CREEPY}},
-	Tammy={Traits={Traits.NICE,Traits.DESTRUCTIVE,Traits.CREEPY}},
-	Tin={Traits={Traits.NAUGHTY,Traits.DESTRUCTIVE,Traits.CREEPY}},
-	Tinsel={Traits={Traits.NICE,Traits.SHOE,Traits.CREEPY}},
-	Twinkle={Traits={Traits.NAUGHTY,Traits.SHOE,Traits.TARGET}},
-	Vanilla={Traits={Traits.NICE,Traits.SHOE,Traits.PEEKER}},
-	Zomby={Traits={Traits.NAUGHTY,Traits.SHOE,Traits.DESTRUCTIVE}},
+	Bauble   = {Traits.NICE,    Traits.SNEAKY,     Traits.PEEKER},
+	Catchy   = {Traits.NAUGHTY, Traits.SNEAKY,     Traits.PEEKER},
+	Chuckle  = {Traits.NICE,    Traits.SNEAKY,     Traits.TARGET},
+	Cocoa    = {Traits.NAUGHTY, Traits.SNEAKY,     Traits.TARGET},
+	Fiddle   = {Traits.NICE,    Traits.SNEAKY,     Traits.DESTRUCTIVE},
+	Giggles  = {Traits.NAUGHTY, Traits.SNEAKY,     Traits.DESTRUCTIVE},
+	Icky     = {Traits.NICE,    Traits.SNEAKY,     Traits.CREEPY},
+	Lamp     = {Traits.NAUGHTY, Traits.SNEAKY,     Traits.CREEPY},
+	Merry    = {Traits.NICE,    Traits.PEEKER,     Traits.TARGET},
+	Mittens  = {Traits.NAUGHTY, Traits.PEEKER,     Traits.TARGET},
+	Noodle   = {Traits.NICE,    Traits.PEEKER,     Traits.DESTRUCTIVE},
+	Pinky    = {Traits.NAUGHTY, Traits.PEEKER,     Traits.DESTRUCTIVE},
+	Smarty   = {Traits.NICE,    Traits.PEEKER,     Traits.CREEPY},
+	Snozzle  = {Traits.NAUGHTY, Traits.PEEKER,     Traits.CREEPY},
+	Socks    = {Traits.NICE,    Traits.TARGET,     Traits.DESTRUCTIVE},
+	Sprinkle = {Traits.NAUGHTY, Traits.TARGET,     Traits.DESTRUCTIVE},
+	Star     = {Traits.NICE,    Traits.TARGET,     Traits.CREEPY},
+	Sugarplum= {Traits.NAUGHTY, Traits.TARGET,     Traits.CREEPY},
+	Tammy    = {Traits.NICE,    Traits.DESTRUCTIVE,Traits.CREEPY},
+	Tin      = {Traits.NAUGHTY, Traits.DESTRUCTIVE,Traits.CREEPY},
+	Tinsel   = {Traits.NICE,    Traits.SHOE,       Traits.CREEPY},
+	Twinkle  = {Traits.NAUGHTY, Traits.SHOE,       Traits.TARGET},
+	Vanilla  = {Traits.NICE,    Traits.SHOE,       Traits.PEEKER},
+	Zomby    = {Traits.NAUGHTY, Traits.SHOE,       Traits.DESTRUCTIVE},
 }
 
 local function getTraits()
-    local debris = RS:FindFirstChild("Debris")
 	local traits = {}
-	local map = workspace:FindFirstChild("Map")
-	local workshop = map and map:FindFirstChild("Santa's Workshop")
-
+	local workshop = workspace:FindFirstChild("Map") and workspace.Map:FindFirstChild("Santa's Workshop")
 	if workshop then
 		local conveyor = workshop:FindFirstChild("ConveyorGiftItem")
-		if conveyor then
-			traits[#traits+1] = conveyor.Value == "Coal" and Traits.NAUGHTY or Traits.NICE
+		if conveyor and conveyor.Value == "Coal" then
+			table.insert(traits, Traits.NAUGHTY)
+		else
+			table.insert(traits, Traits.NICE)
 		end
-		if workshop:FindFirstChild("HiddenEvidence") then traits[#traits+1] = Traits.SNEAKY end
-		if workshop:FindFirstChild("Wrecked") then traits[#traits+1] = Traits.DESTRUCTIVE end
+		if workshop:FindFirstChild("HiddenEvidence") then table.insert(traits, Traits.SNEAKY) end
+		if workshop:FindFirstChild("Wrecked") then table.insert(traits, Traits.DESTRUCTIVE) end
 	end
 
 	local active = workspace:FindFirstChild("ActiveEvidence")
 	if active then
 		local shoe = active:FindFirstChild("Shoe")
-		if shoe then
-			if shoe:FindFirstChild("ElfShoe") or #shoe:GetChildren() > 0 then
-				traits[#traits+1] = Traits.SHOE
-			end
+		if shoe and (shoe:FindFirstChild("ElfShoe") or #shoe:GetChildren() > 0) then
+			table.insert(traits, Traits.SHOE)
 		end
-
-		local imgHolder = debris:FindFirstChild("Image")
-        local imgObj = imgHolder and imgHolder:FindFirstChildWhichIsA("Decal")
-
-        if imgObj and imgObj.Texture == "rbxassetid://73874117311257" then
-            traits[#traits+1] = Traits.TARGET
-        end
-
+		local imageFolder = active:FindFirstChild("Image")
+		local decal = imageFolder and imageFolder:FindFirstChildWhichIsA("Decal")
+		if decal and decal.Texture == "rbxassetid://73874117311257" then
+			table.insert(traits, Traits.TARGET)
+		end
 		local debris = RS:FindFirstChild("Debris")
 		if debris and debris:FindFirstChild("OpenGifts") then
-			traits[#traits+1] = Traits.PEEKER
+			table.insert(traits, Traits.PEEKER)
 		end
 	end
 
-	while #traits < 3 do traits[#traits+1] = Traits.CREEPY end
+	while #traits < 3 do
+		table.insert(traits, Traits.CREEPY)
+	end
 	return traits
 end
 
 local function findSuspect(traits)
-	for name, data in next, Suspects do
-		local m = 0
+	for name, suspectTraits in pairs(Suspects) do
+		local matches = 0
 		for _, t in ipairs(traits) do
-			if table.find(data.Traits, t) then m += 1 end
+			if table.find(suspectTraits, t) then
+				matches += 1
+			end
 		end
-		if m == 3 then return name end
+		if matches == 3 then
+			return name
+		end
 	end
+	return nil
 end
 
-local function process()
-	local suspect = findSuspect(getTraits())
-	Values.GuiltySuspect.Value = suspect or ""
-	return suspect
-end
-
-local function waitSuspect()
-	local v = Values.GuiltySuspect
-	repeat task.wait() until v.Value ~= ""
-	return v.Value
-end
-
-local function doAction()
-	process()
-	task.wait(3)
-	local s = waitSuspect()
-	Events.AccuseSuspect:FireServer(s)
-	task.wait(10)
+local function accuseAndRejoin()
+	local traits = getTraits()
+	local suspect = findSuspect(traits)
+	if suspect then
+		Values.GuiltySuspect.Value = suspect
+		task.wait(1)
+		Events.AccuseSuspect:FireServer(suspect)
+	else
+		Events.AccuseSuspect:FireServer("Bauble")
+	end
+	task.wait(12)
 	Events.CreateParty:FireServer(1, "Santa's Workshop", "Friends")
 	Events.RetryMap:FireServer()
 end
 
-local function clickMenu()
+local function clickPlayAgain()
 	local cam = workspace.CurrentCamera
-	local size = cam.ViewportSize
-	local x, y = size.X * 0.5, size.Y * 0.84
+	local scr = cam.ViewportSize
+	local x = scr.X / 2
+	local y = scr.Y * 0.84
 	VIM:SendMouseButtonEvent(x, y, 0, true, game, 0)
-	task.wait()
+	task.wait(0.1)
 	VIM:SendMouseButtonEvent(x, y, 0, false, game, 0)
-    task.wait(5)
-    doAction()
 end
 
 task.spawn(function()
 	repeat task.wait() until game:IsLoaded()
-	task.wait(2)
-
-	while task.wait(0.5) do
-		local gui = Player.PlayerGui:FindFirstChild("MenuGui")
-		if gui then
-			clickMenu()
+	task.wait(4)
+	while true do
+		local menuGui = Player.PlayerGui:FindFirstChild("MenuGui")
+		if menuGui then
+			clickPlayAgain()
+			task.wait(2.5)
+			accuseAndRejoin()
 		end
+		task.wait(0.5)
 	end
 end)
