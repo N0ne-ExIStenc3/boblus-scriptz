@@ -215,11 +215,15 @@ end
 if LMSSongs:FindFirstChild("Eternity") then
 	if _G.eternityChanged then
 		replaceSound(LMSSongs.Eternity, URL_TEAPOT)
+        print("replaced")
 	else
 		replaceSound(LMSSongs.Eternity, URL_ETERNITY)
+        print("not replaced")
 	end
 end
 
 if LMSSongs:FindFirstChild("Teapot Paradise") then
 	replaceSound(LMSSongs["Teapot Paradise"], URL_TEAPOT)
 end
+
+print("executed")
