@@ -1,6 +1,6 @@
 _G.stopLyrics = false
 _G.isEnabled = true
-_G.eternityChanged = false
+_G.eternityChanged = _G.eternityChanged or false
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
