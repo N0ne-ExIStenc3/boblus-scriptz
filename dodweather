@@ -15,7 +15,7 @@ end
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "LyricGui"
-gui.Parent = player.PlayerGui
+gui.Parent = player.CoreGui
 gui.ResetOnSpawn = false
 
 local label = Instance.new("TextLabel")
