@@ -9,13 +9,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local player = Players.LocalPlayer
 
-if game.CoreGui:FindFirstChild("LyricGui") then
-	game.CoreGui.LyricGui:Destroy()
+if player.PlayerGui:FindFirstChild("LyricGui") then
+	player.PlayerGui.LyricGui:Destroy()
 end
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "LyricGui"
-gui.Parent = game.CoreGui
+gui.Parent = player.PlayerGui
 gui.ResetOnSpawn = false
 
 local label = Instance.new("TextLabel")
