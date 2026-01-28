@@ -1,0 +1,225 @@
+_G.stopLyrics = false
+_G.isEnabled = true
+_G.eternityChanged = false
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local SoundService = game:GetService("SoundService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
+
+if player.PlayerGui:FindFirstChild("LyricGui") then
+	player.PlayerGui.LyricGui:Destroy()
+end
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "LyricGui"
+gui.Parent = player.PlayerGui
+gui.ResetOnSpawn = false
+
+local label = Instance.new("TextLabel")
+label.Parent = gui
+label.Font = Enum.Font.Merriweather
+label.TextScaled = true
+label.BackgroundTransparency = 1
+label.TextTransparency = 1
+label.TextStrokeTransparency = 0
+label.TextStrokeColor3 = Color3.new(1,1,1)
+label.Size = UDim2.new(0.8,0,0.15,0)
+label.Visible = true
+
+local function stopAllLyrics()
+	_G.stopLyrics = true
+	label.Text = ""
+	label.TextTransparency = 1
+end
+
+local posList = {
+	UDim2.new(0.177,0,0.112,0),
+	UDim2.new(0.02,0,0.74,0),
+	UDim2.new(0.177,0,0.575,0),
+	UDim2.new(0.019,0,0.171,0),
+	UDim2.new(0.184,0,0.355,0),
+	UDim2.new(0.035,0,0.259,0),
+	UDim2.new(0.191,0,0.026,0)
+}
+
+local lastIndex
+local function getPosition(forced)
+	if forced then return forced end
+	local i
+	repeat
+		i = math.random(#posList)
+	until i ~= lastIndex
+	lastIndex = i
+	return posList[i]
+end
+
+local function circleMotion(center, duration)
+	local start = tick()
+	while tick() - start < duration do
+		if _G.stopLyrics then return end
+		local t = tick() - start
+		label.Position = center + UDim2.fromOffset(math.cos(t*4)*20, math.sin(t*4)*20)
+		task.wait(0.05)
+	end
+end
+
+local function showLyric(data, sound)
+	if _G.stopLyrics or not sound or not sound.Parent or not sound.IsPlaying then return end
+
+	local duration = data.duration or 2
+	label.Text = data.text
+	label.TextColor3 = data.color or Color3.new(1,1,1)
+	label.TextStrokeColor3 = label.TextColor3
+	label.TextStrokeTransparency = data.transparent or 0
+	label.TextTransparency = data.transparent or 0
+	label.Position = getPosition(data.forcedPos)
+
+	task.spawn(circleMotion, label.Position, duration)
+
+	local start = tick()
+	while tick() - start < duration do
+		if _G.stopLyrics or not sound.IsPlaying or not sound.Parent then
+			return
+		end
+		task.wait(0.1)
+	end
+
+	if data.fade and not _G.stopLyrics then
+		TweenService:Create(label, TweenInfo.new(1), {TextTransparency = 1}):Play()
+		task.wait(1)
+	end
+
+	task.wait(data.waitAfter or 0)
+end
+
+local lyrics = {
+	{text="", duration=50.5},
+	{text="Shimmering night sky", duration=1},
+	{text="casts its light", duration=1},
+	{text="Hopelessly trying to", duration=1},
+	{text="survive", duration=0.2, forcedPos=UDim2.new(0.1,0,0.4,0)},
+	{text="survive", duration=0.9, color=Color3.fromRGB(255,0,0), forcedPos=UDim2.new(0.1,0,0.4,0)},
+	{text="Eternally trapped inside", duration=1.25},
+	{text="What we call our light", duration=1.6},
+	{text="Again and again you'll", duration=1.4},
+	{text="try", duration=0.1, forcedPos=UDim2.new(0.1,0,0.4,0)},
+	{text="try", duration=0.7, color=Color3.fromRGB(255,0,0), forcedPos=UDim2.new(0.1,0,0.4,0)},
+	{text="(oooh)", duration=1, color=Color3.fromRGB(129,129,129), transparent=0.7, forcedPos=UDim2.new(0.1,0,0.4,0)},
+	{text="Running ain't an option", duration=1},
+	{text="and you know your options are running dry", duration=2.5},
+	{text="The weather forecast's calling for an", duration=2.25},
+	{text="everlasting night", duration=0.1, forcedPos=UDim2.new(0.1,0,0.4,0)},
+	{text="everlasting night", duration=3.58, waitAfter=7, color=Color3.fromRGB(255,0,0), fade=true, forcedPos=UDim2.new(0.1,0,0.4,0)}
+}
+
+local function PlayLyricsWithSound(sound)
+	_G.stopLyrics = false
+	label.TextTransparency = 0
+	task.spawn(function()
+		for _, lyric in ipairs(lyrics) do
+			if _G.stopLyrics or not sound.IsPlaying then break end
+			showLyric(lyric, sound)
+		end
+	end)
+end
+
+local LMSSongs = ReplicatedStorage
+	:WaitForChild("Sounds")
+	:WaitForChild("Songs")
+	:WaitForChild("LMSSongs")
+
+local LOCAL_FOLDER = "GameSounds"
+local DEFAULT_VOLUME = 1
+
+local URL_ETERNITY = "https://files.catbox.moe/i5f9k1.ogg"
+local URL_TEAPOT = "https://files.catbox.moe/41iu2i.ogg"
+
+local function fetchUrl(url)
+	if syn and syn.request then
+		local r = syn.request({Url = url, Method = "GET"})
+		if r and r.Body then return true, r.Body end
+	end
+	if http and http.request then
+		local r = http.request({Url = url, Method = "GET"})
+		if r and r.Body then return true, r.Body end
+	end
+	if request then
+		local r = request({Url = url, Method = "GET"})
+		if r and r.Body then return true, r.Body end
+	end
+	return false
+end
+
+local function writeFile(name, data)
+	if not (makefolder and writefile) then return nil end
+	if not isfolder(LOCAL_FOLDER) then
+		makefolder(LOCAL_FOLDER)
+	end
+	local path = LOCAL_FOLDER .. "/" .. name
+	writefile(path, data)
+	return path
+end
+
+local function pathToAsset(path)
+	if getcustomasset then
+		return getcustomasset(path)
+	elseif getsynasset then
+		return getsynasset(path)
+	end
+end
+
+local function applySound(sound, assetId)
+	if not sound:IsA("Sound") then return end
+
+	local wasPlaying = sound.IsPlaying
+	sound.SoundId = assetId
+	sound.Volume = DEFAULT_VOLUME
+
+	if wasPlaying then
+		sound:Stop()
+		sound:Play()
+	end
+
+	sound.Ended:Connect(stopAllLyrics)
+	sound.Stopped:Connect(stopAllLyrics)
+	sound:GetPropertyChangedSignal("IsPlaying"):Connect(function()
+		if not sound.IsPlaying then
+			stopAllLyrics()
+		end
+	end)
+	sound.AncestryChanged:Connect(function(_, parent)
+		if not parent then
+			stopAllLyrics()
+		end
+	end)
+
+	sound.Played:Connect(function()
+		PlayLyricsWithSound(sound)
+	end)
+end
+
+local function replaceSound(sound, url)
+	local ok, data = fetchUrl(url)
+	if not ok then return end
+	local filename = sound.Name:gsub("%s+", "_") .. ".ogg"
+	local path = writeFile(filename, data)
+	if not path then return end
+	local assetId = pathToAsset(path)
+	if not assetId then return end
+	applySound(sound, assetId)
+end
+
+if LMSSongs:FindFirstChild("Eternity") then
+	if _G.eternityChanged then
+		replaceSound(LMSSongs.Eternity, URL_TEAPOT)
+	else
+		replaceSound(LMSSongs.Eternity, URL_ETERNITY)
+	end
+end
+
+if LMSSongs:FindFirstChild("Teapot Paradise") then
+	replaceSound(LMSSongs["Teapot Paradise"], URL_TEAPOT)
+end
