@@ -1,0 +1,1499 @@
+-- script by DeepSeekScripts
+
+-- Script for granting all abilities button in Die of Death + ESP + Invis GUI Creator
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+
+local AbilityNames = {"Cloak", "Punch", "Taunt", "BonusPad", "Block", "Caretaker", "Dash", "Hotdog", "Revolver", "Adrenaline", "Banana"}
+
+local AbilityDatas = {
+    ["Adrenaline"] = {Name = "Adrenaline", InputShown = "", Tip = "Temporary speed boost for 6 seconds", Cooldown = 35, Icon = "rbxassetid://116399911657417", DisplayName = "Adrenaline"},
+    ["Punch"] = {Name = "Punch", InputShown = "", Tip = "Punch forward, stunning killers for 3 seconds", Cooldown = 40, Icon = "rbxassetid://97428323453639", DisplayName = "Punch"},
+    ["Caretaker"] = {Name = "Caretaker", InputShown = "", Tip = "Heals survivors for 20 HP", Cooldown = 30, Icon = "rbxassetid://90712805517714", DisplayName = "Caretaker"},
+    ["Cloak"] = {Name = "Cloak", InputShown = "", Tip = "Become invisible for a short time", Cooldown = 50, Icon = "rbxassetid://90476367580326", DisplayName = "Cloak"},
+    ["Block"] = {Name = "Block", InputShown = "", Tip = "Block damage and receive healing", Cooldown = 40, Icon = "rbxassetid://120929805037270", DisplayName = "Block"},
+    ["Dash"] = {Name = "Dash", InputShown = "", Tip = "Dash forward followed by fatigue", Cooldown = 20, Icon = "rbxassetid://73777691791017", DisplayName = "Dash"},
+    ["BonusPad"] = {Name = "BonusPad", InputShown = "", Tip = "Create a temporary speed boost pad", Cooldown = 70, Icon = "rbxassetid://86775625332300", DisplayName = "BonusPad"},
+    ["Hotdog"] = {Name = "Hotdog", InputShown = "", Tip = "Eat a hotdog to heal 15 HP", Cooldown = 15, Icon = "rbxassetid://134322360499381", DisplayName = "Hotdog"},
+    ["Revolver"] = {Name = "Revolver", InputShown = "", Tip = "Shoot and stun killer for 2 seconds", Cooldown = 15, Icon = "rbxassetid://107624957891469", DisplayName = "Revolver"},
+    ["Taunt"] = {Name = "Taunt", InputShown = "", Tip = "Taunt the killer and gain a shield", Cooldown = 25, Icon = "rbxassetid://85436299122876", DisplayName = "Taunt"},
+    ["Banana"] = {Name = "Banana", InputShown = "", Tip = "Throw a banana peel to stun", Cooldown = 20, Icon = "rbxassetid://96202444819611", DisplayName = "Banana Peel"}
+}
+
+local ESPEnabled = false
+local ESPFolder = nil
+local ESPConnectionsPerPlayer = {}
+local ESPPlayers = {}
+local ESPShowNames = true
+local ESPShowDistance = true
+local ESPShowHealth = true
+local ESPShowKillers = true
+local ESPShowSurvivors = true
+local ESPShowGhosts = true
+local globalPlayerAddedConn = nil
+local globalPlayerRemovingConn = nil
+
+local BLOCK_DISTANCE = 15
+local watcherEnabled = true
+local Logged = {}
+local badwareState = {active = false, startTime = 0, lastWS = nil}
+
+local KillerConfigs = {
+    ["Pursuer"] = {enabled = true, check = function(_, ws) local valid = {4,6,7,8,10,12,14,16,20}; for _, v in ipairs(valid) do if ws == v then return true end end return false end},
+    ["Artful"] = {enabled = true, check = function(_, ws) local valid = {4,7,8,12,16,20,9,13,17,21}; for _, v in ipairs(valid) do if ws == v then return true end end return false end},
+    ["Harken"] = {enabled = true, check = function(playerFolder, ws) local enraged = playerFolder:GetAttribute("Enraged") local seq = enraged and {7.5,10,5,13.5,17.5,21.5,25.5} or {4,8,12,16,20} if playerFolder:GetAttribute("AgitationCooldown") then return true end for _, v in ipairs(seq) do if ws == v then return true end end return false end},
+    ["Badware"] = {enabled = true, check = function(_, ws) local valid = {4,8,12,16,20} local function isValid(val) for _, v in ipairs(valid) do if val == v then return true end end return false end local now = tick() if isValid(ws) then if not badwareState.active then badwareState.startTime = now badwareState.active = true badwareState.lastWS = ws return false else badwareState.lastWS = ws return false end else if badwareState.active then local duration = now - badwareState.startTime badwareState.active = false badwareState.lastWS = nil badwareState.startTime = nil if duration < 0.3 then return true else return false end end end return false end},
+    ["Killdroid"] = {enabled = true, check = function(_, ws) local valid = {-4,0,4,12,16,20}; for _, v in ipairs(valid) do if ws == v then return true end end return false end}
+}
+
+local lockWSM = true
+local keepStaminaEnabled = true
+local customStamina = 100
+local defaultStamina = 100
+local AntiWalls = false
+local instantPPEnabled = true
+local proximityPrompts = {}
+local noM1Enabled = false
+local DETECTION_RANGE = 18
+local CHECK_INTERVAL = 0.5
+local hideState = false
+local blockerList = {}
+
+local AntiWallsEnabled = false
+local AntiComputerEnabled = false
+local AntiEvilScaryEnabled = false
+local AntiTauntEnabled = false
+local AntiBarriersEnabled = false
+local AntiFallDamageEnabled = false
+
+local autoStretchEnabled = true
+local isMinimized = false
+
+local tauntMonitorActive = false
+
+-- Function to create Invis GUI (from the second script, modified)
+local function CreateInvisGUI()
+    local player = LocalPlayer
+    local screenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+    screenGui.ResetOnSpawn = false
+    local frame = Instance.new("Frame", screenGui)
+    local toggleButton = Instance.new("TextButton", frame)
+    local closeButton = Instance.new("TextButton", frame)
+
+    frame.Size = UDim2.new(0, 100, 0, 60)
+    frame.Position = UDim2.new(0.5, -50, 0.5, -35)
+    frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    frame.Active = true
+    frame.Draggable = true
+
+    toggleButton.Size = UDim2.new(0, 80, 0, 30)
+    toggleButton.Position = UDim2.new(0, 10, 0, 30)
+    toggleButton.Text = "INVISIBLE"
+    toggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+    toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleButton.Font = Enum.Font.SourceSans
+    toggleButton.TextScaled = true
+
+    closeButton.Size = UDim2.new(0, 20, 0, 20)
+    closeButton.Position = UDim2.new(1, -30, 0, 5)
+    closeButton.Text = "X"
+    closeButton.BackgroundColor3 = Color3.fromRGB(255, 123, 0)
+    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.Font = Enum.Font.SourceSans
+    closeButton.TextSize = 18
+
+    local invis_on = false
+
+    local sound = Instance.new("Sound", player:WaitForChild("PlayerGui"))
+    sound.SoundId = "rbxassetid://942127495"
+    sound.Volume = 1
+
+    local function setTransparency(character, transparency)
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") or part:IsA("Decal") then
+                part.Transparency = transparency
+            end
+        end
+    end
+
+    local function toggleInvisibility()
+        local character = player.Character
+        if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+        invis_on = not invis_on
+        sound:Play()
+        if invis_on then
+            local savedpos = character.HumanoidRootPart.CFrame
+            task.wait()
+            character:MoveTo(Vector3.new(-25.95, 84, 3537.55))
+            task.wait(0.15)
+            local Seat = Instance.new('Seat', Workspace)
+            Seat.Anchored = false
+            Seat.CanCollide = false
+            Seat.Name = 'invischair'
+            Seat.Transparency = 1
+            Seat.Position = Vector3.new(-25.95, 84, 3537.55)
+            local Weld = Instance.new("Weld", Seat)
+            Weld.Part0 = Seat
+            Weld.Part1 = character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
+            task.wait()
+            Seat.CFrame = savedpos
+            setTransparency(character, 0.5)
+            toggleButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        else
+            local invisChair = Workspace:FindFirstChild('invischair')
+            if invisChair then
+                invisChair:Destroy()
+            end
+            setTransparency(character, 0)
+            toggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+        end
+    end
+
+    toggleButton.MouseButton1Click:Connect(toggleInvisibility)
+    closeButton.MouseButton1Click:Connect(function()
+        screenGui:Destroy()
+    end)
+
+    player.CharacterAdded:Connect(function()
+        invis_on = false
+        toggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+    end)
+end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AbilityButtonGui"
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Enabled = true
+
+local frame = Instance.new("Frame", screenGui)
+frame.Size = UDim2.new(0, 300, 0, 400)
+frame.Position = UDim2.new(0, 10, 0, 10)
+frame.Active = true
+frame.Draggable = true
+frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+frame.BorderSizePixel = 2
+frame.BorderColor3 = Color3.fromRGB(80, 80, 80)
+
+local topPanel = Instance.new("Frame", frame)
+topPanel.Size = UDim2.new(1, 0, 0, 30)
+topPanel.Position = UDim2.new(0, 0, 0, 0)
+topPanel.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+topPanel.BorderSizePixel = 0
+
+local titleLabel = Instance.new("TextLabel", topPanel)
+titleLabel.Text = "🎮 Die of Death"
+titleLabel.Size = UDim2.new(0, 150, 1, 0)
+titleLabel.Position = UDim2.new(0, 5, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 14
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local toggleButton = Instance.new("TextButton", topPanel)
+toggleButton.Text = "-"
+toggleButton.Size = UDim2.new(0, 20, 0, 20)
+toggleButton.Position = UDim2.new(1, -45, 0, 5)
+toggleButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Font = Enum.Font.GothamBold
+toggleButton.TextSize = 14
+
+local closeButton = Instance.new("TextButton", topPanel)
+closeButton.Text = "×"
+closeButton.Size = UDim2.new(0, 20, 0, 20)
+closeButton.Position = UDim2.new(1, -20, 0, 5)
+closeButton.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.Font = Enum.Font.GothamBold
+closeButton.TextSize = 16
+
+local sectionsPanel = Instance.new("Frame", frame)
+sectionsPanel.Size = UDim2.new(1, 0, 0, 40)
+sectionsPanel.Position = UDim2.new(0, 0, 0, 30)
+sectionsPanel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+sectionsPanel.BorderSizePixel = 0
+
+local sectionsScrolling = Instance.new("ScrollingFrame", sectionsPanel)
+sectionsScrolling.Size = UDim2.new(1, 0, 1, 0)
+sectionsScrolling.Position = UDim2.new(0, 0, 0, 0)
+sectionsScrolling.BackgroundTransparency = 1
+sectionsScrolling.ScrollBarThickness = 6
+sectionsScrolling.ScrollingDirection = Enum.ScrollingDirection.X
+sectionsScrolling.VerticalScrollBarPosition = Enum.VerticalScrollBarPosition.Left
+sectionsScrolling.CanvasSize = UDim2.new(2, 0, 0, 0)
+
+local sectionsContainer = Instance.new("Frame", sectionsScrolling)
+sectionsContainer.Size = UDim2.new(0, 800, 1, 0)
+sectionsContainer.BackgroundTransparency = 1
+
+local contentContainer = Instance.new("Frame", frame)
+contentContainer.Size = UDim2.new(1, 0, 0, 300)
+contentContainer.Position = UDim2.new(0, 0, 0, 70)
+contentContainer.BackgroundTransparency = 1
+contentContainer.ClipsDescendants = true
+
+local sections = {
+    {"📜", "Abilities"},
+    {"👁️", "ESP"},
+    {"🛡️", "Auto Block"},
+    {"⚙️", "Gameplay"},
+    {"🛡️", "Anti"},
+    {"👻", "Invis"}
+}
+
+local sectionButtons = {}
+local sectionContainers = {}
+local currentSection = nil
+
+local sectionsLayout = Instance.new("UIListLayout", sectionsContainer)
+sectionsLayout.FillDirection = Enum.FillDirection.Horizontal
+sectionsLayout.Padding = UDim.new(0, 5)
+sectionsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+for i, section in ipairs(sections) do
+    local sectionButton = Instance.new("TextButton", sectionsContainer)
+    sectionButton.Text = section[1] .. " " .. section[2]
+    sectionButton.Size = UDim2.new(0, 100, 0, 30)
+    sectionButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    sectionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    sectionButton.Font = Enum.Font.GothamBold
+    sectionButton.TextSize = 11
+    sectionButton.AutoButtonColor = true
+    sectionButton.LayoutOrder = i
+    
+    local sectionContainer = Instance.new("Frame", contentContainer)
+    sectionContainer.Size = UDim2.new(1, 0, 1, 0)
+    sectionContainer.Position = UDim2.new(0, 0, 0, 0)
+    sectionContainer.BackgroundTransparency = 1
+    sectionContainer.Visible = false
+    
+    table.insert(sectionButtons, sectionButton)
+    table.insert(sectionContainers, sectionContainer)
+end
+
+sectionsScrolling.CanvasSize = UDim2.new(0, sectionsContainer.AbsoluteSize.X, 0, 0)
+
+local function resizeFrame()
+    if not currentSection or isMinimized then return end
+    local maxY = 0
+    for _, child in ipairs(currentSection:GetChildren()) do
+        if child:IsA("GuiObject") and child.Visible then
+            local y = child.Position.Y.Offset + child.Size.Y.Offset
+            if y > maxY then maxY = y end
+        end
+    end
+    contentContainer.Size = UDim2.new(1, 0, 0, maxY)
+    frame.Size = UDim2.new(0, 300, 0, 70 + maxY + 10)
+end
+
+RunService.Heartbeat:Connect(function()
+    if autoStretchEnabled and currentSection and not isMinimized then
+        resizeFrame()
+    end
+end)
+
+local abilitiesTab = sectionContainers[1]
+abilitiesTab.Visible = true
+currentSection = abilitiesTab
+
+local mainButton = Instance.new("TextButton", abilitiesTab)
+mainButton.Text = "📜 GRANT ALL ABILITIES"
+mainButton.Size = UDim2.new(0, 280, 0, 35)
+mainButton.Position = UDim2.new(0, 10, 0, 40)
+mainButton.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+mainButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+mainButton.Font = Enum.Font.GothamBold
+mainButton.TextSize = 12
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 6)
+UICorner.Parent = mainButton
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(0, 170, 255)
+UIStroke.Thickness = 2
+UIStroke.Parent = mainButton
+
+local statusLabel = Instance.new("TextLabel", abilitiesTab)
+statusLabel.Text = "Status: Waiting..."
+statusLabel.Size = UDim2.new(0, 280, 0, 20)
+statusLabel.Position = UDim2.new(0, 10, 0, 80)
+statusLabel.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.TextSize = 11
+
+local infoLabel = Instance.new("TextLabel", abilitiesTab)
+infoLabel.Text = "Abilities: 0/11"
+infoLabel.Size = UDim2.new(0, 280, 0, 20)
+infoLabel.Position = UDim2.new(0, 10, 0, 100)
+infoLabel.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+infoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+infoLabel.Font = Enum.Font.Gotham
+infoLabel.TextSize = 11
+
+local divider1 = Instance.new("Frame", abilitiesTab)
+divider1.Size = UDim2.new(0, 280, 0, 1)
+divider1.Position = UDim2.new(0, 10, 0, 125)
+divider1.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+divider1.BorderSizePixel = 0
+
+local cardsLabel = Instance.new("TextLabel", abilitiesTab)
+cardsLabel.Text = "🎴 GRANT CARDS"
+cardsLabel.Size = UDim2.new(0, 280, 0, 20)
+cardsLabel.Position = UDim2.new(0, 10, 0, 130)
+cardsLabel.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+cardsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+cardsLabel.Font = Enum.Font.GothamBold
+cardsLabel.TextSize = 12
+
+local cardSettings = {
+    [1] = {[1] = "Block", [2] = "Dash"},
+    [2] = {[1] = "Hotdog", [2] = "Adrenaline"},
+    [3] = {[1] = "Revolver", [2] = "Punch"}
+}
+
+local dropdowns = {}
+local activeMenus = {}
+
+local function CloseAllMenus()
+    for _, menu in pairs(activeMenus) do
+        if menu and menu.Parent then
+            menu:Destroy()
+        end
+    end
+    activeMenus = {}
+end
+
+for i = 1, 3 do
+    local cardFrame = Instance.new("Frame", abilitiesTab)
+    cardFrame.Size = UDim2.new(0, 280, 0, 25)
+    cardFrame.Position = UDim2.new(0, 10, 0, 150 + (i-1)*30)
+    cardFrame.BackgroundTransparency = 1
+    
+    local cardNumber = Instance.new("TextLabel", cardFrame)
+    cardNumber.Text = "Card " .. i .. ":"
+    cardNumber.Size = UDim2.new(0, 50, 1, 0)
+    cardNumber.Position = UDim2.new(0, 0, 0, 0)
+    cardNumber.BackgroundTransparency = 1
+    cardNumber.TextColor3 = Color3.fromRGB(255, 255, 255)
+    cardNumber.Font = Enum.Font.Gotham
+    cardNumber.TextSize = 11
+    cardNumber.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local dropdown1 = Instance.new("TextButton", cardFrame)
+    dropdown1.Text = cardSettings[i][1]
+    dropdown1.Size = UDim2.new(0, 105, 1, 0)
+    dropdown1.Position = UDim2.new(0, 55, 0, 0)
+    dropdown1.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    dropdown1.TextColor3 = Color3.fromRGB(255, 255, 255)
+    dropdown1.Font = Enum.Font.Gotham
+    dropdown1.TextSize = 10
+    
+    local dropdown2 = Instance.new("TextButton", cardFrame)
+    dropdown2.Text = cardSettings[i][2]
+    dropdown2.Size = UDim2.new(0, 105, 1, 0)
+    dropdown2.Position = UDim2.new(0, 165, 0, 0)
+    dropdown2.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    dropdown2.TextColor3 = Color3.fromRGB(255, 255, 255)
+    dropdown2.Font = Enum.Font.Gotham
+    dropdown2.TextSize = 10
+    
+    table.insert(dropdowns, {dropdown1, dropdown2})
+    
+    local function createDropdownHandler(dropdown, cardIndex, abilityIndex)
+        local menu = nil
+        local connection = nil
+        
+        local function closeMenu()
+            if menu and menu.Parent then
+                menu:Destroy()
+                menu = nil
+            end
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+            for i, activeMenu in pairs(activeMenus) do
+                if activeMenu == menu then
+                    table.remove(activeMenus, i)
+                    break
+                end
+            end
+        end
+        
+        dropdown.MouseButton1Click:Connect(function()
+            if menu and menu.Parent then
+                closeMenu()
+                return
+            end
+            
+            CloseAllMenus()
+            
+            menu = Instance.new("Frame")
+            menu.Size = UDim2.new(0, 100, 0, 200)
+            menu.Position = UDim2.new(0, dropdown.AbsolutePosition.X - frame.AbsolutePosition.X, 0, dropdown.AbsolutePosition.Y - frame.AbsolutePosition.Y + 25)
+            menu.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+            menu.BorderSizePixel = 1
+            menu.BorderColor3 = Color3.fromRGB(100, 100, 100)
+            menu.ZIndex = 5
+            menu.Parent = frame
+            
+            table.insert(activeMenus, menu)
+            
+            local scrollingFrame = Instance.new("ScrollingFrame", menu)
+            scrollingFrame.Size = UDim2.new(1, 0, 1, 0)
+            scrollingFrame.BackgroundTransparency = 1
+            scrollingFrame.BorderSizePixel = 0
+            scrollingFrame.ScrollBarThickness = 6
+            
+            local uiListLayout = Instance.new("UIListLayout", scrollingFrame)
+            uiListLayout.Padding = UDim.new(0, 1)
+            
+            for _, abilityName in pairs(AbilityNames) do
+                local abilityButton = Instance.new("TextButton")
+                abilityButton.Size = UDim2.new(1, -10, 0, 25)
+                abilityButton.Position = UDim2.new(0, 5, 0, 0)
+                abilityButton.Text = abilityName
+                abilityButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+                abilityButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+                abilityButton.Font = Enum.Font.Gotham
+                abilityButton.TextSize = 10
+                abilityButton.Parent = scrollingFrame
+                
+                abilityButton.MouseButton1Click:Connect(function()
+                    cardSettings[cardIndex][abilityIndex] = abilityName
+                    dropdown.Text = abilityName
+                    closeMenu()
+                end)
+            end
+            
+            scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, #AbilityNames * 26)
+            
+            connection = UserInputService.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    local mousePos = UserInputService:GetMouseLocation()
+                    local menuPos = menu.AbsolutePosition
+                    local menuSize = menu.AbsoluteSize
+                    
+                    if mousePos.X < menuPos.X or mousePos.X > menuPos.X + menuSize.X or
+                       mousePos.Y < menuPos.Y or mousePos.Y > menuPos.Y + menuSize.Y then
+                        closeMenu()
+                    end
+                end
+            end)
+        end)
+    end
+    
+    createDropdownHandler(dropdown1, i, 1)
+    createDropdownHandler(dropdown2, i, 2)
+end
+
+local giveCardsButton = Instance.new("TextButton", abilitiesTab)
+giveCardsButton.Text = "🎴 GRANT SELECTED CARDS"
+giveCardsButton.Size = UDim2.new(0, 280, 0, 30)
+giveCardsButton.Position = UDim2.new(0, 10, 0, 240)
+giveCardsButton.BackgroundColor3 = Color3.fromRGB(150, 0, 150)
+giveCardsButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+giveCardsButton.Font = Enum.Font.GothamBold
+giveCardsButton.TextSize = 11
+
+local UICorner2 = Instance.new("UICorner")
+UICorner2.CornerRadius = UDim.new(0, 6)
+UICorner2.Parent = giveCardsButton
+
+local UIStroke2 = Instance.new("UIStroke")
+UIStroke2.Color = Color3.fromRGB(200, 0, 200)
+UIStroke2.Thickness = 2
+UIStroke2.Parent = giveCardsButton
+
+local espTab = sectionContainers[2]
+
+local espToggleButton = Instance.new("TextButton", espTab)
+espToggleButton.Text = "👁️ ESP: OFF"
+espToggleButton.Size = UDim2.new(0, 135, 0, 25)
+espToggleButton.Position = UDim2.new(0, 10, 0, 40)
+espToggleButton.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+espToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+espToggleButton.Font = Enum.Font.GothamBold
+espToggleButton.TextSize = 10
+
+local espNamesButton = Instance.new("TextButton", espTab)
+espNamesButton.Text = "📝 Names: ON"
+espNamesButton.Size = UDim2.new(0, 135, 0, 25)
+espNamesButton.Position = UDim2.new(0, 145, 0, 40)
+espNamesButton.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+espNamesButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+espNamesButton.Font = Enum.Font.Gotham
+espNamesButton.TextSize = 9
+
+local espDistanceButton = Instance.new("TextButton", espTab)
+espDistanceButton.Text = "📏 Distance: ON"
+espDistanceButton.Size = UDim2.new(0, 135, 0, 25)
+espDistanceButton.Position = UDim2.new(0, 10, 0, 70)
+espDistanceButton.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+espDistanceButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+espDistanceButton.Font = Enum.Font.Gotham
+espDistanceButton.TextSize = 9
+
+local espHealthButton = Instance.new("TextButton", espTab)
+espHealthButton.Text = "❤️ Health: ON"
+espHealthButton.Size = UDim2.new(0, 135, 0, 25)
+espHealthButton.Position = UDim2.new(0, 145, 0, 70)
+espHealthButton.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+espHealthButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+espHealthButton.Font = Enum.Font.Gotham
+espHealthButton.TextSize = 9
+
+local espKillersButton = Instance.new("TextButton", espTab)
+espKillersButton.Text = "🔴 Killers: ON"
+espKillersButton.Size = UDim2.new(0, 135, 0, 25)
+espKillersButton.Position = UDim2.new(0, 10, 0, 100)
+espKillersButton.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+espKillersButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+espKillersButton.Font = Enum.Font.Gotham
+espKillersButton.TextSize = 9
+
+local espSurvivorsButton = Instance.new("TextButton", espTab)
+espSurvivorsButton.Text = "🟢 Survivors: ON"
+espSurvivorsButton.Size = UDim2.new(0, 135, 0, 25)
+espSurvivorsButton.Position = UDim2.new(0, 145, 0, 100)
+espSurvivorsButton.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+espSurvivorsButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+espSurvivorsButton.Font = Enum.Font.Gotham
+espSurvivorsButton.TextSize = 9
+
+local espGhostsButton = Instance.new("TextButton", espTab)
+espGhostsButton.Text = "⚪ Ghosts: ON"
+espGhostsButton.Size = UDim2.new(0, 135, 0, 25)
+espGhostsButton.Position = UDim2.new(0, 10, 0, 130)
+espGhostsButton.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+espGhostsButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+espGhostsButton.Font = Enum.Font.Gotham
+espGhostsButton.TextSize = 9
+
+local autoBlockTab = sectionContainers[3]
+
+local autoBlockToggle = Instance.new("TextButton", autoBlockTab)
+autoBlockToggle.Text = "Auto Block: ON"
+autoBlockToggle.Size = UDim2.new(0, 135, 0, 25)
+autoBlockToggle.Position = UDim2.new(0, 10, 0, 40)
+autoBlockToggle.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+autoBlockToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoBlockToggle.Font = Enum.Font.Gotham
+autoBlockToggle.TextSize = 10
+
+local blockDistanceLabel = Instance.new("TextLabel", autoBlockTab)
+blockDistanceLabel.Text = "Block Distance: " .. BLOCK_DISTANCE
+blockDistanceLabel.Size = UDim2.new(0, 280, 0, 20)
+blockDistanceLabel.Position = UDim2.new(0, 10, 0, 70)
+blockDistanceLabel.BackgroundTransparency = 1
+blockDistanceLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+blockDistanceLabel.Font = Enum.Font.Gotham
+blockDistanceLabel.TextSize = 11
+
+local blockDistanceSlider = Instance.new("TextButton", autoBlockTab)
+blockDistanceSlider.Text = "Change Distance"
+blockDistanceSlider.Size = UDim2.new(0, 135, 0, 25)
+blockDistanceSlider.Position = UDim2.new(0, 10, 0, 90)
+blockDistanceSlider.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+blockDistanceSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
+blockDistanceSlider.Font = Enum.Font.Gotham
+blockDistanceSlider.TextSize = 10
+
+local killerButtons = {}
+local yPos = 120
+for killerName, _ in pairs(KillerConfigs) do
+    local killerButton = Instance.new("TextButton", autoBlockTab)
+    killerButton.Text = killerName .. ": ON"
+    killerButton.Size = UDim2.new(0, 135, 0, 25)
+    killerButton.Position = UDim2.new(0, 10, 0, yPos)
+    killerButton.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+    killerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    killerButton.Font = Enum.Font.Gotham
+    killerButton.TextSize = 10
+    
+    killerButtons[killerName] = killerButton
+    yPos = yPos + 30
+end
+
+local gameplayTab = sectionContainers[4]
+
+local lockWSMButton = Instance.new("TextButton", gameplayTab)
+lockWSMButton.Text = "WSM Lock: ON"
+lockWSMButton.Size = UDim2.new(0, 135, 0, 25)
+lockWSMButton.Position = UDim2.new(0, 10, 0, 40)
+lockWSMButton.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+lockWSMButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+lockWSMButton.Font = Enum.Font.Gotham
+lockWSMButton.TextSize = 10
+
+local staminaButton = Instance.new("TextButton", gameplayTab)
+staminaButton.Text = "Custom Stamina: ON"
+staminaButton.Size = UDim2.new(0, 135, 0, 25)
+staminaButton.Position = UDim2.new(0, 145, 0, 40)
+staminaButton.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+staminaButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+staminaButton.Font = Enum.Font.Gotham
+staminaButton.TextSize = 10
+
+local antiWallsButton = Instance.new("TextButton", gameplayTab)
+antiWallsButton.Text = "Anti-Walls: OFF"
+antiWallsButton.Size = UDim2.new(0, 135, 0, 25)
+antiWallsButton.Position = UDim2.new(0, 10, 0, 70)
+antiWallsButton.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+antiWallsButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+antiWallsButton.Font = Enum.Font.Gotham
+antiWallsButton.TextSize = 10
+
+local instantPPButton = Instance.new("TextButton", gameplayTab)
+instantPPButton.Text = "Instant PP: ON"
+instantPPButton.Size = UDim2.new(0, 135, 0, 25)
+instantPPButton.Position = UDim2.new(0, 145, 0, 70)
+instantPPButton.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+instantPPButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+instantPPButton.Font = Enum.Font.Gotham
+instantPPButton.TextSize = 10
+
+local noM1Button = Instance.new("TextButton", gameplayTab)
+noM1Button.Text = "No M1 Blocking: OFF"
+noM1Button.Size = UDim2.new(0, 135, 0, 25)
+noM1Button.Position = UDim2.new(0, 10, 0, 100)
+noM1Button.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+noM1Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+noM1Button.Font = Enum.Font.Gotham
+noM1Button.TextSize = 10
+
+local antiTab = sectionContainers[5]
+
+local antiWallsAntiButton = Instance.new("TextButton", antiTab)
+antiWallsAntiButton.Text = "Anti-Artful Walls: OFF"
+antiWallsAntiButton.Size = UDim2.new(0, 135, 0, 25)
+antiWallsAntiButton.Position = UDim2.new(0, 10, 0, 40)
+antiWallsAntiButton.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+antiWallsAntiButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+antiWallsAntiButton.Font = Enum.Font.Gotham
+antiWallsAntiButton.TextSize = 10
+
+local antiComputerButton = Instance.new("TextButton", antiTab)
+antiComputerButton.Text = "Anti Computer CD: OFF"
+antiComputerButton.Size = UDim2.new(0, 135, 0, 25)
+antiComputerButton.Position = UDim2.new(0, 145, 0, 40)
+antiComputerButton.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+antiComputerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+antiComputerButton.Font = Enum.Font.Gotham
+antiComputerButton.TextSize = 10
+
+local antiEvilScaryButton = Instance.new("TextButton", antiTab)
+antiEvilScaryButton.Text = "Anti Evil Scary: OFF"
+antiEvilScaryButton.Size = UDim2.new(0, 135, 0, 25)
+antiEvilScaryButton.Position = UDim2.new(0, 10, 0, 70)
+antiEvilScaryButton.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+antiEvilScaryButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+antiEvilScaryButton.Font = Enum.Font.Gotham
+antiEvilScaryButton.TextSize = 10
+
+local antiTauntButton = Instance.new("TextButton", antiTab)
+antiTauntButton.Text = "Anti Taunt: OFF"
+antiTauntButton.Size = UDim2.new(0, 135, 0, 25)
+antiTauntButton.Position = UDim2.new(0, 145, 0, 70)
+antiTauntButton.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+antiTauntButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+antiTauntButton.Font = Enum.Font.Gotham
+antiTauntButton.TextSize = 10
+
+local antiBarriersButton = Instance.new("TextButton", antiTab)
+antiBarriersButton.Text = "Anti Barriers: OFF"
+antiBarriersButton.Size = UDim2.new(0, 135, 0, 25)
+antiBarriersButton.Position = UDim2.new(0, 10, 0, 100)
+antiBarriersButton.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+antiBarriersButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+antiBarriersButton.Font = Enum.Font.Gotham
+antiBarriersButton.TextSize = 10
+
+local antiFallDamageButton = Instance.new("TextButton", antiTab)
+antiFallDamageButton.Text = "Anti Fall Damage: OFF"
+antiFallDamageButton.Size = UDim2.new(0, 135, 0, 25)
+antiFallDamageButton.Position = UDim2.new(0, 145, 0, 100)
+antiFallDamageButton.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+antiFallDamageButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+antiFallDamageButton.Font = Enum.Font.Gotham
+antiFallDamageButton.TextSize = 10
+
+local antiTauntMonitorButton = Instance.new("TextButton", antiTab)
+antiTauntMonitorButton.Text = "🚫 Anti-Taunt Monitor"
+antiTauntMonitorButton.Size = UDim2.new(0, 135, 0, 25)
+antiTauntMonitorButton.Position = UDim2.new(0, 10, 0, 130)
+antiTauntMonitorButton.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+antiTauntMonitorButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+antiTauntMonitorButton.Font = Enum.Font.GothamBold
+antiTauntMonitorButton.TextSize = 10
+
+local invisTab = sectionContainers[6]
+
+local createInvisButton = Instance.new("TextButton", invisTab)
+createInvisButton.Text = "👻 Create Invis GUI"
+createInvisButton.Size = UDim2.new(0, 280, 0, 35)
+createInvisButton.Position = UDim2.new(0, 10, 0, 40)
+createInvisButton.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+createInvisButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+createInvisButton.Font = Enum.Font.GothamBold
+createInvisButton.TextSize = 12
+
+local UICornerCreate = Instance.new("UICorner")
+UICornerCreate.CornerRadius = UDim.new(0, 6)
+UICornerCreate.Parent = createInvisButton
+
+local UIStrokeCreate = Instance.new("UIStroke")
+UIStrokeCreate.Color = Color3.fromRGB(0, 170, 255)
+UIStrokeCreate.Thickness = 2
+UIStrokeCreate.Parent = createInvisButton
+
+createInvisButton.MouseButton1Click:Connect(CreateInvisGUI)
+
+local function ShowSection(sectionNumber)
+    for i, container in ipairs(sectionContainers) do
+        container.Visible = (i == sectionNumber)
+    end
+    
+    for i, button in ipairs(sectionButtons) do
+        button.BackgroundColor3 = (i == sectionNumber) and Color3.fromRGB(0, 100, 200) or Color3.fromRGB(80, 80, 80)
+    end
+    
+    currentSection = sectionContainers[sectionNumber]
+    if autoStretchEnabled and not isMinimized then
+        resizeFrame()
+    end
+end
+
+for i, button in ipairs(sectionButtons) do
+    button.MouseButton1Click:Connect(function()
+        ShowSection(i)
+    end)
+end
+
+ShowSection(1)
+
+for i, button in ipairs(sectionButtons) do
+    button.MouseEnter:Connect(function()
+        if button.BackgroundColor3 ~= Color3.fromRGB(0, 100, 200) then
+            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(100, 100, 100)}):Play()
+        end
+    end)
+    
+    button.MouseLeave:Connect(function()
+        if button.BackgroundColor3 ~= Color3.fromRGB(0, 100, 200) then
+            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(80, 80, 80)}):Play()
+        end
+    end)
+end
+
+local function CreateESPFolder()
+    if not ESPFolder then
+        ESPFolder = Instance.new("Folder")
+        ESPFolder.Name = "ESPFolder"
+        ESPFolder.Parent = screenGui
+    end
+    return ESPFolder
+end
+
+local function GetPlayerTeam(player)
+    if not player then return "Unknown" end
+    local gameAssets = Workspace:FindFirstChild("GameAssets")
+    if gameAssets then
+        local teams = gameAssets:FindFirstChild("Teams")
+        if teams then
+            local killerTeam = teams:FindFirstChild("Killer")
+            if killerTeam and killerTeam:FindFirstChild(player.Name) then return "Killer" end
+            local survivorTeam = teams:FindFirstChild("Survivor")
+            if survivorTeam and survivorTeam:FindFirstChild(player.Name) then return "Survivor" end
+            local ghostTeam = teams:FindFirstChild("Ghost")
+            if ghostTeam and ghostTeam:FindFirstChild(player.Name) then return "Ghost" end
+        end
+    end
+    return "Unknown"
+end
+
+local function GetTeamColor(team)
+    if team == "Killer" then return Color3.fromRGB(255, 50, 50)
+    elseif team == "Survivor" then return Color3.fromRGB(50, 255, 50)
+    elseif team == "Ghost" then return Color3.fromRGB(255, 255, 255)
+    else return Color3.fromRGB(255, 255, 255) end
+end
+
+local function ShouldShowESP(team)
+    if team == "Killer" then return ESPShowKillers
+    elseif team == "Survivor" then return ESPShowSurvivors
+    elseif team == "Ghost" then return ESPShowGhosts end
+    return true
+end
+
+local function CreateESP(player)
+    if player == LocalPlayer then return end
+    if ESPPlayers[player] then return end
+    ESPPlayers[player] = true
+    
+    local perPlayerConnections = {}
+    
+    local function CreateESPForCharacter(character)
+        if not character then return end
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        local billboard = Instance.new("BillboardGui")
+        billboard.Name = player.Name .. "_ESP"
+        billboard.Adornee = hrp
+        billboard.Size = UDim2.new(0, 200, 0, 50)
+        billboard.StudsOffset = Vector3.new(0, 3, 0)
+        billboard.AlwaysOnTop = true
+        billboard.MaxDistance = math.huge
+        billboard.Parent = CreateESPFolder()
+        
+        local espText = Instance.new("TextLabel")
+        espText.Size = UDim2.new(1, 0, 1, 0)
+        espText.BackgroundTransparency = 1
+        espText.Text = ""
+        espText.TextColor3 = Color3.fromRGB(255, 255, 255)
+        espText.TextStrokeTransparency = 0
+        espText.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+        espText.Font = Enum.Font.GothamBold
+        espText.TextSize = 14
+        espText.Parent = billboard
+        
+        local highlight = Instance.new("Highlight")
+        highlight.Name = player.Name .. "_Highlight"
+        highlight.Adornee = character
+        highlight.FillTransparency = 0.9
+        highlight.OutlineTransparency = 0
+        highlight.Parent = CreateESPFolder()
+        
+        local espConnection = RunService.Heartbeat:Connect(function()
+            if not character or not character.Parent or not hrp or not hrp.Parent then
+                if espConnection then
+                    espConnection:Disconnect()
+                end
+                if billboard and billboard.Parent then
+                    billboard:Destroy()
+                end
+                if highlight and highlight.Parent then
+                    highlight:Destroy()
+                end
+                return
+            end
+            local humanoid = character:FindFirstChild("Humanoid")
+            local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+            if not humanoid or not humanoidRootPart then return end
+            local team = GetPlayerTeam(player)
+            local teamColor = GetTeamColor(team)
+            if not ShouldShowESP(team) then
+                billboard.Enabled = false
+                highlight.Enabled = false
+                return
+            else
+                billboard.Enabled = true
+                highlight.Enabled = true
+            end
+            espText.TextColor3 = teamColor
+            highlight.FillColor = teamColor
+            highlight.OutlineColor = teamColor
+            local localCharacter = LocalPlayer.Character
+            local localRootPart = localCharacter and localCharacter:FindFirstChild("HumanoidRootPart")
+            if localRootPart then
+                local distance = (humanoidRootPart.Position - localRootPart.Position).Magnitude
+                local text = ""
+                if ESPShowNames then text = text .. player.Name .. "\n" end
+                if ESPShowHealth and humanoid then text = text .. "HP: " .. math.floor(humanoid.Health) .. "/" .. math.floor(humanoid.MaxHealth) .. "\n" end
+                if ESPShowDistance then text = text .. "Distance: " .. math.floor(distance) .. "m" end
+                espText.Text = text
+            end
+        end)
+        table.insert(perPlayerConnections, espConnection)
+    end
+    
+    if player.Character then CreateESPForCharacter(player.Character) end
+    local characterAddedConn = player.CharacterAdded:Connect(function(character) CreateESPForCharacter(character) end)
+    table.insert(perPlayerConnections, characterAddedConn)
+    ESPConnectionsPerPlayer[player] = perPlayerConnections
+end
+
+local function EnableESP()
+    if ESPEnabled then return end
+    ESPEnabled = true
+    espToggleButton.Text = "👁️ ESP: ON"
+    espToggleButton.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+    CreateESPFolder()
+    for _, player in pairs(Players:GetPlayers()) do CreateESP(player) end
+    globalPlayerAddedConn = Players.PlayerAdded:Connect(function(player) CreateESP(player) end)
+    globalPlayerRemovingConn = Players.PlayerRemoving:Connect(function(leavingPlayer)
+        local perConns = ESPConnectionsPerPlayer[leavingPlayer]
+        if perConns then
+            for _, conn in pairs(perConns) do
+                if conn then conn:Disconnect() end
+            end
+            ESPConnectionsPerPlayer[leavingPlayer] = nil
+        end
+        ESPPlayers[leavingPlayer] = nil
+        pcall(function()
+            local espBill = ESPFolder:FindFirstChild(leavingPlayer.Name .. "_ESP")
+            if espBill then espBill:Destroy() end
+            local espHigh = ESPFolder:FindFirstChild(leavingPlayer.Name .. "_Highlight")
+            if espHigh then espHigh:Destroy() end
+        end)
+    end)
+    statusLabel.Text = "Status: ESP enabled"
+    statusLabel.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+end
+
+local function DisableESP()
+    if not ESPEnabled then return end
+    ESPEnabled = false
+    espToggleButton.Text = "👁️ ESP: OFF"
+    espToggleButton.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+    if globalPlayerAddedConn then
+        globalPlayerAddedConn:Disconnect()
+        globalPlayerAddedConn = nil
+    end
+    if globalPlayerRemovingConn then
+        globalPlayerRemovingConn:Disconnect()
+        globalPlayerRemovingConn = nil
+    end
+    for player, perConns in pairs(ESPConnectionsPerPlayer) do
+        for _, conn in pairs(perConns) do
+            if conn then conn:Disconnect() end
+        end
+    end
+    ESPConnectionsPerPlayer = {}
+    ESPPlayers = {}
+    if ESPFolder then
+        ESPFolder:ClearAllChildren()
+    end
+    statusLabel.Text = "Status: ESP disabled"
+    statusLabel.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+end
+
+local function ClearESP()
+    DisableESP()
+end
+
+espToggleButton.MouseButton1Click:Connect(function()
+    if ESPEnabled then DisableESP() else EnableESP() end
+end)
+
+espNamesButton.MouseButton1Click:Connect(function()
+    ESPShowNames = not ESPShowNames
+    espNamesButton.Text = ESPShowNames and "📝 Names: ON" or "📝 Names: OFF"
+    espNamesButton.BackgroundColor3 = ESPShowNames and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+end)
+
+espDistanceButton.MouseButton1Click:Connect(function()
+    ESPShowDistance = not ESPShowDistance
+    espDistanceButton.Text = ESPShowDistance and "📏 Distance: ON" or "📏 Distance: OFF"
+    espDistanceButton.BackgroundColor3 = ESPShowDistance and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+end)
+
+espHealthButton.MouseButton1Click:Connect(function()
+    ESPShowHealth = not ESPShowHealth
+    espHealthButton.Text = ESPShowHealth and "❤️ Health: ON" or "❤️ Health: OFF"
+    espHealthButton.BackgroundColor3 = ESPShowHealth and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+end)
+
+espKillersButton.MouseButton1Click:Connect(function()
+    ESPShowKillers = not ESPShowKillers
+    espKillersButton.Text = ESPShowKillers and "🔴 Killers: ON" or "🔴 Killers: OFF"
+    espKillersButton.BackgroundColor3 = ESPShowKillers and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+end)
+
+espSurvivorsButton.MouseButton1Click:Connect(function()
+    ESPShowSurvivors = not ESPShowSurvivors
+    espSurvivorsButton.Text = ESPShowSurvivors and "🟢 Survivors: ON" or "🟢 Survivors: OFF"
+    espSurvivorsButton.BackgroundColor3 = ESPShowSurvivors and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+end)
+
+espGhostsButton.MouseButton1Click:Connect(function()
+    ESPShowGhosts = not ESPShowGhosts
+    espGhostsButton.Text = ESPShowGhosts and "⚪ Ghosts: ON" or "⚪ Ghosts: OFF"
+    espGhostsButton.BackgroundColor3 = ESPShowGhosts and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+end)
+
+local function sendBlock()
+    local UseAbility = ReplicatedStorage:WaitForChild("Events"):WaitForChild("RemoteFunctions"):WaitForChild("UseAbility")
+    UseAbility:InvokeServer("Block")
+end
+
+local function getWalkSpeedModifier(killer)
+    return killer:GetAttribute("WalkSpeedModifier") or 0
+end
+
+local function getDistanceFromPlayer(killer)
+    if killer:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        return (killer.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+    end
+    return math.huge
+end
+
+local function checkAndBlock(killer)
+    if not watcherEnabled or not killer then return end
+    local ws = getWalkSpeedModifier(killer)
+    local name = killer:GetAttribute("KillerName")
+    if not name then return end
+    local config = KillerConfigs[name]
+    if not config or not config.enabled then return end
+    if getDistanceFromPlayer(killer) > BLOCK_DISTANCE then return end
+    if config.check(killer, ws) then
+        sendBlock()
+        Logged[killer] = Logged[killer] or {}
+        if not Logged[killer][ws] then
+            print("[AutoBlock] "..name.." ("..killer.Name..") WalkSpeedModifier = "..ws.." -> blocked")
+            Logged[killer][ws] = true
+            task.delay(3, function() Logged[killer][ws] = nil end)
+        end
+    end
+end
+
+local function monitorKiller(killer)
+    if not killer then return end
+    checkAndBlock(killer)
+    if not killer:GetAttribute("__AB_CONNECTED") then
+        killer:SetAttribute("__AB_CONNECTED", true)
+        killer.AttributeChanged:Connect(function(attr)
+            if attr == "WalkSpeedModifier" or attr == "KillerName" or attr == "Enraged" then
+                checkAndBlock(killer)
+            end
+        end)
+    end
+end
+
+task.spawn(function()
+    local killersFolder = Workspace:WaitForChild("GameAssets"):WaitForChild("Teams"):WaitForChild("Killer")
+    for _, killer in pairs(killersFolder:GetChildren()) do monitorKiller(killer) end
+    killersFolder.ChildAdded:Connect(monitorKiller)
+end)
+
+autoBlockToggle.MouseButton1Click:Connect(function()
+    watcherEnabled = not watcherEnabled
+    autoBlockToggle.Text = watcherEnabled and "Auto Block: ON" or "Auto Block: OFF"
+    autoBlockToggle.BackgroundColor3 = watcherEnabled and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+end)
+
+blockDistanceSlider.MouseButton1Click:Connect(function()
+    BLOCK_DISTANCE = BLOCK_DISTANCE + 5
+    if BLOCK_DISTANCE > 50 then BLOCK_DISTANCE = 5 end
+    blockDistanceLabel.Text = "Block Distance: " .. BLOCK_DISTANCE
+end)
+
+for killerName, button in pairs(killerButtons) do
+    button.MouseButton1Click:Connect(function()
+        KillerConfigs[killerName].enabled = not KillerConfigs[killerName].enabled
+        button.Text = killerName .. ": " .. (KillerConfigs[killerName].enabled and "ON" or "OFF")
+        button.BackgroundColor3 = KillerConfigs[killerName].enabled and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+    end)
+end
+
+lockWSMButton.MouseButton1Click:Connect(function()
+    lockWSM = not lockWSM
+    lockWSMButton.Text = lockWSM and "WSM Lock: ON" or "WSM Lock: OFF"
+    lockWSMButton.BackgroundColor3 = lockWSM and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+end)
+
+staminaButton.MouseButton1Click:Connect(function()
+    keepStaminaEnabled = not keepStaminaEnabled
+    staminaButton.Text = keepStaminaEnabled and "Custom Stamina: ON" or "Custom Stamina: OFF"
+    staminaButton.BackgroundColor3 = keepStaminaEnabled and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+end)
+
+antiWallsButton.MouseButton1Click:Connect(function()
+    AntiWalls = not AntiWalls
+    antiWallsButton.Text = AntiWalls and "Anti-Walls: ON" or "Anti-Walls: OFF"
+    antiWallsButton.BackgroundColor3 = AntiWalls and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+end)
+
+instantPPButton.MouseButton1Click:Connect(function()
+    instantPPEnabled = not instantPPEnabled
+    instantPPButton.Text = instantPPEnabled and "Instant PP: ON" or "Instant PP: OFF"
+    instantPPButton.BackgroundColor3 = instantPPEnabled and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+end)
+
+noM1Button.MouseButton1Click:Connect(function()
+    noM1Enabled = not noM1Enabled
+    noM1Button.Text = noM1Enabled and "No M1 Blocking: ON" or "No M1 Blocking: OFF"
+    noM1Button.BackgroundColor3 = noM1Enabled and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+end)
+
+antiWallsAntiButton.MouseButton1Click:Connect(function()
+    AntiWallsEnabled = not AntiWallsEnabled
+    antiWallsAntiButton.Text = AntiWallsEnabled and "Anti-Artful Walls: ON" or "Anti-Artful Walls: OFF"
+    antiWallsAntiButton.BackgroundColor3 = AntiWallsEnabled and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+    if AntiWallsEnabled then
+        for i,v in pairs(Workspace:WaitForChild("GameAssets"):WaitForChild("Teams"):WaitForChild("Other"):GetDescendants()) do
+            if v and v.Name == "HumanoidRootPart" and v.Anchored == true then
+                v.CanCollide = false
+                v.CanTouch = false
+                v.Transparency = 0.5
+            end
+        end
+    end
+end)
+
+Workspace:WaitForChild("GameAssets"):WaitForChild("Teams"):WaitForChild("Other").DescendantAdded:Connect(function(descendant)
+    if descendant and descendant.Name == "HumanoidRootPart" and descendant.Anchored == true and AntiWallsEnabled then
+        descendant.CanCollide = false
+        descendant.CanTouch = false
+        descendant.Transparency = 0.5
+    end
+end)
+
+antiComputerButton.MouseButton1Click:Connect(function()
+    AntiComputerEnabled = not AntiComputerEnabled
+    antiComputerButton.Text = AntiComputerEnabled and "Anti Computer CD: ON" or "Anti Computer CD: OFF"
+    antiComputerButton.BackgroundColor3 = AntiComputerEnabled and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+    if AntiComputerEnabled then
+        for _,descendant in pairs(Workspace:WaitForChild("GameAssets"):GetDescendants()) do
+            if descendant and descendant:IsA("ProximityPrompt") then
+                pcall(function()
+                    descendant.HoldDuration = 0
+                    descendant.RequiresLineOfSight = false
+                    descendant.Enabled = true
+                end)
+            end
+        end
+    end
+end)
+
+Workspace:WaitForChild("GameAssets").DescendantAdded:Connect(function(descendant)
+    if descendant and descendant:IsA("ProximityPrompt") and AntiComputerEnabled then
+        pcall(function()
+            descendant.HoldDuration = 0
+            descendant.RequiresLineOfSight = false
+            descendant.Enabled = true
+        end)
+    end
+end)
+
+antiEvilScaryButton.MouseButton1Click:Connect(function()
+    AntiEvilScaryEnabled = not AntiEvilScaryEnabled
+    antiEvilScaryButton.Text = AntiEvilScaryEnabled and "Anti Evil Scary: ON" or "Anti Evil Scary: OFF"
+    antiEvilScaryButton.BackgroundColor3 = AntiEvilScaryEnabled and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+    if AntiEvilScaryEnabled then
+        for i,v in pairs(Workspace:WaitForChild("GameAssets"):WaitForChild("Debris"):WaitForChild("Cleanable"):GetChildren()) do
+            if v and v.Name == "EvilScary" then
+                for _,trans in pairs(v:GetChildren()) do
+                    if trans and trans:IsA("TouchTransmitter") then trans:Destroy() end
+                end
+                for _,part in pairs(v:GetChildren()) do
+                    if part and part:IsA("BasePart") then
+                        part.CanCollide = false
+                        part.CanTouch = false
+                        pcall(function() part.CanQuery = false end)
+                        part:Destroy()
+                    end
+                end
+                v.CanCollide = false
+                v.CanTouch = false
+                pcall(function() v.CanQuery = false end)
+                v:Destroy()
+            end
+        end
+    end
+end)
+
+Workspace:WaitForChild("GameAssets"):WaitForChild("Debris"):WaitForChild("Cleanable").ChildAdded:Connect(function(child)
+    if child and child.Name == "EvilScary" and AntiEvilScaryEnabled then
+        for _,trans in pairs(child:GetChildren()) do
+            if trans and trans:IsA("TouchTransmitter") then trans:Destroy() end
+        end
+        for _,part in pairs(child:GetChildren()) do
+            if part and part:IsA("BasePart") then
+                part.CanCollide = false
+                part.CanTouch = false
+                pcall(function() part.CanQuery = false end)
+                part:Destroy()
+            end
+        end
+        child.CanCollide = false
+        child.CanTouch = false
+        pcall(function() child.CanQuery = false end)
+        child:Destroy()
+    end
+end)
+
+antiTauntButton.MouseButton1Click:Connect(function()
+    AntiTauntEnabled = not AntiTauntEnabled
+    antiTauntButton.Text = AntiTauntEnabled and "Anti Taunt: ON" or "Anti Taunt: OFF"
+    antiTauntButton.BackgroundColor3 = AntiTauntEnabled and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+    pcall(function()
+        if AntiTauntEnabled then
+            ReplicatedStorage.Events.RemoteEvents.TauntEffect.Parent = game.LogService
+        else
+            game.LogService.TauntEffect.Parent = ReplicatedStorage.Events.RemoteEvents
+        end
+    end)
+end)
+
+antiBarriersButton.MouseButton1Click:Connect(function()
+    AntiBarriersEnabled = not AntiBarriersEnabled
+    antiBarriersButton.Text = AntiBarriersEnabled and "Anti Barriers: ON" or "Anti Barriers: OFF"
+    antiBarriersButton.BackgroundColor3 = AntiBarriersEnabled and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+    pcall(function()
+        if AntiBarriersEnabled then
+            Workspace.GameAssets.Map.Config.Barriers:Destroy()
+        end
+    end)
+end)
+
+antiFallDamageButton.MouseButton1Click:Connect(function()
+    AntiFallDamageEnabled = not AntiFallDamageEnabled
+    antiFallDamageButton.Text = AntiFallDamageEnabled and "Anti Fall Damage: ON" or "Anti Fall Damage: OFF"
+    antiFallDamageButton.BackgroundColor3 = AntiFallDamageEnabled and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(120, 0, 0)
+    if AntiFallDamageEnabled then
+        for i,v in pairs(Workspace.GameAssets:GetDescendants()) do
+            if v and v.Name == "FallDamage" and v:IsA("BasePart") then v:Destroy() end
+        end
+    end
+end)
+
+Workspace.GameAssets.DescendantAdded:Connect(function(child)
+    if child and child.Name == "FallDamage" and child:IsA("BasePart") and AntiFallDamageEnabled then child:Destroy() end
+end)
+
+local function StartTauntEffectMonitor()
+    if tauntMonitorActive then return end
+    tauntMonitorActive = true
+
+    local eventsFolder = ReplicatedStorage:WaitForChild("Events")
+    local remoteEvents = eventsFolder:WaitForChild("RemoteEvents")
+    
+    local tauntEffect = remoteEvents:FindFirstChild("TauntEffect")
+    if tauntEffect then tauntEffect:Destroy() end
+    
+    remoteEvents.ChildAdded:Connect(function(child)
+        if child.Name == "TauntEffect" then
+            task.wait(0.1)
+            child:Destroy()
+        end
+    end)
+    
+    RunService.Heartbeat:Connect(function()
+        local tauntEffect = remoteEvents:FindFirstChild("TauntEffect")
+        if tauntEffect then tauntEffect:Destroy() end
+    end)
+end
+
+antiTauntMonitorButton.MouseButton1Click:Connect(function()
+    StartTauntEffectMonitor()
+    antiTauntMonitorButton.Text = "✅ Activated"
+    antiTauntMonitorButton.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+end)
+
+local function GetAllAbilities()
+    local AbilityModule
+    local success, err = pcall(function()
+        AbilityModule = require(LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("MainGui"):WaitForChild("Client"):WaitForChild("Modules"):WaitForChild("Ability"))
+    end)
+    
+    if not success then
+        warn("Failed to load AbilityModule: " .. tostring(err))
+        return false, 0
+    end
+    
+    local abilitiesGiven = 0
+    
+    for _, abilityName in pairs(AbilityNames) do
+        local abilityData = AbilityDatas[abilityName]
+        if abilityData then
+            local success2 = pcall(function()
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("RemoteEvents"):WaitForChild("AbilitySelection"):FireServer(abilityName)
+                AbilityModule.CreateAbility(abilityData)
+                abilitiesGiven = abilitiesGiven + 1
+            end)
+            if not success2 then warn("Error granting ability " .. abilityName) end
+        end
+    end
+    
+    return true, abilitiesGiven
+end
+
+local function GiveSelectedCards()
+    local UIModule
+    local success, err = pcall(function()
+        UIModule = require(LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("MainGui"):WaitForChild("Client"):WaitForChild("Modules"):WaitForChild("UI"))
+    end)
+    
+    if not success then
+        warn("Failed to load UIModule: " .. tostring(err))
+        return false
+    end
+    
+    local success2 = pcall(function()
+        UIModule.AbilitySelection(unpack(cardSettings))
+    end)
+    
+    return success2
+end
+
+mainButton.MouseButton1Click:Connect(function()
+    CloseAllMenus()
+    local originalSize = mainButton.Size
+    local originalColor = mainButton.BackgroundColor3
+    TweenService:Create(mainButton, TweenInfo.new(0.1), {Size = UDim2.new(0, 270, 0, 32), BackgroundColor3 = Color3.fromRGB(0, 80, 160)}):Play()
+    task.wait(0.1)
+    TweenService:Create(mainButton, TweenInfo.new(0.1), {Size = originalSize, BackgroundColor3 = Color3.fromRGB(0, 120, 220)}):Play()
+    mainButton.Text = "⏳ GRANTING..."
+    statusLabel.Text = "Status: Instant granting..."
+    statusLabel.BackgroundColor3 = Color3.fromRGB(200, 150, 0)
+    local success, count = GetAllAbilities()
+    if success and count > 0 then
+        mainButton.Text = "✅ SUCCESS!"
+        mainButton.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+        statusLabel.Text = "Status: Granted " .. count .. " abilities!"
+        statusLabel.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+        infoLabel.Text = "Abilities: " .. count .. "/11"
+    else
+        mainButton.Text = "❌ ERROR!"
+        mainButton.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+        statusLabel.Text = "Status: Granting error"
+        statusLabel.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+    end
+    task.delay(3, function()
+        mainButton.Text = "📜 GRANT ALL ABILITIES"
+        mainButton.BackgroundColor3 = originalColor
+        statusLabel.Text = "Status: Waiting..."
+        statusLabel.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    end)
+end)
+
+giveCardsButton.MouseButton1Click:Connect(function()
+    CloseAllMenus()
+    local originalSize = giveCardsButton.Size
+    local originalColor = giveCardsButton.BackgroundColor3
+    TweenService:Create(giveCardsButton, TweenInfo.new(0.1), {Size = UDim2.new(0, 270, 0, 28), BackgroundColor3 = Color3.fromRGB(120, 0, 120)}):Play()
+    task.wait(0.1)
+    TweenService:Create(giveCardsButton, TweenInfo.new(0.1), {Size = originalSize, BackgroundColor3 = Color3.fromRGB(150, 0, 150)}):Play()
+    giveCardsButton.Text = "⏳ GRANTING CARDS..."
+    statusLabel.Text = "Status: Granting cards..."
+    statusLabel.BackgroundColor3 = Color3.fromRGB(200, 150, 0)
+    local success = GiveSelectedCards()
+    if success then
+        giveCardsButton.Text = "✅ CARDS GRANTED!"
+        giveCardsButton.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+        statusLabel.Text = "Status: Cards granted!"
+        statusLabel.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+    else
+        giveCardsButton.Text = "❌ ERROR!"
+        giveCardsButton.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+        statusLabel.Text = "Status: Cards granting error"
+        statusLabel.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+    end
+    task.delay(3, function()
+        giveCardsButton.Text = "🎴 GRANT SELECTED CARDS"
+        giveCardsButton.BackgroundColor3 = originalColor
+        statusLabel.Text = "Status: Waiting..."
+        statusLabel.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    end)
+end)
+
+local function setupButtonHover(button, normalColor, hoverColor)
+    button.MouseEnter:Connect(function()
+        if not string.find(button.Text, "⏳") and not string.find(button.Text, "✅") and not string.find(button.Text, "❌") then
+            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = hoverColor}):Play()
+        end
+    end)
+    button.MouseLeave:Connect(function()
+        if not string.find(button.Text, "⏳") and not string.find(button.Text, "✅") and not string.find(button.Text, "❌") then
+            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = normalColor}):Play()
+        end
+    end)
+end
+
+local function setupToggleHover(button, enabledFunc)
+    local offColor = Color3.fromRGB(120, 0, 0)
+    local onColor = Color3.fromRGB(0, 120, 0)
+    local offHover = Color3.fromRGB(150, 0, 0)
+    local onHover = Color3.fromRGB(0, 150, 0)
+    button.MouseEnter:Connect(function()
+        local enabled = enabledFunc()
+        local target = enabled and onHover or offHover
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = target}):Play()
+    end)
+    button.MouseLeave:Connect(function()
+        local enabled = enabledFunc()
+        local target = enabled and onColor or offColor
+        TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = target}):Play()
+    end)
+end
+
+setupButtonHover(mainButton, Color3.fromRGB(0, 100, 200), Color3.fromRGB(0, 140, 255))
+setupButtonHover(giveCardsButton, Color3.fromRGB(150, 0, 150), Color3.fromRGB(180, 0, 180))
+
+setupToggleHover(espToggleButton, function() return ESPEnabled end)
+setupToggleHover(espNamesButton, function() return ESPShowNames end)
+setupToggleHover(espDistanceButton, function() return ESPShowDistance end)
+setupToggleHover(espHealthButton, function() return ESPShowHealth end)
+setupToggleHover(espKillersButton, function() return ESPShowKillers end)
+setupToggleHover(espSurvivorsButton, function() return ESPShowSurvivors end)
+setupToggleHover(espGhostsButton, function() return ESPShowGhosts end)
+
+setupToggleHover(autoBlockToggle, function() return watcherEnabled end)
+setupButtonHover(blockDistanceSlider, Color3.fromRGB(80, 80, 80), Color3.fromRGB(100, 100, 100))
+
+for killerName, button in pairs(killerButtons) do
+    setupToggleHover(button, function() return KillerConfigs[killerName].enabled end)
+end
+
+setupToggleHover(lockWSMButton, function() return lockWSM end)
+setupToggleHover(staminaButton, function() return keepStaminaEnabled end)
+setupToggleHover(antiWallsButton, function() return AntiWalls end)
+setupToggleHover(instantPPButton, function() return instantPPEnabled end)
+setupToggleHover(noM1Button, function() return noM1Enabled end)
+
+setupToggleHover(antiWallsAntiButton, function() return AntiWallsEnabled end)
+setupToggleHover(antiComputerButton, function() return AntiComputerEnabled end)
+setupToggleHover(antiEvilScaryButton, function() return AntiEvilScaryEnabled end)
+setupToggleHover(antiTauntButton, function() return AntiTauntEnabled end)
+setupToggleHover(antiBarriersButton, function() return AntiBarriersEnabled end)
+setupToggleHover(antiFallDamageButton, function() return AntiFallDamageEnabled end)
+
+setupButtonHover(antiTauntMonitorButton, Color3.fromRGB(0, 100, 200), Color3.fromRGB(0, 120, 220))
+
+for _, dropdownPair in pairs(dropdowns) do
+    for _, dropdown in pairs(dropdownPair) do
+        setupButtonHover(dropdown, Color3.fromRGB(80, 80, 80), Color3.fromRGB(100, 100, 100))
+    end
+end
+
+setupButtonHover(createInvisButton, Color3.fromRGB(0, 100, 200), Color3.fromRGB(0, 140, 255))
+
+setupButtonHover(toggleButton, Color3.fromRGB(80, 80, 80), Color3.fromRGB(100, 100, 100))
+setupButtonHover(closeButton, Color3.fromRGB(120, 0, 0), Color3.fromRGB(150, 0, 0))
+
+toggleButton.MouseButton1Click:Connect(function()
+    CloseAllMenus()
+    isMinimized = not isMinimized
+    if isMinimized then
+        frame.Size = UDim2.new(0, 300, 0, 30)
+        toggleButton.Text = "+"
+        sectionsPanel.Visible = false
+        contentContainer.Visible = false
+    else
+        toggleButton.Text = "-"
+        sectionsPanel.Visible = true
+        contentContainer.Visible = true
+        if autoStretchEnabled then
+            resizeFrame()
+        else
+            contentContainer.Size = UDim2.new(1, 0, 0, 300)
+            frame.Size = UDim2.new(0, 300, 0, 400)
+        end
+    end
+end)
+
+closeButton.MouseButton1Click:Connect(function()
+    DisableESP()
+    screenGui:Destroy()
+end)
+
+screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
