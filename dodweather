@@ -134,8 +134,8 @@ local LMSSongs = ReplicatedStorage
 local LOCAL_FOLDER = "GameSounds"
 local DEFAULT_VOLUME = 1
 
-local URL_ETERNITY = "https://files.catbox.moe/i5f9k1.ogg"
-local URL_TEAPOT = "https://files.catbox.moe/41iu2i.ogg"
+local URL_ETERNITY = "https://files.catbox.moe/2ltd6u.mp3"
+local URL_TEAPOT = "https://files.catbox.moe/4yztna.mp3"
 
 local function fetchUrl(url)
 	if syn and syn.request then
