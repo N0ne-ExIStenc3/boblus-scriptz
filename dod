@@ -25,7 +25,7 @@ local AbilityDatas = {
     ["Banana"] = {Name = "Banana", InputShown = "", Tip = "Throw a banana peel to stun", Cooldown = 20, Icon = "rbxassetid://96202444819611", DisplayName = "Banana Peel"}
 }
 
-local ESPEnabled = false
+local ESPEnabled = true
 local ESPFolder = nil
 local ESPConnectionsPerPlayer = {}
 local ESPPlayers = {}
@@ -34,12 +34,12 @@ local ESPShowDistance = true
 local ESPShowHealth = true
 local ESPShowKillers = true
 local ESPShowSurvivors = true
-local ESPShowGhosts = true
+local ESPShowGhosts = false
 local globalPlayerAddedConn = nil
 local globalPlayerRemovingConn = nil
 
 local BLOCK_DISTANCE = 15
-local watcherEnabled = true
+local watcherEnabled = false
 local Logged = {}
 local badwareState = {active = false, startTime = 0, lastWS = nil}
 
@@ -52,11 +52,11 @@ local KillerConfigs = {
 }
 
 local lockWSM = true
-local keepStaminaEnabled = true
-local customStamina = 100
+local keepStaminaEnabled = false
+local customStamina = 9999999999999
 local defaultStamina = 100
 local AntiWalls = false
-local instantPPEnabled = true
+local instantPPEnabled = false
 local proximityPrompts = {}
 local noM1Enabled = false
 local DETECTION_RANGE = 18
@@ -74,7 +74,7 @@ local AntiFallDamageEnabled = false
 local autoStretchEnabled = true
 local isMinimized = false
 
-local tauntMonitorActive = false
+local tauntMonitorActive = true
 
 -- Function to create Invis GUI (from the second script, modified)
 local function CreateInvisGUI()
@@ -356,8 +356,8 @@ cardsLabel.TextSize = 12
 
 local cardSettings = {
     [1] = {[1] = "Block", [2] = "Dash"},
-    [2] = {[1] = "Hotdog", [2] = "Adrenaline"},
-    [3] = {[1] = "Revolver", [2] = "Punch"}
+    [2] = {[1] = "Punch", [2] = "Cloak"},
+    [3] = {[1] = "Caretaker", [2] = "BonusPad"}
 }
 
 local dropdowns = {}
@@ -517,10 +517,10 @@ UIStroke2.Parent = giveCardsButton
 local espTab = sectionContainers[2]
 
 local espToggleButton = Instance.new("TextButton", espTab)
-espToggleButton.Text = "👁️ ESP: OFF"
+espToggleButton.Text = "👁️ ESP: ON"
 espToggleButton.Size = UDim2.new(0, 135, 0, 25)
 espToggleButton.Position = UDim2.new(0, 10, 0, 40)
-espToggleButton.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+espToggleButton.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
 espToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 espToggleButton.Font = Enum.Font.GothamBold
 espToggleButton.TextSize = 10
@@ -571,10 +571,10 @@ espSurvivorsButton.Font = Enum.Font.Gotham
 espSurvivorsButton.TextSize = 9
 
 local espGhostsButton = Instance.new("TextButton", espTab)
-espGhostsButton.Text = "⚪ Ghosts: ON"
+espGhostsButton.Text = "⚪ Ghosts: OFF"
 espGhostsButton.Size = UDim2.new(0, 135, 0, 25)
 espGhostsButton.Position = UDim2.new(0, 10, 0, 130)
-espGhostsButton.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+espGhostsButton.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
 espGhostsButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 espGhostsButton.Font = Enum.Font.Gotham
 espGhostsButton.TextSize = 9
@@ -582,10 +582,10 @@ espGhostsButton.TextSize = 9
 local autoBlockTab = sectionContainers[3]
 
 local autoBlockToggle = Instance.new("TextButton", autoBlockTab)
-autoBlockToggle.Text = "Auto Block: ON"
+autoBlockToggle.Text = "Auto Block: OFF"
 autoBlockToggle.Size = UDim2.new(0, 135, 0, 25)
 autoBlockToggle.Position = UDim2.new(0, 10, 0, 40)
-autoBlockToggle.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
+autoBlockToggle.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
 autoBlockToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
 autoBlockToggle.Font = Enum.Font.Gotham
 autoBlockToggle.TextSize = 10
@@ -636,7 +636,7 @@ lockWSMButton.Font = Enum.Font.Gotham
 lockWSMButton.TextSize = 10
 
 local staminaButton = Instance.new("TextButton", gameplayTab)
-staminaButton.Text = "Custom Stamina: ON"
+staminaButton.Text = "Custom Stamina: OFF"
 staminaButton.Size = UDim2.new(0, 135, 0, 25)
 staminaButton.Position = UDim2.new(0, 145, 0, 40)
 staminaButton.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
@@ -654,7 +654,7 @@ antiWallsButton.Font = Enum.Font.Gotham
 antiWallsButton.TextSize = 10
 
 local instantPPButton = Instance.new("TextButton", gameplayTab)
-instantPPButton.Text = "Instant PP: ON"
+instantPPButton.Text = "Instant PP: OFF"
 instantPPButton.Size = UDim2.new(0, 135, 0, 25)
 instantPPButton.Position = UDim2.new(0, 145, 0, 70)
 instantPPButton.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
