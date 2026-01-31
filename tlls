@@ -30,7 +30,7 @@ local Locations = {
 		{"Apatite Boss", Vector3.new(-466,-110,205)},
 		{"Serpentine Boss", Vector3.new(-167,-231,1060)},
 		{"Volcano Boss", Vector3.new(518,-135,263)},
-		{"Ice Queen", Vector3.new(-710,-126,-438)},
+		{"Ice Boss", Vector3.new(-710,-126,-438)},
 		{"Darkness Boss", Vector3.new(251,-19,-301)},
 		{"Hiddenite Boss", Vector3.new(272,-62,-690)},
 	},
@@ -70,7 +70,7 @@ end)
 
 local function rejoin()
 	if #Players:GetPlayers() <= 1 then
-		Players.LocalPlayer:Kick("\nRejoining...")
+		Players.LocalPlayer:Kick("Rejoining...")
 		task.wait()
 		TeleportService:Teleport(game.PlaceId, Players.LocalPlayer)
 	else
@@ -102,13 +102,6 @@ title.Font = Enum.Font.SourceSansBold
 title.TextSize = 14
 title.TextColor3 = Color3.new(1,1,1)
 title.BackgroundTransparency = 1
-
-local minimize = Instance.new("TextButton", titleBar)
-minimize.Size = UDim2.new(0,20,1,0)
-minimize.Position = UDim2.new(1,-44,0,0)
-minimize.Text = "="
-minimize.TextColor3 = Color3.new(1,1,1)
-minimize.BackgroundTransparency = 1
 
 local close = Instance.new("TextButton", titleBar)
 close.Size = UDim2.new(0,20,1,0)
@@ -212,13 +205,6 @@ rejoinBtn.TextColor3 = Color3.new(1,1,1)
 rejoinBtn.BackgroundColor3 = Color3.fromRGB(45,30,30)
 rejoinBtn.BorderSizePixel = 0
 rejoinBtn.Activated:Connect(rejoin)
-
-local minimized=false
-local full=frame.Size
-minimize.Activated:Connect(function()
-	minimized = not minimized
-	frame.Size = minimized and UDim2.new(full.X.Scale,full.X.Offset,0,24) or full
-end)
 
 local confirm=false
 close.Activated:Connect(function()
