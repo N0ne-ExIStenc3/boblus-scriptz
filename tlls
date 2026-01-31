@@ -86,23 +86,32 @@ local function rejoin()
 	end
 end
 
-local function autoPickup()
-	task.spawn(function()
-		while true do
-			if AUTO_PICKUP then
-				local itemsFolder = workspace:FindFirstChild("Items")
-				if itemsFolder then
-					for _,item in ipairs(itemsFolder:GetChildren()) do
+local AllowedItems = {
+	["Coin"] = true,
+	["Experience"] = true,
+	["Health Potion"] = true,
+	["Thrist Potion"] = true,
+	["Hiddenite"] = true,
+	["Olivine"] = true,
+}
+
+task.spawn(function()
+	while true do
+		if AUTO_PICKUP then
+			local itemsFolder = workspace:FindFirstChild("Items")
+			if itemsFolder then
+				for _,item in ipairs(itemsFolder:GetChildren()) do
+					if AllowedItems[item.Name] then
 						pcall(function()
 							PickupEvent:FireServer(item)
 						end)
 					end
 				end
 			end
-			task.wait(PICKUP_DELAY)
 		end
-	end)
-end
+		task.wait(PICKUP_DELAY)
+	end
+end)
 
 -- :: GUI ::
 local gui = Instance.new("ScreenGui", Player.PlayerGui)
