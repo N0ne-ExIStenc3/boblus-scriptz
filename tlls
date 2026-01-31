@@ -1,0 +1,243 @@
+-- :: SERVICES ::
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
+local TeleportService = game:GetService("TeleportService")
+
+local Player = Players.LocalPlayer
+local Events = ReplicatedStorage:WaitForChild("Events")
+local Consume = Events:WaitForChild("Consume")
+
+-- :: SETTINGS ::
+local WALK_SPEED = 38
+local JUMP_POWER = 90
+local AUTO_MINE = false
+local AUTO_MINE_DELAY = 0.25
+
+-- :: LOCATIONS ::
+local Locations = {
+	Entrances = {
+		{"Mine Entrance", Vector3.new(-209,65,-493)},
+		{"Ice Entrance", Vector3.new(-914,29,-981)},
+		{"Temple Entrance", Vector3.new(-959,62,1430)},
+		{"Floating Island", Vector3.new(-353,7,235)},
+		{"Hiddenite Palace", Vector3.new(1084,-253,-616)},
+		{"Volcano Entrance", Vector3.new(729,13,668)},
+		{"Waterfall Entrance", Vector3.new(102,21,584)},
+	},
+	Bosses = {
+		{"Spinel Boss", Vector3.new(-1402,-272,502)},
+		{"Apatite Boss", Vector3.new(-466,-110,205)},
+		{"Serpentine Boss", Vector3.new(-167,-231,1060)},
+		{"Volcano Boss", Vector3.new(518,-135,263)},
+		{"Ice Queen", Vector3.new(-710,-126,-438)},
+		{"Darkness Boss", Vector3.new(251,-19,-301)},
+		{"Hiddenite Boss", Vector3.new(272,-62,-690)},
+	},
+	Extras = {
+		{"Village", Vector3.new(725,65,-372)},
+		{"Jungle Tree", Vector3.new(-207,73,226)},
+		{"Pixie Place", Vector3.new(110,65,-47)},
+		{"Olivine", Vector3.new(1111,-315,-609)},
+	}
+}
+
+-- :: FUNCTIONS ::
+task.spawn(function()
+	while true do
+		if AUTO_MINE then
+			Events.Mine:FireServer()
+		end
+		task.wait(AUTO_MINE_DELAY)
+	end
+end)
+
+task.spawn(function()
+	while task.wait(0.25) do
+		local char = Player.Character
+		local hum = char and char:FindFirstChildOfClass("Humanoid")
+		if hum then
+			hum.WalkSpeed = WALK_SPEED
+			hum.JumpPower = JUMP_POWER
+
+			if hum.Health / hum.MaxHealth <= 0.5 then
+				Consume:FireServer("Health Potion")
+				task.wait(0.5)
+			end
+		end
+	end
+end)
+
+local function rejoin()
+	if #Players:GetPlayers() <= 1 then
+		Players.LocalPlayer:Kick("\nRejoining...")
+		task.wait()
+		TeleportService:Teleport(game.PlaceId, Players.LocalPlayer)
+	else
+		TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, Players.LocalPlayer)
+	end
+end
+
+-- :: GUI ::
+local gui = Instance.new("ScreenGui", Player.PlayerGui)
+gui.ResetOnSpawn = false
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0,240,0,300)
+frame.Position = UDim2.new(0.5,-120,0.5,-150)
+frame.BackgroundColor3 = Color3.fromRGB(35,35,35)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+
+local titleBar = Instance.new("Frame", frame)
+titleBar.Size = UDim2.new(1,0,0,24)
+titleBar.BackgroundColor3 = Color3.fromRGB(30,30,30)
+
+local title = Instance.new("TextLabel", titleBar)
+title.Size = UDim2.new(1,-60,1,0)
+title.Position = UDim2.new(0,6,0,0)
+title.Text = "The Lost Lands"
+title.TextXAlignment = Left
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 14
+title.TextColor3 = Color3.new(1,1,1)
+title.BackgroundTransparency = 1
+
+local minimize = Instance.new("TextButton", titleBar)
+minimize.Size = UDim2.new(0,20,1,0)
+minimize.Position = UDim2.new(1,-44,0,0)
+minimize.Text = "="
+minimize.TextColor3 = Color3.new(1,1,1)
+minimize.BackgroundTransparency = 1
+
+local close = Instance.new("TextButton", titleBar)
+close.Size = UDim2.new(0,20,1,0)
+close.Position = UDim2.new(1,-22,0,0)
+close.Text = "X"
+close.TextColor3 = Color3.fromRGB(255,80,80)
+close.BackgroundTransparency = 1
+
+local tabFrame = Instance.new("Frame", frame)
+tabFrame.Position = UDim2.new(0,0,0,24)
+tabFrame.Size = UDim2.new(1,0,0,22)
+tabFrame.BackgroundTransparency = 1
+
+local function makeTab(text,x)
+	local b = Instance.new("TextButton", tabFrame)
+	b.Size = UDim2.new(1/3,0,1,0)
+	b.Position = UDim2.new(x,0,0,0)
+	b.Text = text
+	b.Font = Enum.Font.SourceSansBold
+	b.TextSize = 13
+	b.TextColor3 = Color3.new(1,1,1)
+	b.BackgroundColor3 = Color3.fromRGB(40,40,40)
+	return b
+end
+
+local tE = makeTab("Entrances",0)
+local tB = makeTab("Bosses",1/3)
+local tX = makeTab("Extras",2/3)
+
+local content = Instance.new("Frame", frame)
+content.Position = UDim2.new(0,0,0,46)
+content.Size = UDim2.new(1,0,1,-70)
+content.BackgroundTransparency = 1
+
+local sections = {}
+for name in pairs(Locations) do
+	local scroll = Instance.new("ScrollingFrame", content)
+	scroll.Size = UDim2.new(1,0,1,0)
+	scroll.CanvasSize = UDim2.new(0,0,0,0)
+	scroll.ScrollBarImageTransparency = 0.4
+	scroll.BackgroundTransparency = 1
+	scroll.Visible = false
+
+	local layout = Instance.new("UIListLayout", scroll)
+	layout.Padding = UDim.new(0,4)
+	layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		scroll.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y + 6)
+	end)
+
+	sections[name] = scroll
+end
+sections.Entrances.Visible = true
+
+local function show(tab)
+	for k,v in pairs(sections) do
+		v.Visible = (k == tab)
+	end
+end
+
+tE.Activated:Connect(function() show("Entrances") end)
+tB.Activated:Connect(function() show("Bosses") end)
+tX.Activated:Connect(function() show("Extras") end)
+
+local function button(parent,text,callback)
+	local b = Instance.new("TextButton", parent)
+	b.Size = UDim2.new(1,-10,0,22)
+	b.Text = text
+	b.Font = Enum.Font.SourceSansBold
+	b.TextSize = 13
+	b.TextColor3 = Color3.new(1,1,1)
+	b.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	b.BorderSizePixel = 0
+	b.Activated:Connect(callback)
+	return b
+end
+
+for sec,list in pairs(Locations) do
+	for _,info in ipairs(list) do
+		button(sections[sec], info[1], function()
+			local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+			if hrp then
+				hrp.CFrame = CFrame.new(info[2] + Vector3.new(0,4,0))
+			end
+		end)
+	end
+end
+
+local autoMineButton
+autoMineButton = button(sections.Extras, "Auto Mine: OFF", function()
+	AUTO_MINE = not AUTO_MINE
+	autoMineButton.Text = "Auto Mine: " .. (AUTO_MINE and "ON" or "OFF")
+end)
+
+local rejoinBtn = Instance.new("TextButton", frame)
+rejoinBtn.Size = UDim2.new(1,-10,0,22)
+rejoinBtn.Position = UDim2.new(0,5,1,-24)
+rejoinBtn.Text = "REJOIN"
+rejoinBtn.Font = Enum.Font.SourceSansBold
+rejoinBtn.TextSize = 13
+rejoinBtn.TextColor3 = Color3.new(1,1,1)
+rejoinBtn.BackgroundColor3 = Color3.fromRGB(45,30,30)
+rejoinBtn.BorderSizePixel = 0
+rejoinBtn.Activated:Connect(rejoin)
+
+local minimized=false
+local full=frame.Size
+minimize.Activated:Connect(function()
+	minimized = not minimized
+	frame.Size = minimized and UDim2.new(full.X.Scale,full.X.Offset,0,24) or full
+end)
+
+local confirm=false
+close.Activated:Connect(function()
+	if not confirm then
+		confirm=true
+		StarterGui:SetCore("SendNotification",{
+			Title="Close UI?",
+			Text="Click X again to confirm",
+			Duration=3
+		})
+		task.delay(3,function() confirm=false end)
+	else
+		gui:Destroy()
+	end
+end)
+
+if queue_on_teleport then
+	queue_on_teleport([[
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/N0ne-ExIStenc3/boblus-scriptz/refs/heads/main/tlls"))()
+	]])
+end
