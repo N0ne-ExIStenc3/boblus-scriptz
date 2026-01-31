@@ -93,6 +93,10 @@ local AllowedItems = {
 	["Thrist Potion"] = true,
 	["Hiddenite"] = true,
 	["Olivine"] = true,
+    ["Serpentine"] = true,
+    ["Spinel"] = true,
+    ["Apatite"] = true,
+    ["Medipack"] = true,
 }
 
 task.spawn(function()
