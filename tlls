@@ -7,12 +7,15 @@ local TeleportService = game:GetService("TeleportService")
 local Player = Players.LocalPlayer
 local Events = ReplicatedStorage:WaitForChild("Events")
 local Consume = Events:WaitForChild("Consume")
+local PickupEvent = Events:WaitForChild("Pickup")
 
 -- :: SETTINGS ::
 local WALK_SPEED = 38
 local JUMP_POWER = 90
 local AUTO_MINE = false
 local AUTO_MINE_DELAY = 0.25
+local AUTO_PICKUP = false
+local PICKUP_DELAY = 0.2
 
 -- :: LOCATIONS ::
 local Locations = {
@@ -44,6 +47,10 @@ local Locations = {
 }
 
 -- :: FUNCTIONS ::
+pcall(function()
+	game.Players.LocalPlayer.PlayerGui.TheLostLands:Destroy()
+end)
+
 task.spawn(function()
 	while true do
 		if AUTO_MINE then
@@ -77,6 +84,24 @@ local function rejoin()
 	else
 		TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, Players.LocalPlayer)
 	end
+end
+
+local function autoPickup()
+	task.spawn(function()
+		while true do
+			if AUTO_PICKUP then
+				local itemsFolder = workspace:FindFirstChild("Items")
+				if itemsFolder then
+					for _,item in ipairs(itemsFolder:GetChildren()) do
+						pcall(function()
+							PickupEvent:FireServer(item)
+						end)
+					end
+				end
+			end
+			task.wait(PICKUP_DELAY)
+		end
+	end)
 end
 
 -- :: GUI ::
@@ -194,6 +219,12 @@ local autoMineButton
 autoMineButton = button(sections.Extras, "Auto Mine: OFF", function()
 	AUTO_MINE = not AUTO_MINE
 	autoMineButton.Text = "Auto Mine: " .. (AUTO_MINE and "ON" or "OFF")
+end)
+
+local autoPickupButton
+autoPickupButton = button(sections.Extras, "Auto Pickup: OFF", function()
+	AUTO_PICKUP = not AUTO_PICKUP
+	autoPickupButton.Text = "Auto Pickup: " .. (AUTO_PICKUP and "ON" or "OFF")
 end)
 
 local rejoinBtn = Instance.new("TextButton", frame)
