@@ -38,7 +38,8 @@ local Locations = {
 		{"Village", Vector3.new(725,65,-372)},
 		{"Jungle Tree", Vector3.new(-207,73,226)},
 		{"Pixie Place", Vector3.new(110,65,-47)},
-		{"Olivine", Vector3.new(1111,-315,-609)},
+		{"Hiddenite", Vector3.new(460, -70, -614)},
+        {"Olivine", Vector3.new(1111,-315,-609)},
 	}
 }
 
