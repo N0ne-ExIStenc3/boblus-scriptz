@@ -7,7 +7,6 @@ local Events = ReplicatedStorage:WaitForChild("Events")
 local PickupEvent = Events:WaitForChild("Pickup")
 local SetTool = Events:WaitForChild("SetTool")
 
--- SETTINGS
 local AUTO_FARM = true
 local AUTO_PICKUP = true
 local AUTO_MINE = true
@@ -17,6 +16,8 @@ local PICKUP_DELAY = 0.25
 local PICKUP_DISTANCE = 15
 local AUTO_MINE_DELAY = 0.25
 
+local TOOL_NAME = "Lightning Tool"
+
 local AllowedItems = {
 	Coin = true,
 	Experience = true,
@@ -24,14 +25,12 @@ local AllowedItems = {
 	Meat = true,
 }
 
--- Remove proximity prompt hold time
 for _, v in ipairs(workspace:GetDescendants()) do
 	if v:IsA("ProximityPrompt") then
 		v.HoldDuration = 0
 	end
 end
 
--- CHARACTER UTILS
 local function getChar()
 	return Player.Character
 end
@@ -48,7 +47,21 @@ local function tp(cf)
 	end
 end
 
--- AUTO MINE
+local function equipTool()
+	SetTool:FireServer(TOOL_NAME)
+end
+
+Player.CharacterAdded:Connect(function()
+	task.wait(1.5)
+	equipTool()
+end)
+
+task.spawn(function()
+	while task.wait(5) do
+		equipTool()
+	end
+end)
+
 task.spawn(function()
 	while task.wait(AUTO_MINE_DELAY) do
 		if AUTO_MINE then
@@ -57,7 +70,6 @@ task.spawn(function()
 	end
 end)
 
--- PICKUP SYSTEM
 local function getItemPosition(item)
 	if item:IsA("BasePart") then
 		return item.Position
@@ -81,7 +93,6 @@ task.spawn(function()
 		if not AUTO_PICKUP then continue end
 		local folder = workspace:FindFirstChild("Items")
 		if not folder then continue end
-
 		for _, item in ipairs(folder:GetChildren()) do
 			if AllowedItems[item.Name] and isNear(item) then
 				pcall(function()
@@ -92,19 +103,24 @@ task.spawn(function()
 	end
 end)
 
--- TREE FINDING
+local function getTreePart(tree)
+	local part = tree:FindFirstChild("Trunk") or tree:FindFirstChild("Reference")
+	if part and part:IsA("BasePart") then
+		return part
+	end
+end
+
 local function findNearestTree()
 	local hrp = getHRP()
 	if not hrp then return end
-
 	local nearest, dist = nil, math.huge
 	for _, tree in ipairs(workspace.Trees:GetChildren()) do
-		local ref = tree:FindFirstChild("Reference") or tree:FindFirstChild("Trunk")
-		if ref then
-			local d = (hrp.Position - ref.Position).Magnitude
+		local part = getTreePart(tree)
+		if part then
+			local d = (hrp.Position - part.Position).Magnitude
 			if d < dist then
 				dist = d
-				nearest = ref
+				nearest = part
 			end
 		end
 	end
@@ -112,30 +128,28 @@ local function findNearestTree()
 end
 
 local function findRandomTree()
-	local refs = {}
+	local parts = {}
 	for _, tree in ipairs(workspace.Trees:GetChildren()) do
-		local ref = tree:FindFirstChild("Reference")
-		if ref then
-			table.insert(refs, ref)
+		local part = getTreePart(tree)
+		if part then
+			table.insert(parts, part)
 		end
 	end
-	if #refs > 0 then
-		return refs[math.random(1, #refs)]
+	if #parts > 0 then
+		return parts[math.random(1, #parts)]
 	end
 end
 
-local function chopTree(ref)
-	while ref and ref.Parent do
-		tp(ref.CFrame + Vector3.new(0, 3, 0))
+local function chopTree(part)
+	while part and part.Parent do
+		tp(part.CFrame * CFrame.new(0, 0, 3))
 		task.wait(0.2)
 	end
 end
 
--- AUTO FARM LOOP
 task.spawn(function()
 	while task.wait(FARM_DELAY) do
 		if not AUTO_FARM then continue end
-
 		local tree = findNearestTree()
 		if not tree then
 			tree = findRandomTree()
@@ -144,18 +158,12 @@ task.spawn(function()
 				task.wait(0.5)
 			end
 		end
-
 		if tree then
 			chopTree(tree)
 		end
 	end
 end)
 
-while wait() do
-   game:GetService("ReplicatedStorage").Events.SetTool:FireServer("Lightning Tool")
-end
-
--- ANTI AFK
 for _, v in pairs(getconnections(Player.Idled)) do
 	v:Disable()
 end
