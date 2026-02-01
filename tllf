@@ -17,10 +17,6 @@ local PICKUP_DELAY = 0.25
 local PICKUP_DISTANCE = 15
 local AUTO_MINE_DELAY = 0.25
 
-local TOOLS = {
-	Axe = "Lighting Tool",
-}
-
 local AllowedItems = {
 	Coin = true,
 	Experience = true,
