@@ -1,0 +1,117 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TeleportService = game:GetService("TeleportService")
+
+local Player = Players.LocalPlayer
+local PlaceId = game.PlaceId
+local JobId = game.JobId
+
+if not game:IsLoaded() then
+	game.Loaded:Wait()
+end
+
+local Events = ReplicatedStorage:WaitForChild("Events")
+
+local StartGame = Events:WaitForChild("StartGame")
+StartGame:FireServer()
+
+task.wait(3)
+
+local MineEvent = Events:WaitForChild("Mine")
+local SetTool = Events:WaitForChild("SetTool")
+local PickupEvent = Events:WaitForChild("Pickup")
+
+local AUTO_PICKUP = true
+local PICKUP_DELAY = 0.01
+local PICKUP_DISTANCE = 15
+
+local function getChar()
+	return Player.Character or Player.CharacterAdded:Wait()
+end
+
+local function getHRP()
+	return getChar():WaitForChild("HumanoidRootPart")
+end
+
+task.spawn(function()
+	while task.wait(0.25) do
+		MineEvent:FireServer()
+	end
+end)
+
+local function equipTool(toolName)
+	SetTool:FireServer(toolName)
+end
+
+equipTool("Spinel Pick")
+task.spawn(function()
+	while task.wait(2) do
+		equipTool("Spinel Pick")
+	end
+end)
+
+local function rejoin()
+	if #Players:GetPlayers() <= 1 then
+		Player:Kick("\nRejoining...")
+		task.wait()
+		TeleportService:Teleport(PlaceId, Player)
+	else
+		TeleportService:TeleportToPlaceInstance(PlaceId, JobId, Player)
+	end
+end
+
+local AllowedItems = {
+	Coin = true,
+	Experience = true,
+	Hiddenite = true,
+	Olivine = true,
+}
+
+local function getItemPosition(item)
+	if item:IsA("BasePart") then
+		return item.Position
+	elseif item:IsA("Model") then
+		local p = item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart", true)
+		return p and p.Position
+	end
+end
+
+local function isNear(item)
+	local hrp = getHRP()
+	local pos = getItemPosition(item)
+	return pos and (hrp.Position - pos).Magnitude <= PICKUP_DISTANCE
+end
+
+task.spawn(function()
+	while task.wait(PICKUP_DELAY) do
+		if not AUTO_PICKUP then continue end
+		local folder = workspace:FindFirstChild("Items")
+		if not folder then continue end
+
+		for _, item in ipairs(folder:GetChildren()) do
+			if AllowedItems[item.Name] and isNear(item) then
+				pcall(function()
+					PickupEvent:FireServer(item)
+				end)
+			end
+		end
+	end
+end)
+
+local Positions = {
+	Vector3.new(465, -69, -631),
+	Vector3.new(465, -68, -603),
+	Vector3.new(382, -63, -597),
+	Vector3.new(1157, -319, -597),
+	Vector3.new(1136, -314, -616),
+	Vector3.new(1113, -314, -605),
+}
+
+task.spawn(function()
+	local hrp = getHRP()
+	for _, pos in ipairs(Positions) do
+		hrp.CFrame = CFrame.new(pos)
+		task.wait(8)
+	end
+	rejoin()
+end)
