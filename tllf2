@@ -113,6 +113,10 @@ task.spawn(function()
 		hrp.CFrame = CFrame.new(pos)
 		task.wait(8)
 	end
+    game:GetService("ReplicatedStorage").Events.Market:FireServer("Hiddenite",4)
+    game:GetService("ReplicatedStorage").Events.Market:FireServer("Olivine",4)
+    game:GetService("ReplicatedStorage").Events.Purchase:FireServer("Bag Space","Market")
+    task.wait(1)
 	rejoin()
 end)
 
