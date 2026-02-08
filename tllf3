@@ -69,10 +69,10 @@ local function loadGValues()
 end
 
 _G.tool = _G.tool
-_G.pickupEnabled = false or _G.pickupEnabled
-_G.webhookEnabled = false or _G.webhookEnabled
-_G.discordWebhook = "" or _G.discordWebhook
-_G.sellho = true or _G.sellho
+_G.pickupEnabled = _G.pickupEnabled or false
+_G.webhookEnabled = _G.webhookEnabled or false
+_G.discordWebhook = _G.discordWebhook or ""
+_G.sellho = _G.sellho or false
 
 _G.execCount = (_G.execCount or 0) + 1
 _G.bh = _G.bh or 0
@@ -121,36 +121,30 @@ end
 local function sendWebhook(fields)
 	if not (_G.webhookEnabled and _G.discordWebhook ~= "") then return end
 
-	local thumb = getThumbnail()
-
-	local embed = {
-		title = "Overall Stats",
-		color = 6629386,
-		fields = fields,
-		footer = { text = "Execution #" .. _G.execCount },
-		timestamp = DateTime.now():ToIsoDateTime()
-	}
-
-	if thumb then
-		embed.thumbnail = { url = thumb }
-	end
-
 	local payload = {
 		username = "Farm Log",
-		embeds = { embed }
+		content = nil,
+		embeds = {{
+			title = "Overall Stats",
+			color = 6629386,
+			thumbnail = { url = getThumbnail() },
+			fields = fields,
+			footer = { text = "Execution #" .. _G.execCount },
+			timestamp = DateTime.now():ToIsoDate()
+		}}
 	}
 
 	local req = syn and syn.request or http_request or request
-	if not req then return end
-
-	pcall(function()
-		req({
-			Url = _G.discordWebhook,
-			Method = "POST",
-			Headers = { ["Content-Type"] = "application/json" },
-			Body = HttpService:JSONEncode(payload)
-		})
-	end)
+	if req then
+		pcall(function()
+			req({
+				Url = _G.discordWebhook,
+				Method = "POST",
+				Headers = {["Content-Type"] = "application/json"},
+				Body = HttpService:JSONEncode(payload)
+			})
+		end)
+	end
 end
 
 local Events = ReplicatedStorage:WaitForChild("Events")
@@ -251,8 +245,8 @@ task.spawn(function()
 		task.wait(waitData.O)
 	end
 
-	_G.bh = getOres("Hiddenite") or _G.bh
-	_G.bo = getOres("Olivine") or _G.bo
+	_G.bh = getOres("Hiddenite")
+	_G.bo = getOres("Olivine")
 
 	sendWebhook({
 		{name="👤 User", value=LP.DisplayName.." ("..LP.Name..")", inline=false},
