@@ -224,15 +224,15 @@ _G.candies = _G.candies
 
 if LP:FindFirstChild("leaderstats") then
     if LP.leaderstats:FindFirstChild("Stars") then
-        stars = LP.leaderstats.Stars.Value
+        _G.stars = LP.leaderstats.Stars.Value
     end
     if LP.leaderstats:FindFirstChild("Wins") then
-        wins = LP.leaderstats.Wins.Value
+        _G.wins = LP.leaderstats.Wins.Value
     end
 end
 
 if LP:FindFirstChild("Candy") then
-    candies = LP.Candy.Value
+    _G.candies = LP.Candy.Value
 end
 
 local H = Window:CreateTab("Home", "home")
@@ -242,9 +242,9 @@ local G = Window:CreateTab("Gloves", "home")
 
 -- Home
 H:CreateParagraph({Title = "ello!", Content = "Welcome! " .. Display .. " (" .. User .. ") Thank you for using my script! :)"})
-H:CreateLabel("Stars: " .. stars, 4483362458, Color3.fromRGB(255, 255, 255), false)
-H:CreateLabel("Candies: " .. candies, 4483362458, Color3.fromRGB(255, 255, 255), false)
-H:CreateLabel("Wins: " .. wins, 4483362458, Color3.fromRGB(255, 255, 255), false)
+H:CreateLabel("Stars: " .. _G.stars, 4483362458, Color3.fromRGB(255, 255, 255), false)
+H:CreateLabel("Candies: " .. _G.candies, 4483362458, Color3.fromRGB(255, 255, 255), false)
+H:CreateLabel("Wins: " .. _G.wins, 4483362458, Color3.fromRGB(255, 255, 255), false)
 
 -- Misc
 M:CreateButton({
