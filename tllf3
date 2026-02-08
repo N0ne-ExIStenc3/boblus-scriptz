@@ -254,14 +254,14 @@ task.spawn(function()
 		{name="📱 Device", value=getDevice(), inline=true},
 		{name="📆 Account Age", value=LP.AccountAge.." days", inline=true},
 		{name="🕒 Time", value=os.date("%Y-%m-%d %H:%M:%S"), inline=false},
-		{name="⚒️ Tool", value=_G.tool, inline=true},
+		{name="⚒️ Tool", value=tostring(_G.tool), inline=true},
 		{name="⏱️ Wait (H/O)", value=waitData.H.." / "..waitData.O.."s", inline=true},
 		{name="💰 Coins", value=getStat("Coin") or "N/A", inline=true},
 		{name="⭐ Stars", value=getStat("Star") or "N/A", inline=true},
 		{name="🌟 Level", value=tostring(getStat("Experience") or "N/A"), inline=true},
 		{name="✨ Experience", value=tostring(getStat("XP") or "N/A"), inline=true},
-		{name="🟦 Hiddenite Total", value=_G.bh, inline=true},
-		{name="🟩 Olivine Total", value=_G.bo, inline=true},
+		{name="🟦 Hiddenite Total", value=tostring(_G.bh), inline=true},
+		{name="🟩 Olivine Total", value=tostring(_G.bo), inline=true},
 	})
 
 	if _G.sellho then
