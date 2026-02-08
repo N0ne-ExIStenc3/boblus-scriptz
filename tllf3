@@ -38,6 +38,81 @@ local TOOL_WAIT = {
 	["Christmas Tree Tool"]   = {H=10,  O=10},
 }
 
+local saveFile = "GValuesTLL_" .. LP.UserId .. ".json"
+local Http = game:GetService("HttpService")
+
+local function safeNotify(title, msg)
+    print("["..(title or "Save/Load").."] "..msg)
+end
+
+local function saveGValues()
+    if not writefile then 
+        safeNotify("Save Failed", "writefile not supported by executor!")
+        return 
+    end
+    
+    local success, data = pcall(function()
+        local t = {}
+        for k,v in pairs(_G) do
+            if typeof(v) == "string" or typeof(v) == "number" or typeof(v) == "boolean" then
+                t[k] = v
+            end
+        end
+        return t
+    end)
+    
+    if not success then 
+        safeNotify("Save Failed", "Error collecting data!")
+        return 
+    end
+    
+    local jsonSuccess, jsonData = pcall(Http.JSONEncode, Http, data)
+    if not jsonSuccess then 
+        safeNotify("Save Failed", "JSONEncode error: "..tostring(jsonData))
+        return 
+    end
+    
+    local writeSuccess, writeErr = pcall(writefile, saveFile, jsonData)
+    if writeSuccess then
+        safeNotify("Saved", "G values saved ("..tostring(#data).." keys)")
+    else
+        safeNotify("Save Failed", "writefile error: "..tostring(writeErr))
+    end
+end
+
+local function loadGValues()
+    if not isfile or not readfile then 
+        safeNotify("Load Failed", "isfile/readfile not supported!")
+        return 
+    end
+    
+    if not isfile(saveFile) then 
+        safeNotify("Load", "No save file found (first run?)")
+        return 
+    end
+    
+    local readSuccess, jsonData = pcall(readfile, saveFile)
+    if not readSuccess then 
+        safeNotify("Load Failed", "readfile error: "..tostring(jsonData))
+        return 
+    end
+    
+    local decodeSuccess, data = pcall(Http.JSONDecode, Http, jsonData)
+    if not decodeSuccess then 
+        safeNotify("Load Failed", "JSONDecode error (corrupted file?): "..tostring(data))
+        pcall(delfile, saveFile)
+        return 
+    end
+    
+    local count = 0
+    for k,v in pairs(data) do
+        _G[k] = v
+        count = count + 1
+    end
+    
+    safeNotify("Loaded", "G values loaded ("..count.." keys)")
+end
+
 _G.tool = _G.tool
 _G.pickupEnabled = false or _G.pickupEnabled
 _G.webhookEnabled = false or _G.webhookEnabled
@@ -176,6 +251,17 @@ task.spawn(function()
 	while task.wait(2) do
 		SetTool:FireServer(_G.tool)
 	end
+end)
+
+loadGValues()
+
+task.spawn(function()
+    task.wait(5)
+    saveGValues()
+    while true do
+        task.wait(10)
+        saveGValues()
+    end
 end)
 
 local PICKUP_DELAY = 0.01
