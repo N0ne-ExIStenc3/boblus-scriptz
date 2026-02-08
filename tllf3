@@ -1,5 +1,4 @@
 local TOOL_WAIT = {
-	-- PICKS
 	["Wood Pick"]        = {H=58, O=61},
 	["Ice Pick"]         = {H=49, O=51},
 	["Stone Pick"]       = {H=40, O=42},
@@ -27,90 +26,46 @@ local TOOL_WAIT = {
 	["Sodalite Pick"]    = {H=7,  O=7},
 	["Spinel Pick"]      = {H=7,  O=7},
 
-	-- DAMAGE TO ALL TOOLS
 	["Rock"]                  = {H=90, O=95},
 	["Star Club"]             = {H=16, O=17},
 	["Jade Dragon Tool"]      = {H=8, O=8},
-	["Legendary Hook"]        = {H=13,  O=13},
-	["Lightning Tool"]        = {H=11,  O=11},
-	["Valentines Tool"]       = {H=16,  O=17},
+	["Legendary Hook"]        = {H=13, O=13},
+	["Lightning Tool"]        = {H=11, O=11},
+	["Valentines Tool"]       = {H=16, O=17},
 	["Gingerbread Cookie Tool"]={H=11, O=11},
-	["Christmas Tree Tool"]   = {H=10,  O=10},
+	["Christmas Tree Tool"]   = {H=10, O=10},
 }
 
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local UserInputService = game:GetService("UserInputService")
+
+local LP = Players.LocalPlayer
 local saveFile = "GValuesTLL_" .. LP.UserId .. ".json"
-local Http = game:GetService("HttpService")
 
 local function safeNotify(title, msg)
-    print("["..(title or "Save/Load").."] "..msg)
+	print("["..(title or "Save/Load").."] "..msg)
 end
 
 local function saveGValues()
-    if not writefile then 
-        safeNotify("Save Failed", "writefile not supported by executor!")
-        return 
-    end
-    
-    local success, data = pcall(function()
-        local t = {}
-        for k,v in pairs(_G) do
-            if typeof(v) == "string" or typeof(v) == "number" or typeof(v) == "boolean" then
-                t[k] = v
-            end
-        end
-        return t
-    end)
-    
-    if not success then 
-        safeNotify("Save Failed", "Error collecting data!")
-        return 
-    end
-    
-    local jsonSuccess, jsonData = pcall(Http.JSONEncode, Http, data)
-    if not jsonSuccess then 
-        safeNotify("Save Failed", "JSONEncode error: "..tostring(jsonData))
-        return 
-    end
-    
-    local writeSuccess, writeErr = pcall(writefile, saveFile, jsonData)
-    if writeSuccess then
-        safeNotify("Saved", "G values saved ("..tostring(#data).." keys)")
-    else
-        safeNotify("Save Failed", "writefile error: "..tostring(writeErr))
-    end
+	if not writefile then return end
+	local t = {}
+	for k,v in pairs(_G) do
+		if typeof(v) == "string" or typeof(v) == "number" or typeof(v) == "boolean" then
+			t[k] = v
+		end
+	end
+	writefile(saveFile, HttpService:JSONEncode(t))
 end
 
 local function loadGValues()
-    if not isfile or not readfile then 
-        safeNotify("Load Failed", "isfile/readfile not supported!")
-        return 
-    end
-    
-    if not isfile(saveFile) then 
-        safeNotify("Load", "No save file found (first run?)")
-        return 
-    end
-    
-    local readSuccess, jsonData = pcall(readfile, saveFile)
-    if not readSuccess then 
-        safeNotify("Load Failed", "readfile error: "..tostring(jsonData))
-        return 
-    end
-    
-    local decodeSuccess, data = pcall(Http.JSONDecode, Http, jsonData)
-    if not decodeSuccess then 
-        safeNotify("Load Failed", "JSONDecode error (corrupted file?): "..tostring(data))
-        pcall(delfile, saveFile)
-        return 
-    end
-    
-    local count = 0
-    for k,v in pairs(data) do
-        _G[k] = v
-        count = count + 1
-    end
-    
-    safeNotify("Loaded", "G values loaded ("..count.." keys)")
+	if not isfile or not readfile or not isfile(saveFile) then return end
+	local data = HttpService:JSONDecode(readfile(saveFile))
+	for k,v in pairs(data) do
+		_G[k] = v
+	end
 end
 
 _G.tool = _G.tool
@@ -125,26 +80,16 @@ _G.bo = _G.bo or 0
 _G.sh = _G.sh or 0
 _G.so = _G.so or 0
 
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TeleportService = game:GetService("TeleportService")
-local HttpService = game:GetService("HttpService")
-local UserInputService = game:GetService("UserInputService")
-
-local Player = Players.LocalPlayer
-local PlaceId = game.PlaceId
-local JobId = game.JobId
-
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 local function getStat(name)
-	local p = Player:FindFirstChild("PlayerData")
+	local p = LP:FindFirstChild("PlayerData")
 	local s = p and p:FindFirstChild("PRINCIPAL")
 	return s and s:FindFirstChild(name) and s[name].Value
 end
 
 local function getOres(name)
-	local p = Player:FindFirstChild("PlayerData")
+	local p = LP:FindFirstChild("PlayerData")
 	local m = p and p:FindFirstChild("Materials")
 	return m and m:FindFirstChild(name) and m[name].Value
 end
@@ -161,57 +106,51 @@ end
 local function getThumbnail()
 	local req = syn and syn.request or http_request or request
 	if not req then return nil end
-
-	local url = ("https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=150x150&format=Png")
-		:format(Player.UserId)
-
 	local response = req({
-		Url = url,
+		Url = ("https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=%d&size=150x150&format=Png"):format(LP.UserId),
 		Method = "GET"
 	})
-
 	if not response or not response.Body then return nil end
-
 	local data = HttpService:JSONDecode(response.Body)
-
 	if data and data.data and data.data[1] and data.data[1].imageUrl then
 		return data.data[1].imageUrl
 	end
-
 	return nil
 end
-
-local waitData = TOOL_WAIT[_G.tool] or {H=8,O=8}
-local WAIT_H = waitData.H
-local WAIT_O = waitData.O
 
 local function sendWebhook(fields)
 	if not (_G.webhookEnabled and _G.discordWebhook ~= "") then return end
 
+	local thumb = getThumbnail()
+
+	local embed = {
+		title = "Overall Stats",
+		color = 6629386,
+		fields = fields,
+		footer = { text = "Execution #" .. _G.execCount },
+		timestamp = DateTime.now():ToIsoDateTime()
+	}
+
+	if thumb then
+		embed.thumbnail = { url = thumb }
+	end
+
 	local payload = {
 		username = "Farm Log",
-		content = nil,
-		embeds = {{
-			title = "Overall Stats",
-			color = 6629386,
-			thumbnail = { url = getThumbnail() },
-			fields = fields,
-			footer = { text = "Execution #" .. _G.execCount },
-			timestamp = DateTime.now():ToIsoDate()
-		}}
+		embeds = { embed }
 	}
 
 	local req = syn and syn.request or http_request or request
-	if req then
-		pcall(function()
-			req({
-				Url = _G.discordWebhook,
-				Method = "POST",
-				Headers = {["Content-Type"] = "application/json"},
-				Body = HttpService:JSONEncode(payload)
-			})
-		end)
-	end
+	if not req then return end
+
+	pcall(function()
+		req({
+			Url = _G.discordWebhook,
+			Method = "POST",
+			Headers = { ["Content-Type"] = "application/json" },
+			Body = HttpService:JSONEncode(payload)
+		})
+	end)
 end
 
 local Events = ReplicatedStorage:WaitForChild("Events")
@@ -223,21 +162,11 @@ local SetTool = Events.SetTool
 local PickupEvent = Events.Pickup
 
 local function getChar()
-	return Player.Character or Player.CharacterAdded:Wait()
+	return LP.Character or LP.CharacterAdded:Wait()
 end
 
 local function getHRP()
 	return getChar():WaitForChild("HumanoidRootPart")
-end
-
-local function rejoin()
-	if #Players:GetPlayers() <= 1 then
-		Player:Kick("Rejoining...")
-		task.wait()
-		TeleportService:Teleport(PlaceId, Player)
-	else
-		TeleportService:TeleportToPlaceInstance(PlaceId, JobId, Player)
-	end
 end
 
 task.spawn(function()
@@ -247,6 +176,7 @@ task.spawn(function()
 end)
 
 SetTool:FireServer(_G.tool)
+
 task.spawn(function()
 	while task.wait(2) do
 		SetTool:FireServer(_G.tool)
@@ -256,12 +186,11 @@ end)
 loadGValues()
 
 task.spawn(function()
-    task.wait(5)
-    saveGValues()
-    while true do
-        task.wait(10)
-        saveGValues()
-    end
+	task.wait(5)
+	saveGValues()
+	while task.wait(10) do
+		saveGValues()
+	end
 end)
 
 local PICKUP_DELAY = 0.01
@@ -286,7 +215,9 @@ task.spawn(function()
 			if AllowedItems[item.Name] then
 				local pos = getItemPosition(item)
 				if pos and (hrp.Position - pos).Magnitude <= PICKUP_DISTANCE then
-					pcall(function() PickupEvent:FireServer(item) end)
+					pcall(function()
+						PickupEvent:FireServer(item)
+					end)
 				end
 			end
 		end
@@ -298,41 +229,43 @@ local HPositions = {
 	Vector3.new(465,-68,-603),
 	Vector3.new(382,-63,-597),
 }
+
 local OPositions = {
 	Vector3.new(1157,-319,-597),
 	Vector3.new(1136,-314,-616),
 	Vector3.new(1113,-314,-605),
 }
 
+local waitData = TOOL_WAIT[_G.tool] or {H=8,O=8}
+
 task.spawn(function()
 	local hrp = getHRP()
 
 	for _,p in ipairs(HPositions) do
 		hrp.CFrame = CFrame.new(p)
-		task.wait(WAIT_H)
+		task.wait(waitData.H)
 	end
 
 	for _,p in ipairs(OPositions) do
 		hrp.CFrame = CFrame.new(p)
-		task.wait(WAIT_O)
+		task.wait(waitData.O)
 	end
 
-	local beforeH = getOres("Hiddenite")
-	local beforeO = getOres("Olivine")
-	_G.bh, _G.bo = beforeH or _G.bh, beforeO or _G.bo
+	_G.bh = getOres("Hiddenite") or _G.bh
+	_G.bo = getOres("Olivine") or _G.bo
 
 	sendWebhook({
-		{name="👤 User", value=Player.DisplayName.." ("..Player.Name..")", inline=false},
-		{name="🆔 User ID", value=Player.UserId, inline=true},
+		{name="👤 User", value=LP.DisplayName.." ("..LP.Name..")", inline=false},
+		{name="🆔 User ID", value=LP.UserId, inline=true},
 		{name="📱 Device", value=getDevice(), inline=true},
-		{name="📆 Account Age", value=Player.AccountAge.." days", inline=true},
+		{name="📆 Account Age", value=LP.AccountAge.." days", inline=true},
 		{name="🕒 Time", value=os.date("%Y-%m-%d %H:%M:%S"), inline=false},
 		{name="⚒️ Tool", value=_G.tool, inline=true},
-		{name="⏱️ Wait (H/O)", value=WAIT_H.." / "..WAIT_O.."s", inline=true},
+		{name="⏱️ Wait (H/O)", value=waitData.H.." / "..waitData.O.."s", inline=true},
 		{name="💰 Coins", value=getStat("Coin") or "N/A", inline=true},
 		{name="⭐ Stars", value=getStat("Star") or "N/A", inline=true},
-        {name="🌟 Level", value=tostring(getStat("Experience") or "N/A"), inline=true},
-	    {name="✨ Experience", value=tostring(getStat("XP") or "N/A"), inline=true},
+		{name="🌟 Level", value=tostring(getStat("Experience") or "N/A"), inline=true},
+		{name="✨ Experience", value=tostring(getStat("XP") or "N/A"), inline=true},
 		{name="🟦 Hiddenite Total", value=_G.bh, inline=true},
 		{name="🟩 Olivine Total", value=_G.bo, inline=true},
 	})
@@ -343,9 +276,15 @@ task.spawn(function()
 	end
 
 	task.wait(2.5)
-	rejoin()
-end)
 
+	if #Players:GetPlayers() <= 1 then
+		LP:Kick("Rejoining...")
+		task.wait()
+		TeleportService:Teleport(game.PlaceId, LP)
+	else
+		TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LP)
+	end
+end)
 
 if queue_on_teleport then
 	queue_on_teleport([[
