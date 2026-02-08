@@ -218,9 +218,9 @@ local Window = Rayfield:CreateWindow({
    }
 })
 
-_G.stars = _G.stars
-_G.wins = _G.wins
-_G.candies = _G.candies
+_G.stars = _G.stars or 0
+_G.wins = _G.wins or 0
+_G.candies = _G.candies or 0
 
 if LP:FindFirstChild("leaderstats") then
     if LP.leaderstats:FindFirstChild("Stars") then
